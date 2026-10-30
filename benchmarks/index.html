@@ -64,8 +64,11 @@ th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
 .banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
 .banner strong { display: block; font-size: 15px; }
 /* A hash wraps rather than overflow: a screenshot must show every character. */
-.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; white-space: normal; }
-code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+/* Named fonts first: a Korean system monospace draws the backslash as ₩, and a
+   screenshot must show the characters the files hold. */
+code, pre, .hash { font-family: Consolas, "Cascadia Mono", Menlo, "SF Mono", ui-monospace, monospace; }
+.hash { font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-size: 12px; }
 pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
 </style>
@@ -81,14 +84,14 @@ footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid);
 a { color: var(--s1); }
 </style>
 <h1>Agent Fusion Router benchmark records</h1>
-<p class="sub">Every run and comparison under <code>benchmarks/</code>, newest first, re-verified when this page was made (2026-10-30T09:34:03.584Z). Click a screenshot to see it whole.</p>
+<p class="sub">Every run and comparison under <code>benchmarks/</code>, newest first, re-verified when this page was made (2026-10-30T10:04:46.379Z). Click a screenshot to see it whole.</p>
 
 <h2>Comparisons</h2>
 <div class="card entry">
 <div class="shot"><a href="comparisons/20261030-085716_vs_20261030-090443/comparison.png"><img class="thumb" src="comparisons/20261030-085716_vs_20261030-090443/comparison.png" alt="Screenshot"></a><div class="note"><a href="comparisons/20261030-085716_vs_20261030-090443/comparison.html">Open the page</a> · <a href="comparisons/20261030-085716_vs_20261030-090443/comparison.png">Full screenshot</a></div></div>
 <div class="facts">
 <div><strong><a href="comparisons/20261030-085716_vs_20261030-090443/comparison.html">Before fix and After fix</a></strong></div>
-<div class="note">Runs <code>20261030-085716</code> and <code>20261030-090443</code> · made 2026-10-30T09:16:23.169Z</div>
+<div class="note">Runs <code>20261030-085716</code> and <code>20261030-090443</code> · made 2026-10-30T10:04:44.652Z</div>
 <p class="note">The page verifies both runs when it is made, and its screenshot prints both data hashes. Check them against the run cards here.</p>
 </div></div>
 
@@ -97,12 +100,14 @@ a { color: var(--s1); }
 <div class="shot"><a href="results/20261030-092454/report.png"><img class="thumb" src="results/20261030-092454/report.png" alt="Screenshot"></a><div class="note"><a href="results/20261030-092454/report.html">Open the page</a> · <a href="results/20261030-092454/report.png">Full screenshot</a></div></div>
 <div class="facts">
 <div><strong><a href="results/20261030-092454/report.html">20261030-092454</a></strong> </div>
-<div class="note">2026-10-30T09:24:54.729Z · 6 tasks × 3 arms (Default, opusplan, Auto routing) × 1 rep</div>
+<div class="note">2026-10-30T09:24:54.729Z · 6 tasks × 3 arms (Default, opusplan, Auto routing) × 1 rep · <a href="results/20261030-092454/work.html">Work produced</a></div>
 <div class="scroll"><table>
 <thead><tr><th></th><th></th></tr></thead>
 <tbody><tr><td>Success</td><td>17/18</td></tr>
-<tr><td>Claude Code total</td><td>$1.50158421</td></tr>
-<tr><td>Cost accounted for</td><td><span class="fail">9/18</span></td></tr>
+<tr><td>Claude Code computed</td><td>$1.50158421</td></tr>
+<tr><td>Plugin estimate</td><td>$1.49898981</td></tr>
+<tr><td>Difference</td><td>+$0.00259440</td></tr>
+<tr><td>Price table check</td><td><span class="pass">✓ 32/32 agree with Claude Code</span></td></tr>
 <tr><td>Verification</td><td><span class="pass">✓ Verified</span></td></tr>
 <tr><td>Data SHA-256</td><td><span class="hash">27b115865309dc0f4e4901464eaa3b688855dc663efb7cf22ffb85f73ed88579</span></td></tr></tbody>
 </table></div>
@@ -113,12 +118,14 @@ a { color: var(--s1); }
 <div class="shot"><a href="results/20261030-090443/report.png"><img class="thumb" src="results/20261030-090443/report.png" alt="Screenshot"></a><div class="note"><a href="results/20261030-090443/report.html">Open the page</a> · <a href="results/20261030-090443/report.png">Full screenshot</a></div></div>
 <div class="facts">
 <div><strong><a href="results/20261030-090443/report.html">20261030-090443</a></strong> </div>
-<div class="note">2026-10-30T09:04:43.693Z · 1 task × 1 arm (Auto routing) × 1 rep</div>
+<div class="note">2026-10-30T09:04:43.693Z · 1 task × 1 arm (Auto routing) × 1 rep · <a href="results/20261030-090443/work.html">Work produced</a></div>
 <div class="scroll"><table>
 <thead><tr><th></th><th></th></tr></thead>
 <tbody><tr><td>Success</td><td>1/1</td></tr>
-<tr><td>Claude Code total</td><td>$0.00284224</td></tr>
-<tr><td>Cost accounted for</td><td><span class="pass">✓ 1/1 to the last digit</span></td></tr>
+<tr><td>Claude Code computed</td><td>$0.00284224</td></tr>
+<tr><td>Plugin estimate</td><td>$0.00271234</td></tr>
+<tr><td>Difference</td><td>+$0.00012990</td></tr>
+<tr><td>Price table check</td><td>—</td></tr>
 <tr><td>Verification</td><td><span class="pass">✓ Verified</span></td></tr>
 <tr><td>Data SHA-256</td><td><span class="hash">3c4e83a797be7bec1d2a9b2bbc586f352390143002a6c987cbee70615ab1f91a</span></td></tr></tbody>
 </table></div>
@@ -129,12 +136,14 @@ a { color: var(--s1); }
 <div class="shot"><a href="results/20261030-090215/report.png"><img class="thumb" src="results/20261030-090215/report.png" alt="Screenshot"></a><div class="note"><a href="results/20261030-090215/report.html">Open the page</a> · <a href="results/20261030-090215/report.png">Full screenshot</a></div></div>
 <div class="facts">
 <div><strong><a href="results/20261030-090215/report.html">20261030-090215</a></strong> </div>
-<div class="note">2026-10-30T09:02:15.644Z · 1 task × 1 arm (Auto routing) × 1 rep</div>
+<div class="note">2026-10-30T09:02:15.644Z · 1 task × 1 arm (Auto routing) × 1 rep · <a href="results/20261030-090215/work.html">Work produced</a></div>
 <div class="scroll"><table>
 <thead><tr><th></th><th></th></tr></thead>
 <tbody><tr><td>Success</td><td>0/1</td></tr>
-<tr><td>Claude Code total</td><td>$0.00282152</td></tr>
-<tr><td>Cost accounted for</td><td><span class="pass">✓ 1/1 to the last digit</span></td></tr>
+<tr><td>Claude Code computed</td><td>$0.00282152</td></tr>
+<tr><td>Plugin estimate</td><td>$0.00269162</td></tr>
+<tr><td>Difference</td><td>+$0.00012990</td></tr>
+<tr><td>Price table check</td><td>—</td></tr>
 <tr><td>Verification</td><td><span class="pass">✓ Verified</span></td></tr>
 <tr><td>Data SHA-256</td><td><span class="hash">addaef32dbd81761f58fdfd2f48284df1f8d92a2c48ecb67f5fce0e01904796d</span></td></tr></tbody>
 </table></div>
@@ -145,12 +154,14 @@ a { color: var(--s1); }
 <div class="shot"><a href="results/20261030-085716/report.png"><img class="thumb" src="results/20261030-085716/report.png" alt="Screenshot"></a><div class="note"><a href="results/20261030-085716/report.html">Open the page</a> · <a href="results/20261030-085716/report.png">Full screenshot</a></div></div>
 <div class="facts">
 <div><strong><a href="results/20261030-085716/report.html">20261030-085716</a></strong> </div>
-<div class="note">2026-10-30T08:57:16.670Z · 1 task × 1 arm (Auto routing) × 1 rep</div>
+<div class="note">2026-10-30T08:57:16.670Z · 1 task × 1 arm (Auto routing) × 1 rep · <a href="results/20261030-085716/work.html">Work produced</a></div>
 <div class="scroll"><table>
 <thead><tr><th></th><th></th></tr></thead>
 <tbody><tr><td>Success</td><td>1/1</td></tr>
-<tr><td>Claude Code total</td><td>$0.00204753</td></tr>
-<tr><td>Cost accounted for</td><td><span class="fail">0/1</span></td></tr>
+<tr><td>Claude Code computed</td><td>$0.00204753</td></tr>
+<tr><td>Plugin estimate</td><td>$0.00204753</td></tr>
+<tr><td>Difference</td><td>+$0.00000000</td></tr>
+<tr><td>Price table check</td><td><span class="pass">✓ 1/1 agree with Claude Code</span></td></tr>
 <tr><td>Verification</td><td><span class="pass">✓ Verified</span></td></tr>
 <tr><td>Data SHA-256</td><td><span class="hash">9a6734f16bcb473cbe8f65583331c314e200c7b14462d0fad9602e594a194f75</span></td></tr></tbody>
 </table></div>
@@ -160,11 +171,12 @@ a { color: var(--s1); }
 
 <h2>How to check a figure yourself</h2>
 <ol>
-<li>Each run card links Claude Code's own output (<code>claude.json</code>). Its <code>total_cost_usd</code> and <code>modelUsage</code> are what Claude Code printed at the end of the session; the benchmark only saved them.</li>
+<li>Each run card links Claude Code's own output (<code>claude.json</code>). Its <code>total_cost_usd</code> and <code>modelUsage</code> are what Claude Code printed at the end of the session; the benchmark only saved them. They are Claude Code's computed cost, not a bill: the billed cost is in the provider's billing console.</li>
+<li>Difference = Claude Code computed − plugin estimate. It mixes requests the plugin does not see with estimation error, so it is not explained by cause; zero means the totals are consistent, not that each request was estimated right.</li>
 <li>In the run folder, <code>sha256sum -c evidence.sha256</code> confirms no file changed since the run, and <code>sha256sum evidence.sha256</code> prints the data hash shown here and in every screenshot of that run.</li>
 <li><code>node packages/cli/dist/cli.js bench verify benchmarks/results/&lt;run&gt;</code> recomputes every figure from the raw files.</li>
 </ol>
 
-<footer>Agent Fusion Router · benchmark records · 2026-10-30T09:34:03.584Z</footer>
+<footer>Agent Fusion Router · benchmark records · 2026-10-30T10:04:46.379Z</footer>
 </main></body>
 </html>

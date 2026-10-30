@@ -1,3 +1,7 @@
+import type { Tokens } from '@agent-fusion-router/core'
+
+import type { PriceCheck } from '../bench/summary.ts'
+
 // Self-contained HTML: no scripts, no network, so a report opens the same
 // anywhere, years later, and its screenshot shows exactly what the file holds.
 
@@ -11,13 +15,21 @@ export const usd = (n: number | undefined): string =>
 export const exactUsd = (n: number | undefined): string =>
   n === undefined ? '—' : `${n < 0 ? '−' : ''}$${Math.abs(n).toFixed(8)}`
 
-/** Whether a cost reconciles: plugin + outside the conversation − Claude Code's total. */
-export const accounted = (unaccounted: number | undefined): string =>
-  unaccounted === undefined
+/** A signed amount at full precision: the sign is part of the figure. */
+export const signedUsd = (n: number | undefined): string =>
+  n === undefined ? '—' : `${n < 0 ? '−' : '+'}$${Math.abs(n).toFixed(8)}`
+
+/** Whether this project's price table computed what Claude Code computed, model by model. */
+export const priceAgreement = (c: PriceCheck): string =>
+  c.checked === 0
     ? '—'
-    : Math.abs(unaccounted) < 5e-9
-      ? '<span class="pass">✓ to the last digit</span>'
-      : `<span class="fail">off by ${exactUsd(unaccounted)}</span>`
+    : c.agree === c.checked
+      ? `<span class="pass">✓ ${c.agree}/${c.checked} agree</span>`
+      : `<span class="fail">${c.agree}/${c.checked} agree</span>`
+
+/** Token counts in one cell: input · output · cache read · cache write. */
+export const tokenCounts = (t: Tokens | undefined): string =>
+  t === undefined ? '—' : `${compact(t.input)} · ${compact(t.output)} · ${compact(t.cacheRead)} · ${compact(t.cacheWrite)}`
 
 export const pct = (n: number): string => `${Math.round(n * 100)}%`
 
@@ -196,8 +208,11 @@ th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
 .banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
 .banner strong { display: block; font-size: 15px; }
 /* A hash wraps rather than overflow: a screenshot must show every character. */
-.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; white-space: normal; }
-code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+/* Named fonts first: a Korean system monospace draws the backslash as ₩, and a
+   screenshot must show the characters the files hold. */
+code, pre, .hash { font-family: Consolas, "Cascadia Mono", Menlo, "SF Mono", ui-monospace, monospace; }
+.hash { font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-size: 12px; }
 pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
 `

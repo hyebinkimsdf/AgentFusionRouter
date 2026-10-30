@@ -1,10 +1,12 @@
 import { readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
+import { CLAUDE_MODELS } from '@agent-fusion-router/core'
+
 import type { IndexComparison, IndexRun } from '../html/index-page.ts'
 import { renderIndex } from '../html/index-page.ts'
-import { loadForComparison, runName } from './run.ts'
-import { unaccountedUsd } from './summary.ts'
+import { loadForDisplay, runName } from './run.ts'
+import { priceCheck } from './summary.ts'
 
 /** What `bench compare` leaves beside its page, so the index can name it. */
 export type ComparisonInfo = { labelA: string; labelB: string; runA: string; runB: string; generatedAt: string }
@@ -29,13 +31,12 @@ export const writeIndex = async (root: string, includeSimulated = false): Promis
     const dir = join(root, 'results', name)
     if (!(await exists(join(dir, 'run.json')))) continue
 
-    const c = await loadForComparison(dir)
+    const c = await loadForDisplay(dir)
     if (c.run.simulated && !includeSimulated) continue
 
-    const unaccounted = c.results.flatMap(r => {
-      const u = unaccountedUsd(r, c.prices)
-      return u === undefined ? [] : [u]
-    })
+    // With the current price table, as the run's report shows it.
+    const valid = c.results.filter(r => r.valid)
+    const checks = valid.map(r => priceCheck(r, CLAUDE_MODELS))
 
     runs.push({
       runId: c.run.runId,
@@ -46,13 +47,16 @@ export const writeIndex = async (root: string, includeSimulated = false): Promis
       reps: c.run.reps,
       runs: c.results.length,
       successes: c.results.filter(r => r.valid && r.success).length,
-      claudeCostUsd: c.results.reduce((n, r) => n + (r.claude?.costUsd ?? 0), 0),
-      accounted: { matched: unaccounted.filter(u => Math.abs(u) < 5e-9).length, checked: unaccounted.length },
+      claudeCostUsd: valid.reduce((n, r) => n + (r.claude?.costUsd ?? 0), 0),
+      unknownCostRuns: valid.filter(r => r.claude?.costUsd === undefined).length,
+      pluginEstimateUsd: valid.reduce((n, r) => n + r.plugin.costUsd, 0),
+      priceCheck: { agree: checks.reduce((n, x) => n + x.agree, 0), checked: checks.reduce((n, x) => n + x.checked, 0) },
       verified: c.check.problems.length === 0,
       problems: c.check.problems,
       dataHash: c.check.dataHash,
       report: `results/${name}/report.html`,
       ...((await exists(join(dir, 'report.png'))) ? { screenshot: `results/${name}/report.png` } : {}),
+      ...((await exists(join(dir, 'work.html'))) ? { work: `results/${name}/work.html` } : {}),
       raw: c.results.map(r => ({
         label: `${r.taskId} · ${r.armId} · rep ${r.rep}`,
         path: `results/${name}/runs/${runName(r.taskId, r.armId, r.rep)}/claude.json`,

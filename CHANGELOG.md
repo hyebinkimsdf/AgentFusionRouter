@@ -21,6 +21,19 @@ First release, Claude Code only.
   - `--simulate` exercises the pipeline without calling a model, and marks its output as simulated.
 - Example task set `examples/shop`: six tasks from light to heavy, with hidden checks and reference solutions.
 - `bench compare <a> <b>`: two runs side by side as a page and a screenshot, each verified, with every cost reconciled against Claude Code's total.
+- `bench index`: every run and comparison in `benchmarks/index.html`, with screenshots, verification, and links to Claude Code's own output.
+- Each run also writes `work.html` and its screenshot: every session's code change and final answer, task by task, the arms side by side, with the model that did the work. The report groups results by model too.
+- Arms can start in another permission mode, add permission rules, and `planThenExecute`. That runs a task as a person uses opusplan: plan mode first, then the same session resumed with the plan approved.
+
+### Changed
+
+- Reports keep three cost figures apart. The *plugin estimate* is per request, from the tokens the plugin sees. *Claude Code's computed session cost* (`total_cost_usd`) is Claude Code's own figure, used by every comparison. The *billed cost* is in the provider's console and not measured.
+- Reports show the signed **difference = Claude Code computed − plugin estimate**, per arm and per run. It is not explained by cause and is not called "accounted for": it mixes requests the plugin does not see with estimation error, and zero only shows the totals are consistent.
+- Tokens outside the conversation are shown as observed counts from Claude Code's own output, with no claim about what they were for.
+- The **price table check** compares this project's table with Claude Code's per-model figures, model by model.
+- A session with no reported cost is *unknown*, never counted as $0 or replaced by the plugin's estimate.
+- New like-for-like figure: session cost over the tasks every arm completed.
+- Pages show plugin estimates with the current price table. Where a run was recorded with an earlier one, the page says so and lists recorded against current. The recorded files are unchanged and still verify.
 
 ### Fixed
 

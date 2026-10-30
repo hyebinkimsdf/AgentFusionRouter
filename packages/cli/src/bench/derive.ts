@@ -15,21 +15,27 @@ const add = (a: Tokens, b: Tokens): Tokens => ({
   cacheWrite: a.cacheWrite + b.cacheWrite,
 })
 
-/** The result object of `claude -p --output-format json`: the last JSON line printed. */
+/**
+ * The result of `claude -p --output-format json`: one JSON line per
+ * invocation. A plan-then-execute run has two, the second resuming the first's
+ * session. A resumed session's `total_cost_usd` and `modelUsage` are
+ * cumulative, so they come from the last line; its `usage` covers its own
+ * requests only, so the conversation's tokens are summed over every line.
+ */
 export const parseClaudeOutput = (stdout: string): ClaudeFacts | undefined => {
-  const line = stdout
+  const results = stdout
     .split('\n')
     .map(l => l.trim())
     .filter(l => l.startsWith('{'))
-    .at(-1)
-  if (line === undefined) return undefined
-
-  let json: Record<string, unknown>
-  try {
-    json = JSON.parse(line) as Record<string, unknown>
-  } catch {
-    return undefined
-  }
+    .flatMap(l => {
+      try {
+        return [JSON.parse(l) as Record<string, unknown>]
+      } catch {
+        return []
+      }
+    })
+  const json = results.at(-1)
+  if (json === undefined) return undefined
 
   const byModel: ClaudeFacts['byModel'] = {}
   let tokens = emptyTokens()
@@ -45,7 +51,19 @@ export const parseClaudeOutput = (stdout: string): ClaudeFacts | undefined => {
     tokens = add(tokens, t)
   }
 
-  const usage = json.usage as Record<string, unknown> | undefined
+  const usages = results.flatMap(r => (r.usage === undefined ? [] : [r.usage as Record<string, unknown>]))
+  const usage =
+    usages.length === 0
+      ? undefined
+      : usages.reduce(
+          (sum, u) => ({
+            input_tokens: num(sum.input_tokens) + num(u.input_tokens),
+            output_tokens: num(sum.output_tokens) + num(u.output_tokens),
+            cache_read_input_tokens: num(sum.cache_read_input_tokens) + num(u.cache_read_input_tokens),
+            cache_creation_input_tokens: num(sum.cache_creation_input_tokens) + num(u.cache_creation_input_tokens),
+          }),
+          {} as Record<string, unknown>,
+        )
 
   return {
     isError: json.is_error === true,

@@ -24,6 +24,17 @@ export type Arm = {
   label: string
   /** The session model, as `claude --model` takes it (`opus`, `opusplan`); absent, the account's default. */
   model?: string
+  /** The mode the session starts in (default `acceptEdits`); `plan` starts in plan mode, as opusplan expects. */
+  permissionMode?: string
+  /** Permission rules added to the run's allow list. */
+  allow?: string[]
+  /**
+   * Plan first, then execute, as a person using opusplan does: the session
+   * starts in plan mode, then resumes in acceptEdits mode with an approval.
+   * A `claude -p` session offers no ExitPlanMode tool, so a plan cannot be
+   * approved inside one session.
+   */
+  planThenExecute?: boolean
   /** The plugin's settings for this arm. */
   plugin: Record<string, string | number | boolean>
 }

@@ -1,7 +1,14 @@
 import type { ModelEntry, Tier, Tokens } from '@agent-fusion-router/core'
-import { TIERS, emptyTokens, estimateCostUsd } from '@agent-fusion-router/core'
+import { TIERS, emptyTokens, estimateCostUsd, findModel, promptTokens } from '@agent-fusion-router/core'
 
 import type { Arm, RunResult, Task } from './types.ts'
+
+// Three cost figures, kept apart throughout:
+// - the plugin's estimate: per request, from the tokens it sees, priced with
+//   this project's table;
+// - Claude Code's computed session cost (`total_cost_usd`): Claude Code's own
+//   figure, the one every comparison uses;
+// - the billed cost: the provider's billing, which a run cannot see.
 
 export type ArmSummary = {
   armId: string
@@ -10,10 +17,18 @@ export type ArmSummary = {
   validRuns: number
   successes: number
   successRate: number
-  /** Claude Code's reported cost, summed over valid runs; the plugin's estimate where Claude reported none. */
+  /** Claude Code's computed session cost, summed over the valid runs that report one. */
   costUsd: number
-  /** Total cost ÷ successes: what one finished task cost, failures included. Undefined with no success. */
+  /** Valid runs whose session cost is unknown: left out of `costUsd`, never counted as 0. */
+  unknownCostRuns?: number
+  /** Session cost ÷ successes: what one finished task cost, failures included. Undefined with no success or an unknown cost. */
   costPerSuccessUsd?: number
+  /** The plugin's per-request estimates, summed over the valid runs. */
+  pluginEstimateUsd?: number
+  /** Claude Code's computed cost − the plugin's estimate. Signed; it mixes unobserved requests with estimation error. */
+  differenceUsd?: number
+  /** Session cost over the tasks every arm completed: a like-for-like figure. */
+  commonTasksCostUsd?: number
   meanWallMs: number
   tokens: Tokens
   meanTurns: number
@@ -28,6 +43,7 @@ export type Cell = {
   runs: number
   successes: number
   costUsd: number
+  unknownCostRuns?: number
   meanWallMs: number
   decidedTiers: Tier[]
 }
@@ -40,17 +56,22 @@ export type CrossCheckRow = {
   pluginCostUsd: number
   /** (plugin − Claude) ÷ Claude, in percent. */
   diffPct?: number
+  /** Claude Code's computed cost − the plugin's estimate, signed. */
+  differenceUsd?: number
 }
 
 export type BenchSummary = {
   arms: ArmSummary[]
   cells: Cell[]
+  /** Tasks every arm ran validly and passed on every run. */
+  commonTasks?: string[]
   classifier: { scored: number; correct: number; matrix: Record<Tier, Record<Tier, number>> }
   crossCheck: { rows: CrossCheckRow[]; meanAbsDiffPct?: number; maxAbsDiffPct?: number }
   invalid: { taskId: string; armId: string; rep: number; reason: string }[]
 }
 
-export const runCost = (r: RunResult): number => r.claude?.costUsd ?? r.plugin.costUsd
+/** Claude Code's computed session cost; undefined where it reported none. */
+export const runCost = (r: RunResult): number | undefined => r.claude?.costUsd
 
 const minus = (a: Tokens, b: Tokens): Tokens => ({
   input: a.input - b.input,
@@ -59,49 +80,74 @@ const minus = (a: Tokens, b: Tokens): Tokens => ({
   cacheWrite: a.cacheWrite - b.cacheWrite,
 })
 
+const add = (a: Tokens, b: Tokens): Tokens => ({
+  input: a.input + b.input,
+  output: a.output + b.output,
+  cacheRead: a.cacheRead + b.cacheRead,
+  cacheWrite: a.cacheWrite + b.cacheWrite,
+})
+
+const isZero = (t: Tokens): boolean => t.input === 0 && t.output === 0 && t.cacheRead === 0 && t.cacheWrite === 0
+
 /**
- * What Claude Code spent outside the conversation (titles, summaries), model
- * by model: a model the conversation never used is all side requests; on the
- * conversation's own model, the side requests are its tokens less the
- * conversation's. Undefined where that cannot be told apart: no conversation
- * figure, a conversation on several models, or a model without a price.
+ * Tokens Claude Code counted outside the conversation, from its own figures
+ * alone: per-model totals (`modelUsage`) less the conversation's (`usage`).
+ * Observed counts, not costs, and not explained: what those requests were for
+ * is not recorded. Undefined where they cannot be told apart.
  */
-export const outsideConversationUsd = (r: RunResult, prices: readonly ModelEntry[]): number | undefined => {
+export const outsideConversationTokens = (r: RunResult): Tokens | undefined => {
   const conversation = r.claude?.conversationTokens
-  const [conversationModel, ...more] = r.plugin.models
-  if (!r.claude || !conversation || conversationModel === undefined || more.length > 0) return undefined
+  const conversationModels = r.plugin.models
+  if (!r.claude || !conversation || conversationModels.length === 0) return undefined
 
-  let total = 0
-  for (const [model, { tokens }] of Object.entries(r.claude.byModel)) {
-    const cost = estimateCostUsd(model === conversationModel ? minus(tokens, conversation) : tokens, model, prices)
-    if (cost === undefined) return undefined
-    total += cost
-  }
+  const byModel = Object.entries(r.claude.byModel)
+  const onConversationModels = byModel
+    .filter(([model]) => conversationModels.includes(model))
+    .reduce((sum, [, { tokens }]) => add(sum, tokens), emptyTokens())
+  const leftover = minus(onConversationModels, conversation)
+  if (conversationModels.length > 1 && !isZero(leftover)) return undefined
 
-  return total
+  return byModel
+    .filter(([model]) => !conversationModels.includes(model))
+    .reduce((sum, [, { tokens }]) => add(sum, tokens), conversationModels.length === 1 ? leftover : emptyTokens())
 }
 
-/** Plugin estimate + outside the conversation − Claude Code's total: 0 when every cent is accounted for. */
-export const unaccountedUsd = (r: RunResult, prices: readonly ModelEntry[]): number | undefined => {
-  const outside = outsideConversationUsd(r, prices)
-  const total = r.claude?.costUsd
+export type PriceCheck = { checked: number; agree: number; differ: { model: string; claudeUsd: number; tableUsd: number }[] }
 
-  return outside === undefined || total === undefined ? undefined : r.plugin.costUsd + outside - total
+/**
+ * Whether this project's price table computes what Claude Code computed, model
+ * by model, from Claude Code's own token counts. It checks the table against
+ * Claude Code's, not against a bill. A long-context price applies per request,
+ * so a model whose session total crosses that threshold cannot be checked
+ * from totals and is skipped.
+ */
+export const priceCheck = (r: RunResult, prices: readonly ModelEntry[]): PriceCheck => {
+  const result: PriceCheck = { checked: 0, agree: 0, differ: [] }
+
+  for (const [model, { tokens, costUsd }] of Object.entries(r.claude?.byModel ?? {})) {
+    const entry = findModel(model, prices)
+    const tableUsd = estimateCostUsd(tokens, model, prices)
+    const isAmbiguous = entry?.longContext !== undefined && promptTokens(tokens) > entry.longContext.aboveInputTokens
+    if (costUsd === undefined || tableUsd === undefined || isAmbiguous) continue
+
+    result.checked += 1
+    if (Math.abs(tableUsd - costUsd) < 5e-9) result.agree += 1
+    else result.differ.push({ model, claudeUsd: costUsd, tableUsd })
+  }
+
+  return result
 }
 
 const mean = (values: readonly number[]): number =>
   values.length === 0 ? 0 : values.reduce((a, b) => a + b, 0) / values.length
 
-const sumTokens = (list: readonly Tokens[]): Tokens =>
-  list.reduce(
-    (a, t) => ({
-      input: a.input + t.input,
-      output: a.output + t.output,
-      cacheRead: a.cacheRead + t.cacheRead,
-      cacheWrite: a.cacheWrite + t.cacheWrite,
-    }),
-    emptyTokens(),
-  )
+const sumTokens = (list: readonly Tokens[]): Tokens => list.reduce(add, emptyTokens())
+
+/** Sums known costs; `unknown` counts the runs without one, never as 0. */
+const sumCosts = (runs: readonly RunResult[]): { usd: number; unknown: number } => ({
+  usd: runs.reduce((n, r) => n + (runCost(r) ?? 0), 0),
+  unknown: runs.filter(r => runCost(r) === undefined).length,
+})
 
 /** Folds run results into the report's figures. Invalid runs are listed, never counted. */
 export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], unordered: readonly RunResult[]): BenchSummary => {
@@ -113,11 +159,23 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
   })
   const valid = results.filter(r => r.valid)
 
+  const commonTasks = tasks
+    .filter(task =>
+      arms.every(arm => {
+        const runs = valid.filter(r => r.taskId === task.id && r.armId === arm.id)
+        return runs.length > 0 && runs.every(r => r.success)
+      }),
+    )
+    .map(t => t.id)
+
   const armSummaries = arms.map((arm): ArmSummary => {
     const all = results.filter(r => r.armId === arm.id)
     const runs = valid.filter(r => r.armId === arm.id)
     const successes = runs.filter(r => r.success).length
-    const costUsd = runs.reduce((n, r) => n + runCost(r), 0)
+    const cost = sumCosts(runs)
+    const plugin = runs.reduce((n, r) => n + r.plugin.costUsd, 0)
+    const common = sumCosts(runs.filter(r => commonTasks.includes(r.taskId)))
+    const isKnown = cost.unknown === 0
 
     return {
       armId: arm.id,
@@ -126,8 +184,12 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
       validRuns: runs.length,
       successes,
       successRate: runs.length === 0 ? 0 : successes / runs.length,
-      costUsd,
-      ...(successes === 0 ? {} : { costPerSuccessUsd: costUsd / successes }),
+      costUsd: cost.usd,
+      ...(isKnown ? {} : { unknownCostRuns: cost.unknown }),
+      ...(successes === 0 || !isKnown ? {} : { costPerSuccessUsd: cost.usd / successes }),
+      pluginEstimateUsd: plugin,
+      ...(isKnown ? { differenceUsd: cost.usd - plugin } : {}),
+      ...(common.unknown === 0 && commonTasks.length > 0 ? { commonTasksCostUsd: common.usd } : {}),
       meanWallMs: mean(runs.map(r => r.wallMs)),
       tokens: sumTokens(runs.map(r => r.claude?.tokens ?? r.plugin.tokens)),
       meanTurns: mean(runs.map(r => r.claude?.numTurns ?? 0)),
@@ -140,13 +202,15 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
   const cells = tasks.flatMap(task =>
     arms.map((arm): Cell => {
       const runs = valid.filter(r => r.taskId === task.id && r.armId === arm.id)
+      const cost = sumCosts(runs)
 
       return {
         taskId: task.id,
         armId: arm.id,
         runs: runs.length,
         successes: runs.filter(r => r.success).length,
-        costUsd: runs.reduce((n, r) => n + runCost(r), 0),
+        costUsd: cost.usd,
+        ...(cost.unknown === 0 ? {} : { unknownCostRuns: cost.unknown }),
         meanWallMs: mean(runs.map(r => r.wallMs)),
         decidedTiers: runs.flatMap(r => (r.plugin.decidedTier ? [r.plugin.decidedTier] : [])),
       }
@@ -175,13 +239,22 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
         ? undefined
         : ((r.plugin.costUsd - claudeCostUsd) / claudeCostUsd) * 100
 
-    return { taskId: r.taskId, armId: r.armId, rep: r.rep, claudeCostUsd, pluginCostUsd: r.plugin.costUsd, diffPct }
+    return {
+      taskId: r.taskId,
+      armId: r.armId,
+      rep: r.rep,
+      claudeCostUsd,
+      pluginCostUsd: r.plugin.costUsd,
+      diffPct,
+      ...(claudeCostUsd === undefined ? {} : { differenceUsd: claudeCostUsd - r.plugin.costUsd }),
+    }
   })
   const diffs = rows.flatMap(r => (r.diffPct === undefined ? [] : [Math.abs(r.diffPct)]))
 
   return {
     arms: armSummaries,
     cells,
+    commonTasks,
     classifier: { scored, correct, matrix },
     crossCheck: {
       rows,

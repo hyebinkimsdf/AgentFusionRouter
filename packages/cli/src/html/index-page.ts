@@ -1,4 +1,4 @@
-import { esc, exactUsd, page, passMark, table } from './page.ts'
+import { esc, exactUsd, page, passMark, signedUsd, table } from './page.ts'
 
 export type IndexRun = {
   runId: string
@@ -9,16 +9,22 @@ export type IndexRun = {
   reps: number
   runs: number
   successes: number
-  /** Sum of Claude Code's own `total_cost_usd` over the run's sessions. */
+  /** Claude Code's computed session cost, summed over the sessions that report one. */
   claudeCostUsd: number
-  /** Runs whose cost reconciles to the last digit, of those that can be reconciled. */
-  accounted: { matched: number; checked: number }
+  /** Sessions with no reported cost: never counted as $0. */
+  unknownCostRuns: number
+  /** The plugin's per-request estimates, summed, with the current price table. */
+  pluginEstimateUsd: number
+  /** Model entries where this project's table computes what Claude Code computed. */
+  priceCheck: { agree: number; checked: number }
   verified: boolean
   problems: string[]
   dataHash: string
   /** Paths relative to the index page. */
   report: string
   screenshot?: string
+  /** Each session's change and answer, side by side per task. */
+  work?: string
   /** Each session's raw Claude Code output, for reading the reported figures first-hand. */
   raw: { label: string; path: string; costUsd?: number }[]
 }
@@ -51,19 +57,21 @@ const runCard = (r: IndexRun): string => {
 <div class="shot">${shot(r.screenshot, r.report)}</div>
 <div class="facts">
 <div><strong><a href="${esc(r.report)}">${esc(r.runId)}</a></strong> ${r.simulated ? '<span class="fail">SIMULATED: not a result</span>' : ''}</div>
-<div class="note">${esc(r.startedAt)} · ${r.tasks} task${r.tasks === 1 ? '' : 's'} × ${r.arms.length} arm${r.arms.length === 1 ? '' : 's'} (${esc(r.arms.join(', '))}) × ${r.reps} rep</div>
+<div class="note">${esc(r.startedAt)} · ${r.tasks} task${r.tasks === 1 ? '' : 's'} × ${r.arms.length} arm${r.arms.length === 1 ? '' : 's'} (${esc(r.arms.join(', '))}) × ${r.reps} rep${r.work === undefined ? '' : ` · <a href="${esc(r.work)}">Work produced</a>`}</div>
 ${table(
   ['', ''],
   [
     ['Success', `${r.successes}/${r.runs}`],
-    ['Claude Code total', exactUsd(r.claudeCostUsd)],
+    ['Claude Code computed', r.unknownCostRuns === 0 ? exactUsd(r.claudeCostUsd) : `${exactUsd(r.claudeCostUsd)} + ${r.unknownCostRuns} unknown`],
+    ['Plugin estimate', exactUsd(r.pluginEstimateUsd)],
+    ['Difference', r.unknownCostRuns === 0 ? signedUsd(r.claudeCostUsd - r.pluginEstimateUsd) : 'unknown'],
     [
-      'Cost accounted for',
-      r.accounted.checked === 0
+      'Price table check',
+      r.priceCheck.checked === 0
         ? '—'
-        : r.accounted.matched === r.accounted.checked
-          ? `<span class="pass">✓ ${r.accounted.matched}/${r.accounted.checked} to the last digit</span>`
-          : `<span class="fail">${r.accounted.matched}/${r.accounted.checked}</span>`,
+        : r.priceCheck.agree === r.priceCheck.checked
+          ? `<span class="pass">✓ ${r.priceCheck.agree}/${r.priceCheck.checked} agree with Claude Code</span>`
+          : `<span class="fail">${r.priceCheck.agree}/${r.priceCheck.checked} agree with Claude Code</span>`,
     ],
     ['Verification', r.verified ? passMark(true).replace('Pass', 'Verified') : `<span class="fail">✗ ${esc(r.problems.join('; '))}</span>`],
     ['Data SHA-256', `<span class="hash">${esc(r.dataHash)}</span>`],
@@ -106,7 +114,8 @@ ${runs.length === 0 ? '<p>None yet. Start one with <code>bench run</code>.</p>' 
 
 <h2>How to check a figure yourself</h2>
 <ol>
-<li>Each run card links Claude Code's own output (<code>claude.json</code>). Its <code>total_cost_usd</code> and <code>modelUsage</code> are what Claude Code printed at the end of the session; the benchmark only saved them.</li>
+<li>Each run card links Claude Code's own output (<code>claude.json</code>). Its <code>total_cost_usd</code> and <code>modelUsage</code> are what Claude Code printed at the end of the session; the benchmark only saved them. They are Claude Code's computed cost, not a bill: the billed cost is in the provider's billing console.</li>
+<li>Difference = Claude Code computed − plugin estimate. It mixes requests the plugin does not see with estimation error, so it is not explained by cause; zero means the totals are consistent, not that each request was estimated right.</li>
 <li>In the run folder, <code>sha256sum -c evidence.sha256</code> confirms no file changed since the run, and <code>sha256sum evidence.sha256</code> prints the data hash shown here and in every screenshot of that run.</li>
 <li><code>node packages/cli/dist/cli.js bench verify benchmarks/results/&lt;run&gt;</code> recomputes every figure from the raw files.</li>
 </ol>

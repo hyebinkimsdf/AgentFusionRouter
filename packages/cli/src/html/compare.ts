@@ -1,10 +1,10 @@
 import type { ModelEntry } from '@agent-fusion-router/core'
 
 import type { RunCheck } from '../bench/run.ts'
-import { outsideConversationUsd } from '../bench/summary.ts'
+import { outsideConversationTokens, priceCheck } from '../bench/summary.ts'
 import type { Arm, RunResult } from '../bench/types.ts'
 import type { RunInfo } from './bench.ts'
-import { accounted, duration, esc, exactUsd, page, passMark, table } from './page.ts'
+import { duration, esc, exactUsd, page, passMark, priceAgreement, signedUsd, table, tokenCounts } from './page.ts'
 
 export type ComparedRun = {
   label: string
@@ -14,16 +14,6 @@ export type ComparedRun = {
   /** The price table the run was made with. */
   prices: readonly ModelEntry[]
   check: RunCheck
-}
-
-const exact = exactUsd
-
-const diff = (plugin: number, claude: number | undefined): string => {
-  if (claude === undefined || claude === 0) return '—'
-  const pct = ((plugin - claude) / claude) * 100
-  const text = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`
-
-  return Math.abs(pct) < 0.005 ? `<span class="pass">✓ ${text}</span>` : `<span class="fail">${text}</span>`
 }
 
 const key = (r: RunResult): string => `${r.taskId}|${r.armId}|${r.rep}`
@@ -68,28 +58,25 @@ export const renderComparison = (a: ComparedRun, b: ComparedRun, generatedAt: st
     [a, b].flatMap(c => {
       const r = find(c, k)
       if (!r) return []
-      const outside = outsideConversationUsd(r, c.prices)
       const claude = r.claude?.costUsd
-      const sum = outside === undefined ? undefined : r.plugin.costUsd + outside
 
       return [
         [
           name(k),
           esc(c.label),
-          exact(claude),
-          exact(r.plugin.costUsd),
-          diff(r.plugin.costUsd, claude),
-          exact(outside),
-          exact(sum),
-          accounted(sum === undefined || claude === undefined ? undefined : sum - claude),
+          exactUsd(r.plugin.costUsd),
+          claude === undefined ? 'unknown' : signedUsd(claude - r.plugin.costUsd),
+          claude === undefined ? 'unknown' : exactUsd(claude),
+          tokenCounts(outsideConversationTokens(r)),
+          priceAgreement(priceCheck(r, c.prices)),
         ],
       ]
     })
 
   const costs = table(
-    ['Run of', 'Run', 'Claude Code total', 'Plugin estimate', 'Difference', 'Outside the conversation', 'Plugin + outside', 'Accounted for'],
+    ['Run of', 'Run', 'Plugin estimate', 'Difference', 'Claude Code computed', 'Tokens outside the conversation (in · out · cache rd · cache wr)', 'Price table check'],
     keys.flatMap(costRows),
-    [2, 3, 4, 5, 6],
+    [2, 3, 4, 5],
   )
 
   // The plugin sees the conversation's requests, so that is what it must match.
@@ -137,8 +124,8 @@ ${simulated ? '<div class="banner" role="note"><strong>⚠ A simulated run is in
 <h2>Runs</h2>
 <div class="cards">${runCard(a)}${runCard(b)}</div>
 
-<h2>Cost: Claude Code's report against the plugin's estimate</h2>
-<p class="sub">Claude Code's total is <code>total_cost_usd</code> from its own report of the session. The plugin's estimate is computed from the tokens it recorded at each request of the conversation, with the run's price table. Claude Code also makes requests outside the conversation (session titles, summaries) that the plugin never sees: their cost is Claude Code's total tokens less the conversation's (<code>usage</code>), at the same prices. "Accounted for" checks that plugin plus outside equals Claude Code's total.</p>
+<h2>Cost reconciliation</h2>
+<p class="sub"><strong>Plugin estimate</strong>: the plugin's per-request estimates, from the tokens it saw, priced with each run's own table. <strong>Claude Code computed</strong>: Claude Code's computed session cost (<code>total_cost_usd</code>), its own figure at list prices, not a bill. <strong>Difference</strong> = Claude Code computed − plugin estimate, signed. It mixes requests the plugin does not see with estimation error and cannot be split by cause; zero shows arithmetic consistency, not per-request accuracy. <strong>Tokens outside the conversation</strong> are observed in Claude Code's own output (per-model totals less the conversation's); their purpose is not recorded. <strong>Price table check</strong> prices Claude Code's per-model token counts with the run's table and compares each with Claude Code's per-model figure: it tests the table against Claude Code's computation.</p>
 ${costs}
 
 <h2>Tokens and outcome</h2>

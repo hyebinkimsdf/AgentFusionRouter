@@ -9,7 +9,7 @@ import { join, relative, sep } from 'node:path'
 
 export const EVIDENCE_FILE = 'evidence.sha256'
 export const REPORT_HASH_FILE = 'report.sha256'
-const REPORT_FILES = ['report.html', 'report.png']
+const REPORT_FILES = ['report.html', 'report.png', 'work.html', 'work.png']
 const NOT_EVIDENCE = new Set([EVIDENCE_FILE, REPORT_HASH_FILE, ...REPORT_FILES])
 
 export const sha256 = (data: string | Buffer): string => createHash('sha256').update(data).digest('hex')

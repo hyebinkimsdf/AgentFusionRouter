@@ -9,6 +9,8 @@ import { CLAUDE_MODELS, PRICES_AS_OF } from '@agent-fusion-router/core'
 import { capturePage } from '../capture.ts'
 import type { RunInfo } from '../html/bench.ts'
 import { renderBenchReport } from '../html/bench.ts'
+import type { Work } from '../html/work.ts'
+import { renderWork } from '../html/work.ts'
 import { duration, usd } from '../html/page.ts'
 import { readRecords } from '../logs.ts'
 import { claudeAnswer, deriveResult } from './derive.ts'
@@ -60,14 +62,20 @@ const shell = (cmd: string, args: string[], cwd?: string): string => {
   return out.status === 0 ? out.stdout.trim() : ''
 }
 
-/** Runs `claude -p` in the workspace. The prompt goes on stdin, everything else in a settings file, so no argument needs quoting. */
-const runClaude = (
+/** What a plan-then-execute run says in its second invocation, as a person approving the plan would. */
+export const APPROVE_PLAN = 'Your plan is approved. Implement it now.'
+
+type AgentRun = { stdout: string; stderr: string; exitCode: number | null; timedOut: boolean; wallMs: number }
+
+/** One `claude -p` invocation. The prompt goes on stdin, everything else in a settings file, so no argument needs quoting. */
+const invokeClaude = (
   opts: RunOptions,
   arm: Arm,
   prompt: string,
   workspace: string,
   settingsFile: string,
-): { stdout: string; stderr: string; exitCode: number | null; timedOut: boolean; wallMs: number } => {
+  session: { mode: string; persist: boolean; resume?: string },
+): AgentRun => {
   const args = [
     '-p',
     '--output-format',
@@ -80,9 +88,10 @@ const runClaude = (
     '--setting-sources',
     'project',
     '--strict-mcp-config',
-    '--no-session-persistence',
+    ...(session.persist ? [] : ['--no-session-persistence']),
+    ...(session.resume === undefined ? [] : ['--resume', session.resume]),
     '--permission-mode',
-    'acceptEdits',
+    session.mode,
     '--max-budget-usd',
     String(opts.budgetUsd),
   ]
@@ -104,6 +113,41 @@ const runClaude = (
     exitCode: out.status,
     timedOut: (out.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT',
     wallMs: Date.now() - started,
+  }
+}
+
+const sessionOf = (stdout: string): string | undefined => {
+  const line = stdout.split('\n').filter(l => l.trim().startsWith('{')).at(-1)
+  try {
+    const id = (JSON.parse(line ?? '{}') as { session_id?: unknown }).session_id
+    return typeof id === 'string' ? id : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * Runs the agent for one task. A plan-then-execute arm runs twice in one
+ * session: plan mode first, then a resume in acceptEdits mode with the
+ * approval. Its output holds both result lines, the second cumulative.
+ */
+const runClaude = (opts: RunOptions, arm: Arm, prompt: string, workspace: string, settingsFile: string): AgentRun => {
+  if (!arm.planThenExecute) {
+    return invokeClaude(opts, arm, prompt, workspace, settingsFile, { mode: arm.permissionMode ?? 'acceptEdits', persist: false })
+  }
+
+  const plan = invokeClaude(opts, arm, prompt, workspace, settingsFile, { mode: 'plan', persist: true })
+  const session = sessionOf(plan.stdout)
+  if (session === undefined || plan.timedOut) return plan
+
+  const execute = invokeClaude(opts, arm, APPROVE_PLAN, workspace, settingsFile, { mode: 'acceptEdits', persist: true, resume: session })
+
+  return {
+    stdout: `${plan.stdout.trim()}\n${execute.stdout}`,
+    stderr: `${plan.stderr}${execute.stderr}`,
+    exitCode: execute.exitCode,
+    timedOut: execute.timedOut,
+    wallMs: plan.wallMs + execute.wallMs,
   }
 }
 
@@ -167,7 +211,7 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
 
         const workspace = await prepareWorkspace(tasks.project)
         const settings = {
-          permissions: { allow: ALLOWED },
+          permissions: { allow: [...ALLOWED, ...(arm.allow ?? [])] },
           pluginConfigs: Object.fromEntries(
             ['agent-fusion-router', 'agent-fusion-router@inline'].map(k => [k, { options: { ...arm.plugin, logDir } }]),
           ),
@@ -176,7 +220,7 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
         const settingsFile = join(settingsDir, 'settings.json')
         await writeFile(settingsFile, JSON.stringify(settings, null, 2))
         await writeFile(join(dir, 'settings.json'), `${JSON.stringify(settings, null, 2)}\n`)
-        await writeFile(join(dir, 'prompt.txt'), task.prompt)
+        await writeFile(join(dir, 'prompt.txt'), arm.planThenExecute ? `${task.prompt}\n\n[after the plan]\n${APPROVE_PLAN}\n` : task.prompt)
 
         const startedAt = new Date().toISOString()
         const agent = opts.simulate
@@ -274,23 +318,78 @@ const loadRun = async (runDir: string): Promise<StoredRun> => {
   return { run, tasks, arms, results }
 }
 
+export type PriceCorrection = {
+  /** When the run's own table dates from, or a description of it. */
+  recordedAsOf: string
+  sessions: { taskId: string; armId: string; rep: number; recordedUsd: number; currentUsd: number; claudeUsd?: number }[]
+}
+
+/**
+ * A run as pages show it: every figure recomputed from the raw files with the
+ * current price table, so a price corrected since the run is not repeated.
+ * Where the run's own table priced the plugin's estimates differently, the
+ * correction lists both. Recorded figures stay as they are and `verify` checks
+ * them against the run's own table.
+ */
+export const loadForDisplay = async (runDir: string) => {
+  const { run, tasks, arms, results } = await loadRun(runDir)
+  const recorded = await runPrices(runDir)
+  const current = await Promise.all(results.map(r => deriveFromFiles(runDir, r, arms, CLAUDE_MODELS)))
+  const sessions = current.flatMap(r => {
+    const stored = results.find(s => s.taskId === r.taskId && s.armId === r.armId && s.rep === r.rep)
+    if (!stored || Math.abs(stored.plugin.costUsd - r.plugin.costUsd) < 5e-9) return []
+
+    return [{ taskId: r.taskId, armId: r.armId, rep: r.rep, recordedUsd: stored.plugin.costUsd, currentUsd: r.plugin.costUsd, claudeUsd: r.claude?.costUsd }]
+  })
+  const asOf = recorded.saved
+    ? ((JSON.parse(await readFile(join(runDir, 'prices.json'), 'utf8')) as { asOf?: string }).asOf ?? 'unknown')
+    : 'before price tables were saved with runs'
+  const correction: PriceCorrection | undefined = sessions.length === 0 ? undefined : { recordedAsOf: asOf, sessions }
+
+  return { run, tasks, arms, results: current, correction, check: await checkRun(runDir) }
+}
+
 /** Writes report.html (and report.png) for a run folder, then hashes them. */
 export const reportBench = async (runDir: string, capture: boolean): Promise<void> => {
-  const { run, tasks, arms, results } = await loadRun(runDir)
+  const { run, tasks, arms, results, correction } = await loadForDisplay(runDir)
   const taskList = tasks.tasks.filter(t => results.some(r => r.taskId === t.id))
   const summary = summarizeBench(taskList, arms, results)
-  const { prices } = await runPrices(runDir)
-  const html = renderBenchReport({ run, tasks: taskList, arms, results, summary, prices, dataHash: await dataHash(runDir) })
+  const hash = await dataHash(runDir)
   const htmlPath = join(runDir, 'report.html')
-  await writeFile(htmlPath, html)
+  await writeFile(
+    htmlPath,
+    renderBenchReport({ run, tasks: taskList, arms, results, summary, prices: CLAUDE_MODELS, correction, dataHash: hash }),
+  )
   console.log(`Report: ${htmlPath}`)
 
+  const works: Work[] = await Promise.all(
+    results.map(async r => {
+      const dir = join(runDir, 'runs', runName(r.taskId, r.armId, r.rep))
+
+      return {
+        taskId: r.taskId,
+        armId: r.armId,
+        rep: r.rep,
+        answer: claudeAnswer(await readFile(join(dir, 'claude.json'), 'utf8').catch(() => '')),
+        patch: await readFile(join(dir, 'diff.patch'), 'utf8').catch(() => ''),
+      }
+    }),
+  )
+  const workPath = join(runDir, 'work.html')
+  await writeFile(workPath, renderWork({ run, tasks: taskList, arms, results, works, dataHash: hash }))
+  console.log(`Work produced: ${workPath}`)
+
   if (capture) {
-    try {
-      const browser = await capturePage(htmlPath, join(runDir, 'report.png'))
-      console.log(`Screenshot: ${join(runDir, 'report.png')} (${browser})`)
-    } catch (error) {
-      console.log(`No screenshot: ${error instanceof Error ? error.message : String(error)}`)
+    for (const [page, png] of [
+      [htmlPath, 'report.png'],
+      [workPath, 'work.png'],
+    ] as const) {
+      try {
+        await capturePage(page, join(runDir, png))
+        console.log(`Screenshot: ${join(runDir, png)}`)
+      } catch (error) {
+        console.log(`No screenshot of ${png}: ${error instanceof Error ? error.message : String(error)}`)
+      }
     }
   }
   await writeReportHashes(runDir)
@@ -298,15 +397,20 @@ export const reportBench = async (runDir: string, capture: boolean): Promise<voi
 
 /**
  * The price table of runs made before `prices.json` was saved with each run
- * (up to 2026-10-30): today's catalog with cache writes at the 5-minute rate.
+ * (up to 2026-10-30), as it stood then: cache writes at the 5-minute rate,
+ * and Sonnet 5.5 cache reads at $0.20/MTok, both since corrected.
  */
 const pricesBeforeSnapshots = (): ModelEntry[] => {
-  const fiveMinute = (p: ModelEntry['price']) => ({ ...p, cacheWrite: p.input * 1.25 })
+  const then = (id: string, p: ModelEntry['price']) => ({
+    ...p,
+    cacheWrite: p.input * 1.25,
+    ...(id === 'claude-sonnet-5-5' ? { cacheRead: 0.2 } : {}),
+  })
 
   return CLAUDE_MODELS.map(m => ({
     ...m,
-    price: fiveMinute(m.price),
-    ...(m.longContext ? { longContext: { ...m.longContext, price: fiveMinute(m.longContext.price) } } : {}),
+    price: then(m.id, m.price),
+    ...(m.longContext ? { longContext: { ...m.longContext, price: then(m.id, m.longContext.price) } } : {}),
   }))
 }
 
@@ -343,7 +447,8 @@ const deriveFromFiles = async (
 /** `value` cut down to the keys `shape` has, at every depth, in `shape`'s key order. */
 const recordedFields = (value: unknown, shape: unknown): unknown => {
   if (shape === null || typeof shape !== 'object' || value === null || typeof value !== 'object') return value
-  if (Array.isArray(shape)) return value
+  // Element by element; a length that differs still shows as a difference.
+  if (Array.isArray(shape)) return Array.isArray(value) ? value.map((v, i) => recordedFields(v, shape[i] ?? v)) : value
 
   const source = value as Record<string, unknown>
 
@@ -381,8 +486,9 @@ export const checkRun = async (runDir: string): Promise<RunCheck> => {
   }
 
   const taskList = tasks.tasks.filter(t => results.some(r => r.taskId === t.id))
-  const storedSummary = await readFile(join(runDir, 'results.json'), 'utf8')
-  if (`${JSON.stringify(summarizeBench(taskList, arms, results), null, 2)}\n` !== storedSummary) {
+  const storedSummary = JSON.parse(await readFile(join(runDir, 'results.json'), 'utf8')) as unknown
+  const summaryNow = recordedFields(summarizeBench(taskList, arms, results), storedSummary)
+  if (JSON.stringify(summaryNow) !== JSON.stringify(storedSummary)) {
     problems.push('results.json does not match the per-run results')
   }
 

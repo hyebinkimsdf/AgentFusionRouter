@@ -2,10 +2,11 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
 import type { UsageRecord } from '@agent-fusion-router/core'
+import { CLAUDE_MODELS } from '@agent-fusion-router/core'
 
 import { deriveResult, diffStats, parseClaudeOutput } from '../src/bench/derive.ts'
 import { answerMatches } from '../src/bench/workspace.ts'
-import { summarizeBench } from '../src/bench/summary.ts'
+import { outsideConversationTokens, priceCheck, summarizeBench } from '../src/bench/summary.ts'
 import type { Arm, RunResult, Task } from '../src/bench/types.ts'
 
 const CLAUDE_OUTPUT = JSON.stringify({
@@ -70,6 +71,66 @@ describe('parseClaudeOutput', () => {
 
     assert.deepEqual(facts?.conversationTokens, { input: 6, output: 363, cacheRead: 95472, cacheWrite: 7774 })
     assert.deepEqual(facts?.tokens, { input: 1200, output: 384, cacheRead: 95472, cacheWrite: 7774 })
+  })
+})
+
+test('a plan-then-execute run takes totals from its last line and sums the conversation', () => {
+  // Measured on 2026-10-30: opusplan planned on Opus, then a resumed session executed on Sonnet.
+  // The second line's total and modelUsage include the first; each line's usage is its own.
+  const plan = {
+    total_cost_usd: 0.1184841,
+    num_turns: 4,
+    usage: { input_tokens: 8, output_tokens: 809, cache_read_input_tokens: 134873, cache_creation_input_tokens: 9396 },
+    modelUsage: { 'claude-opus-5-5': { inputTokens: 8, outputTokens: 809, cacheReadInputTokens: 134873, cacheCreationInputTokens: 9396 } },
+  }
+  const execute = {
+    total_cost_usd: 0.1804236,
+    num_turns: 5,
+    usage: { input_tokens: 8, output_tokens: 553, cache_read_input_tokens: 139415, cache_creation_input_tokens: 10613 },
+    modelUsage: {
+      'claude-opus-5-5': { inputTokens: 8, outputTokens: 809, cacheReadInputTokens: 134873, cacheCreationInputTokens: 9396 },
+      'claude-sonnet-5-5': { inputTokens: 8, outputTokens: 553, cacheReadInputTokens: 139415, cacheCreationInputTokens: 10613 },
+    },
+  }
+  const facts = parseClaudeOutput(`${JSON.stringify(plan)}\n${JSON.stringify(execute)}\n`)
+
+  assert.equal(facts?.costUsd, 0.1804236)
+  assert.deepEqual(Object.keys(facts?.byModel ?? {}), ['claude-opus-5-5', 'claude-sonnet-5-5'])
+  assert.deepEqual(facts?.conversationTokens, { input: 16, output: 1362, cacheRead: 274288, cacheWrite: 20009 })
+})
+
+describe('priceCheck and outsideConversationTokens', () => {
+  // Run 20261030-092454, add-remove-item on Sonnet 5.5, side requests on Haiku.
+  const run = deriveResult({
+    meta: META,
+    claudeStdout: JSON.stringify({
+      total_cost_usd: 0.0467,
+      usage: { input_tokens: 6, output_tokens: 526, cache_read_input_tokens: 95986, cache_creation_input_tokens: 7921 },
+      modelUsage: {
+        'claude-haiku-5-5': { inputTokens: 1194, outputTokens: 20, cacheReadInputTokens: 0, cacheCreationInputTokens: 0, costUSD: 0.0001294 },
+        'claude-sonnet-5-5': { inputTokens: 6, outputTokens: 526, cacheReadInputTokens: 95986, cacheCreationInputTokens: 7921, costUSD: 0.0465546 },
+      },
+    }),
+    records: [step({ model: 'claude-sonnet-5-5', tokens: { input: 6, output: 526, cacheRead: 95986, cacheWrite: 7921 } } as Partial<UsageRecord>)],
+    check: PASSED,
+    numstat: '',
+    needsPlugin: true,
+  })
+
+  test('the current table computes what Claude Code computed, model by model', () => {
+    assert.deepEqual(priceCheck(run, CLAUDE_MODELS), { checked: 2, agree: 2, differ: [] })
+  })
+
+  test('a wrong price shows as a disagreement', () => {
+    const wrong = CLAUDE_MODELS.map(m => (m.id === 'claude-sonnet-5-5' ? { ...m, price: { ...m.price, cacheRead: 0.2 } } : m))
+    const check = priceCheck(run, wrong)
+
+    assert.equal(check.agree, 1)
+    assert.equal(check.differ[0]?.model, 'claude-sonnet-5-5')
+  })
+
+  test('tokens outside the conversation come from Claude Code alone', () => {
+    assert.deepEqual(outsideConversationTokens(run), { input: 1194, output: 20, cacheRead: 0, cacheWrite: 0 })
   })
 })
 
@@ -173,6 +234,37 @@ describe('summarizeBench', () => {
 
     assert.equal(s.invalid.length, 1)
     assert.equal(s.arms.find(a => a.armId === 'auto')?.costUsd.toFixed(2), '0.35')
+  })
+
+  test('an unknown session cost is never counted as $0', () => {
+    const noCost = deriveResult({
+      meta: { ...META, taskId: 'a', armId: 'fixed', rep: 2 },
+      claudeStdout: JSON.stringify({ num_turns: 1 }),
+      records: [],
+      check: PASSED,
+      numstat: '',
+      needsPlugin: false,
+    })
+    const fixed = summarizeBench(tasks, arms, [...results, noCost]).arms.find(a => a.armId === 'fixed')
+
+    assert.equal(fixed?.unknownCostRuns, 1)
+    assert.equal(fixed?.costPerSuccessUsd, undefined)
+    assert.equal(fixed?.differenceUsd, undefined)
+  })
+
+  test('like-for-like cost covers only the tasks every arm completed', () => {
+    const s = summarizeBench(tasks, arms, results)
+
+    assert.deepEqual(s.commonTasks, ['a'])
+    assert.equal(s.arms.find(a => a.armId === 'fixed')?.commonTasksCostUsd?.toFixed(2), '0.20')
+    assert.equal(s.arms.find(a => a.armId === 'auto')?.commonTasksCostUsd?.toFixed(2), '0.05')
+  })
+
+  test('the difference is signed: Claude Code computed − plugin estimate', () => {
+    const auto = summarizeBench(tasks, arms, results).arms.find(a => a.armId === 'auto')
+    const plugin = auto?.pluginEstimateUsd ?? 0
+
+    assert.equal(auto?.differenceUsd?.toFixed(8), (0.35 - plugin).toFixed(8))
   })
 
   test('the classifier is scored against the expected tier', () => {

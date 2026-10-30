@@ -63,23 +63,28 @@ th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
 .fail { color: var(--critical); font-weight: 600; }
 .banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
 .banner strong { display: block; font-size: 15px; }
-.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; }
-code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+/* A hash wraps rather than overflow: a screenshot must show every character. */
+/* Named fonts first: a Korean system monospace draws the backslash as ₩, and a
+   screenshot must show the characters the files hold. */
+code, pre, .hash { font-family: Consolas, "Cascadia Mono", Menlo, "SF Mono", ui-monospace, monospace; }
+.hash { font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-size: 12px; }
 pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body><main>
 <h1>Agent Fusion Router benchmark</h1>
-<p class="sub">Run <code>20261030-090215</code> · task set <strong>shop</strong> (1 tasks) · 1 arms · 1 repetition · 2026-10-30T09:02:15.644Z</p>
+<p class="sub">Run <code>20261030-090215</code> · task set <strong>shop</strong> (1 tasks) · 1 arms · 1 repetition · 2026-10-30T09:02:15.644Z · <a href="work.html">Work produced</a>: every change and answer, model by model</p>
+
 
 <h2>Result by arm</h2>
 <div class="cards"><div class="card">
 <div><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</strong></div>
-<div class="note">opus · plugin route</div>
+<div class="note">opus · plugin route · answered by claude-haiku-5-5</div>
 <div class="tiles">
 <div class="tile"><div class="label">Success</div><div class="value">0/1</div><div class="note">0%</div></div>
-<div class="tile"><div class="label">Cost per completed task</div><div class="value">—</div><div class="note">total $0.0028</div></div>
+<div class="tile"><div class="label">Cost per completed task</div><div class="value">—</div><div class="note">Claude Code computed $0.0028 in all</div></div>
 <div class="tile"><div class="label">Mean time per run</div><div class="value">10s</div></div>
 <div class="tile"><div class="label">Tokens</div><div class="value">104.8K</div><div class="note">384 output</div></div>
 </div></div></div>
@@ -104,15 +109,22 @@ footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid);
 </div>
 <h3>All measures</h3>
 <div class="scroll"><table>
-<thead><tr><th>Arm</th><th class="num">Valid runs</th><th class="num">Success</th><th class="num">Total cost</th><th class="num">Per completed task</th><th class="num">Mean time</th><th class="num">Mean turns</th></tr></thead>
-<tbody><tr><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1/1</td><td class="num">0 (0%)</td><td class="num">$0.0028</td><td class="num">—</td><td class="num">10s</td><td class="num">3.0</td></tr></tbody>
+<thead><tr><th>Arm</th><th class="num">Valid runs</th><th class="num">Success</th><th class="num">Session cost</th><th class="num">Per completed task</th><th class="num">On the 0 tasks all completed</th><th class="num">Mean time</th><th class="num">Mean turns</th></tr></thead>
+<tbody><tr><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1/1</td><td class="num">0 (0%)</td><td class="num">$0.0028</td><td class="num">—</td><td class="num">—</td><td class="num">10s</td><td class="num">3.0</td></tr></tbody>
 </table></div>
 <div style="height:12px"></div>
 <div class="scroll"><table>
 <thead><tr><th>Arm</th><th class="num">Input</th><th class="num">Output</th><th class="num">Cache read</th><th class="num">Cache write</th><th class="num">Escalations</th><th class="num">Permission denials</th><th class="num">Lines changed</th></tr></thead>
 <tbody><tr><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1.2K</td><td class="num">384</td><td class="num">95.5K</td><td class="num">7.8K</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr></tbody>
 </table></div>
-<p class="note">Cost is what Claude Code reported for each session (<code>total_cost_usd</code>), at API list prices; on a subscription the same work counts against plan limits instead. Per completed task = total cost ÷ successes, so failed runs count. Invalid runs are left out of every figure.</p>
+<p class="note">Every cost figure in this comparison is <strong>Claude Code's computed session cost</strong> (<code>total_cost_usd</code>): Claude Code's own figure at list prices, not a bill. The billed cost is in the provider's billing console and is not measured here, and on a subscription the same work counts against plan limits instead. Per completed task = session cost ÷ successes, so failed runs count. "On the tasks all completed" sums session cost over the 0 tasks every arm passed (none): a like-for-like figure. A run with no reported cost is shown as unknown, never as $0. Invalid runs are left out of every figure.</p>
+
+<h2>By model</h2>
+<p class="sub">The same runs grouped by the model that answered the conversation, as the plugin recorded it (<code>A → B</code>: both answered in one session). Claude Code's own side requests are not what did the work and are left out of this grouping, not out of the costs. To see what each model actually changed, open <a href="work.html">Work produced</a>.</p>
+<div class="scroll"><table>
+<thead><tr><th>Model that did the work</th><th class="num">Runs</th><th class="num">Success</th><th class="num">Session cost</th><th class="num">Mean per run</th><th class="num">Mean time</th><th>Tasks</th><th>In arms</th></tr></thead>
+<tbody><tr><td><strong>haiku-5-5</strong></td><td class="num">1</td><td class="num">0/1 (0%)</td><td class="num">$0.0028</td><td class="num">$0.0028</td><td class="num">10s</td><td>find-tax-rate</td><td>Auto routing 1</td></tr></tbody>
+</table></div>
 
 <h2>By task</h2>
 <figure class="chart"><figcaption>Cost per task by arm (✓ every run passed)</figcaption>
@@ -131,8 +143,8 @@ footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid);
 
 <h2>Every run</h2>
 <div class="scroll"><table>
-<thead><tr><th>Task</th><th>Arm</th><th class="num">Rep</th><th>Result</th><th class="num">Claude cost</th><th class="num">Plugin estimate</th><th class="num">Difference</th><th class="num">Time</th><th class="num">Turns</th><th>Router tier</th><th>Models answered</th><th class="num">Diff (+/−)</th></tr></thead>
-<tbody><tr><td><code>find-tax-rate</code></td><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1</td><td><span class="fail">✗ Fail</span></td><td class="num">$0.0028</td><td class="num">$0.0027</td><td class="num">-4.6%</td><td class="num">10s</td><td class="num">3</td><td>light</td><td>claude-haiku-5-5</td><td class="num">+0 / −0</td></tr></tbody>
+<thead><tr><th>Task</th><th>Arm</th><th class="num">Rep</th><th>Result</th><th class="num">Session cost</th><th class="num">Time</th><th class="num">Turns</th><th>Router tier</th><th>Models answered</th><th class="num">Diff (+/−)</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code></td><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1</td><td><span class="fail">✗ Fail</span></td><td class="num">$0.0028</td><td class="num">10s</td><td class="num">3</td><td>light</td><td>claude-haiku-5-5</td><td class="num">+0 / −0</td></tr></tbody>
 </table></div>
 <h3>Invalid runs</h3>
 <p>No invalid runs.</p>
@@ -144,8 +156,19 @@ footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid);
 <thead><tr><th>Task</th><th>Check fails on the untouched project</th><th>Check passes with the reference solution</th><th>Sound</th></tr></thead>
 <tbody><tr><td><code>find-tax-rate</code></td><td><span class="pass">✓ Pass</span></td><td><span class="pass">✓ Pass</span></td><td><span class="pass">✓ Pass</span></td></tr></tbody>
 </table></div>
-<h3>Does the plugin record what Claude Code reports?</h3>
-<p class="sub">For each run, the plugin's estimate from its own step records against Claude Code's reported cost. Mean absolute difference 4.6%, largest 4.6%. Requests Claude Code makes outside a turn (titles, summaries) are not seen by the plugin.</p>
+<h3>Cost reconciliation</h3>
+<p class="sub">Three figures are kept apart. <strong>Plugin estimate</strong>: the plugin's per-request estimates, from the tokens it sees, priced with this project's table, which assumes 1-hour cache writes. <strong>Claude Code's computed session cost</strong>: Claude Code's own figure. <strong>Billed cost</strong>: not measured here.</p>
+<div class="scroll"><table>
+<thead><tr><th>Arm</th><th class="num">Plugin estimate (sum of requests)</th><th class="num">Difference</th><th class="num">Claude Code&#39;s computed session cost</th></tr></thead>
+<tbody><tr><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">$0.00269162</td><td class="num">+$0.00012990</td><td class="num">$0.00282152</td></tr></tbody>
+</table></div>
+<p class="note"><strong>Difference = Claude Code's computed session cost − plugin estimate.</strong> It holds requests the plugin does not see together with any estimation error, double counting or timing difference, and this data cannot split it by cause. A difference of zero shows the totals are arithmetically consistent, not that each request's estimate is right: errors can cancel. Mean absolute difference per run 4.6%, largest 4.6%.</p>
+<div class="scroll"><table>
+<thead><tr><th>Task</th><th>Arm</th><th class="num">Rep</th><th class="num">Plugin estimate</th><th class="num">Difference</th><th class="num">Claude Code computed</th><th class="num">Tokens outside the conversation (in · out · cache rd · cache wr)</th><th>Price table check</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code></td><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1</td><td class="num">$0.00269162</td><td class="num">+$0.00012990</td><td class="num">$0.00282152</td><td class="num">1.2K · 21 · 0 · 0</td><td>—</td></tr></tbody>
+</table></div>
+<p class="note"><strong>Tokens outside the conversation</strong> are observed, not estimated: Claude Code's per-model totals (<code>modelUsage</code>) less the conversation's tokens (<code>usage</code>), both from Claude Code's own output. What those requests were for is not recorded. <strong>Price table check</strong> prices Claude Code's own per-model token counts with this project's table and compares each with Claude Code's per-model figure (<code>costUSD</code>). It checks the table against Claude Code's computation, not against a bill, and found two errors in this project's table. A model whose session total passes a long-context threshold cannot be checked from totals and is skipped.</p>
+
 <h3>How often did the router pick the expected tier?</h3>
 <p class="sub">1 of 1 decisions (100%), counted over every arm: observe-mode arms record the same decision without applying it.</p>
 <div class="scroll"><table>
@@ -178,6 +201,6 @@ footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid);
 sha256sum evidence.sha256
 node packages/cli/dist/cli.js bench verify benchmarks/results/20261030-090215</pre>
 
-<footer>Agent Fusion Router · run 20261030-090215 · data SHA-256 addaef32dbd81761f58fdfd2f48284df1f8d92a2c48ecb67f5fce0e01904796d · prices as of 2026-10-06</footer>
+<footer>Agent Fusion Router · run 20261030-090215 · data SHA-256 addaef32dbd81761f58fdfd2f48284df1f8d92a2c48ecb67f5fce0e01904796d · prices as of 2026-10-30</footer>
 </main></body>
 </html>

@@ -64,15 +64,18 @@ th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
 .banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
 .banner strong { display: block; font-size: 15px; }
 /* A hash wraps rather than overflow: a screenshot must show every character. */
-.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; white-space: normal; }
-code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+/* Named fonts first: a Korean system monospace draws the backslash as ₩, and a
+   screenshot must show the characters the files hold. */
+code, pre, .hash { font-family: Consolas, "Cascadia Mono", Menlo, "SF Mono", ui-monospace, monospace; }
+.hash { font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-size: 12px; }
 pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body><main>
 <h1>Run comparison</h1>
-<p class="sub"><strong>Before fix</strong> (<code>20261030-085716</code>) and <strong>After fix</strong> (<code>20261030-090443</code>) · generated 2026-10-30T09:16:23.169Z</p>
+<p class="sub"><strong>Before fix</strong> (<code>20261030-085716</code>) and <strong>After fix</strong> (<code>20261030-090443</code>) · generated 2026-10-30T10:04:44.652Z</p>
 
 <h2>Runs</h2>
 <div class="cards"><div class="card">
@@ -101,12 +104,12 @@ footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid);
 
 </div></div>
 
-<h2>Cost: Claude Code's report against the plugin's estimate</h2>
-<p class="sub">Claude Code's total is <code>total_cost_usd</code> from its own report of the session. The plugin's estimate is computed from the tokens it recorded at each request of the conversation, with the run's price table. Claude Code also makes requests outside the conversation (session titles, summaries) that the plugin never sees: their cost is Claude Code's total tokens less the conversation's (<code>usage</code>), at the same prices. "Accounted for" checks that plugin plus outside equals Claude Code's total.</p>
+<h2>Cost reconciliation</h2>
+<p class="sub"><strong>Plugin estimate</strong>: the plugin's per-request estimates, from the tokens it saw, priced with each run's own table. <strong>Claude Code computed</strong>: Claude Code's computed session cost (<code>total_cost_usd</code>), its own figure at list prices, not a bill. <strong>Difference</strong> = Claude Code computed − plugin estimate, signed. It mixes requests the plugin does not see with estimation error and cannot be split by cause; zero shows arithmetic consistency, not per-request accuracy. <strong>Tokens outside the conversation</strong> are observed in Claude Code's own output (per-model totals less the conversation's); their purpose is not recorded. <strong>Price table check</strong> prices Claude Code's per-model token counts with the run's table and compares each with Claude Code's per-model figure: it tests the table against Claude Code's computation.</p>
 <div class="scroll"><table>
-<thead><tr><th>Run of</th><th>Run</th><th class="num">Claude Code total</th><th class="num">Plugin estimate</th><th class="num">Difference</th><th class="num">Outside the conversation</th><th class="num">Plugin + outside</th><th>Accounted for</th></tr></thead>
-<tbody><tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>Before fix</td><td class="num">$0.00204753</td><td class="num">$0.00154630</td><td class="num"><span class="fail">-24.48%</span></td><td class="num">$0.00000000</td><td class="num">$0.00154630</td><td><span class="fail">off by −$0.00050123</span></td></tr>
-<tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>After fix</td><td class="num">$0.00284224</td><td class="num">$0.00271234</td><td class="num"><span class="fail">-4.57%</span></td><td class="num">$0.00012990</td><td class="num">$0.00284224</td><td><span class="pass">✓ to the last digit</span></td></tr></tbody>
+<thead><tr><th>Run of</th><th>Run</th><th class="num">Plugin estimate</th><th class="num">Difference</th><th class="num">Claude Code computed</th><th class="num">Tokens outside the conversation (in · out · cache rd · cache wr)</th><th>Price table check</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>Before fix</td><td class="num">$0.00154630</td><td class="num">+$0.00050123</td><td class="num">$0.00204753</td><td class="num">0 · 0 · 0 · 0</td><td><span class="fail">0/1 agree</span></td></tr>
+<tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>After fix</td><td class="num">$0.00271234</td><td class="num">+$0.00012990</td><td class="num">$0.00284224</td><td class="num">1.2K · 21 · 0 · 0</td><td>—</td></tr></tbody>
 </table></div>
 
 <h2>Tokens and outcome</h2>

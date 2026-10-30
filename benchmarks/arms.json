@@ -6,8 +6,9 @@
   },
   {
     "id": "opusplan",
-    "label": "opusplan",
+    "label": "opusplan (plan, then execute)",
     "model": "opusplan",
+    "planThenExecute": true,
     "plugin": { "mode": "observe" }
   },
   {

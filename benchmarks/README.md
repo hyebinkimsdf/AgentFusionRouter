@@ -9,12 +9,12 @@ Routing saves money only if the cheaper model still finishes the job. A light mo
 | Arm | Session model | Plugin | What it answers |
 |---|---|---|---|
 | `default` | the account's default (no `--model`) | observe | Claude Code as it comes |
-| `opusplan` | `opusplan` | observe | Claude Code's own phase-based switch: Opus in plan mode, Sonnet otherwise |
+| `opusplan` | `opusplan`, plan then execute | observe | Claude Code's own phase-based switch, used as a person uses it: Opus plans, Sonnet executes |
 | `auto` | the account's default | route, standard tier → `sonnet` | This router: light tasks to Haiku, ordinary work to Sonnet, heavy work and escalations to Opus |
 
 `default` and `auto` start from the same model, so the router is the only difference between them. The arms that do not route run the plugin in observe mode. It changes nothing there, but it records what it would have chosen, so every arm logs the same fields. The `auto` arm sets the standard tier to Sonnet; without that, ordinary work would stay on the session model.
 
-**opusplan in a headless run.** opusplan uses Opus only while Claude Code is in plan mode, which a person normally enters and approves. A `claude -p` run starts in `acceptEdits` mode, so opusplan may run on Sonnet throughout. The report lists the models that actually answered each arm, from the plugin's records and Claude Code's `modelUsage`, so this shows in the results rather than being assumed.
+**opusplan, plan then execute.** opusplan uses Opus only in plan mode. A person enters plan mode, reads the plan and approves it, and Sonnet carries it out in the same conversation. A `claude -p` session offers no tool to approve a plan, so `planThenExecute` runs this in two invocations of one session. The first runs in plan mode on the task. The second resumes it (`--resume`) in `acceptEdits` mode with "Your plan is approved. Implement it now." Both invocations are saved in `claude.json`. The second's `total_cost_usd` and `modelUsage` already include the first, so the totals come from it, while the conversation's tokens are summed over both. These arms keep their sessions in Claude Code's history, because a resume needs one. Run [`20261030-092454`](results/20261030-092454/report.html) started opusplan in `acceptEdits` mode instead: it never entered plan mode and ran on Sonnet alone.
 
 [`arms.fixed-models.json`](arms.fixed-models.json) compares fixed Opus, fixed Sonnet, and routing instead: `--arms benchmarks/arms.fixed-models.json`.
 
@@ -91,7 +91,9 @@ node packages/cli/dist/cli.js bench verify benchmarks/results/<run id>
 
 The report also checks itself:
 
-- **Cost accounted for:** Claude Code's `total_cost_usd` covers every request of the session. That includes its own side requests (session titles, summaries), which the plugin never sees. Per run, the report prices those side requests from Claude Code's total tokens (`modelUsage`) less the conversation's (`usage`). It then checks that plugin estimate + side requests = Claude Code's total, to the last digit. A gap means the plugin missed a request or priced one wrongly.
+- **Cost reconciliation:** three figures are kept apart. The *plugin estimate* is the plugin's per-request estimates, from the tokens it sees, priced with this project's table. *Claude Code's computed session cost* (`total_cost_usd`) is Claude Code's own figure at list prices. The *billed cost* is in the provider's billing console and is not measured here. The report shows **difference = Claude Code computed − plugin estimate**, signed. The difference mixes requests the plugin does not see with estimation error, double counting and timing, and this data cannot split it by cause. A zero difference shows arithmetic consistency, not that each request was estimated right.
+- **Tokens outside the conversation:** observed in Claude Code's own output, as its per-model totals (`modelUsage`) less the conversation's (`usage`). What those requests were for is not recorded.
+- **Price table check:** prices Claude Code's per-model token counts with this project's table and compares each with Claude Code's per-model figure (`costUSD`). This tests the table against Claude Code's computation, not against a bill.
 - **Classifier accuracy:** the router's tier against each task's expected tier, counted over every arm.
 
 ### Comparing two runs
@@ -102,21 +104,24 @@ node packages/cli/dist/cli.js bench compare benchmarks/results/<a> benchmarks/re
 
 This writes `benchmarks/comparisons/<a>_vs_<b>/` with a page (`comparison.html`), its screenshot (`comparison.png`), and their hashes (`comparison.sha256`). The page verifies both runs and shows them side by side: each run's data hash and verification status, then per task the cost reconciliation and the tokens. Figures are recomputed from the raw files, so an older run shows everything the current release derives.
 
-The first comparison, [`20261030-085716_vs_20261030-090443`](comparisons/20261030-085716_vs_20261030-090443/comparison.png), records a fix found this way. Before it, the plugin priced cache writes at the 5-minute rate, but Claude Code writes with the 1-hour TTL, so the estimate came up short by $0.00050123 (−24.5%). After it, the estimate plus Claude Code's side requests equals Claude Code's total to the last digit.
+The first comparison, [`20261030-085716_vs_20261030-090443`](comparisons/20261030-085716_vs_20261030-090443/comparison.png), records a fix found by the price table check. Before it, the table priced cache writes at the 5-minute rate, but Claude Code's own output reported 1-hour writes (`cacheCreationEphemeral1hInputTokens`), so the estimate came up short by $0.00050123 (−24.5%). After it, the table agrees with Claude Code's per-model figures. The same check later found Sonnet 5.5 cache reads priced at $0.20/MTok instead of $0.10. Both were confirmed on the official pricing page before the table changed.
+
+**Calibration runs and evaluation runs.** Runs `20261030-085716`, `20261030-090215`, `20261030-090443` and `20261030-092454` were used to find and correct the price table. Judge the table's accuracy on later runs, not on the runs that tuned it. The 1-hour cache-write rate is an assumption the plugin makes, because a request's usage reports no TTL. It matches what Claude Code reported in these runs, but it remains an estimate. The comparison figures use Claude Code's computed cost and do not depend on it.
 
 ## Measures
 
 | Measure | Source |
 |---|---|
 | Success | hidden tests and answer check, run by the benchmark after the agent finishes |
-| Cost per completed task | sum of Claude Code's `total_cost_usd` over an arm's runs ÷ its successes; failed runs count |
+| Cost per completed task | Claude Code's computed session cost (`total_cost_usd`) summed over an arm's runs ÷ its successes; failed runs count. A run with no reported cost is unknown, never $0 |
+| Cost on the tasks all arms completed | the same session cost over only the tasks every arm passed: a like-for-like figure |
 | Tokens | input, output, cache read, cache write, from Claude Code's `modelUsage` |
 | Time | wall clock around `claude -p` |
 | Turns, permission denials | Claude Code's report |
 | Escalations, router tier | the plugin's records |
 | Lines changed | `git diff --numstat` against the starting copy |
 
-Costs are at API list prices, as Claude Code computes them. On a subscription the same work counts against plan limits instead.
+Costs are Claude Code's computed figures at list prices, not a bill. On a subscription the same work counts against plan limits instead. Context compaction is not separated: these sessions are short, and its tokens would show only as part of the totals.
 
 ## Limits to state with any result
 

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work produced in 20261030-085716</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --good-text: #006300; --critical: #d03b3b; --warning: #fab219; --warning-wash: #fff6dd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 40px; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 36px 0 12px; }
+h3 { font-size: 14px; margin: 20px 0 8px; }
+p { margin: 0 0 10px; }
+.sub, .note { color: var(--ink-2); }
+.note { font-size: 12px; margin-top: 2px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.tiles { display: grid; gap: 10px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 10px; }
+.tile .label { color: var(--ink-2); font-size: 12px; }
+.tile .value { font-size: 22px; font-weight: 600; }
+.charts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.chart { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+figcaption { font-weight: 600; margin-bottom: 8px; }
+/* Charts keep their drawn size, so their text matches the page's; they shrink on narrow screens. */
+.chart svg { display: block; max-width: 100%; height: auto; }
+svg .lbl { fill: var(--ink-2); font-size: 12px; }
+svg .val { fill: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+svg .small { font-size: 11px; }
+svg .axis { stroke: var(--axis); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; color: var(--ink-2); font-size: 12px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
+.num { text-align: right; }
+.pass { color: var(--good-text); font-weight: 600; }
+.fail { color: var(--critical); font-weight: 600; }
+.banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
+.banner strong { display: block; font-size: 15px; }
+/* A hash wraps rather than overflow: a screenshot must show every character. */
+/* Named fonts first: a Korean system monospace draws the backslash as ₩, and a
+   screenshot must show the characters the files hold. */
+code, pre, .hash { font-family: Consolas, "Cascadia Mono", Menlo, "SF Mono", ui-monospace, monospace; }
+.hash { font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-size: 12px; }
+pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body><main>
+<style>
+.works { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); align-items: start; }
+.work h4 { margin: 12px 0 6px; font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; }
+.work .head { margin-bottom: 2px; }
+.prompt { background: var(--surface); border-left: 3px solid var(--axis); padding: 8px 12px; color: var(--ink-2); }
+pre.diff, pre.answer { margin: 0; padding: 10px 12px; font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-all; }
+pre.diff .add { color: var(--good-text); background: rgba(12,163,12,.08); display: inline-block; width: 100%; }
+pre.diff .del { color: var(--critical); background: rgba(208,59,59,.08); display: inline-block; width: 100%; }
+pre.diff .hunk { color: var(--s1); }
+pre.diff .meta { color: var(--muted); }
+</style>
+<h1>Work produced</h1>
+<p class="sub">Run <code>20261030-085716</code> · what each session changed in the project and answered, task by task, with the model that did it. Pass or fail comes from the hidden tests, run after the session ended.</p>
+
+<h2><code>find-tax-rate</code> <span class="sub">lookup · expected light</span></h2>
+<p class="prompt">Which file defines the tax rate for Korea (KR)? Answer with the relative file path only.</p>
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>haiku-5-5</strong> · $0.0020 · 9s · 3 turns · +0 / −0 lines</div>
+<h4>Change</h4>
+<p class="note">No change to the project.</p>
+<h4>Final answer</h4>
+<pre class="answer">src/pricing.js</pre>
+</div></div>
+<footer>Agent Fusion Router · work produced in run 20261030-085716 · data SHA-256 9a6734f16bcb473cbe8f65583331c314e200c7b14462d0fad9602e594a194f75</footer>
+</main></body>
+</html>
