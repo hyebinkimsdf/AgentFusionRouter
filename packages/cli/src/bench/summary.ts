@@ -1,5 +1,5 @@
-import type { Tier, Tokens } from '@agent-fusion-router/core'
-import { TIERS, emptyTokens } from '@agent-fusion-router/core'
+import type { ModelEntry, Tier, Tokens } from '@agent-fusion-router/core'
+import { TIERS, emptyTokens, estimateCostUsd } from '@agent-fusion-router/core'
 
 import type { Arm, RunResult, Task } from './types.ts'
 
@@ -51,6 +51,37 @@ export type BenchSummary = {
 }
 
 export const runCost = (r: RunResult): number => r.claude?.costUsd ?? r.plugin.costUsd
+
+/**
+ * What Claude Code spent outside the conversation (titles, summaries): its
+ * total tokens less the conversation's, priced at the one model it used.
+ * Undefined where that cannot be told apart: no conversation figure, or
+ * several models in one session.
+ */
+export const outsideConversationUsd = (r: RunResult, prices: readonly ModelEntry[]): number | undefined => {
+  const models = Object.keys(r.claude?.byModel ?? {})
+  const [model] = models
+  const conversation = r.claude?.conversationTokens
+  if (!r.claude || !conversation || models.length !== 1 || model === undefined) return undefined
+
+  const t = r.claude.tokens
+  const outside: Tokens = {
+    input: t.input - conversation.input,
+    output: t.output - conversation.output,
+    cacheRead: t.cacheRead - conversation.cacheRead,
+    cacheWrite: t.cacheWrite - conversation.cacheWrite,
+  }
+
+  return estimateCostUsd(outside, model, prices)
+}
+
+/** Plugin estimate + outside the conversation − Claude Code's total: 0 when every cent is accounted for. */
+export const unaccountedUsd = (r: RunResult, prices: readonly ModelEntry[]): number | undefined => {
+  const outside = outsideConversationUsd(r, prices)
+  const total = r.claude?.costUsd
+
+  return outside === undefined || total === undefined ? undefined : r.plugin.costUsd + outside - total
+}
 
 const mean = (values: readonly number[]): number =>
   values.length === 0 ? 0 : values.reduce((a, b) => a + b, 0) / values.length

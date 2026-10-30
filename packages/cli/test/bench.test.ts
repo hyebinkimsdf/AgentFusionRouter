@@ -4,6 +4,7 @@ import { describe, test } from 'node:test'
 import type { UsageRecord } from '@agent-fusion-router/core'
 
 import { deriveResult, diffStats, parseClaudeOutput } from '../src/bench/derive.ts'
+import { answerMatches } from '../src/bench/workspace.ts'
 import { summarizeBench } from '../src/bench/summary.ts'
 import type { Arm, RunResult, Task } from '../src/bench/types.ts'
 
@@ -55,6 +56,27 @@ describe('parseClaudeOutput', () => {
   test('no JSON is no result', () => {
     assert.equal(parseClaudeOutput('Error: not logged in'), undefined)
   })
+
+  test('reads the conversation apart from side requests', () => {
+    // Run 20261030-090215: modelUsage counts a side request the conversation's usage does not.
+    const facts = parseClaudeOutput(
+      JSON.stringify({
+        usage: { input_tokens: 6, output_tokens: 363, cache_read_input_tokens: 95472, cache_creation_input_tokens: 7774 },
+        modelUsage: {
+          'claude-haiku-5-5': { inputTokens: 1200, outputTokens: 384, cacheReadInputTokens: 95472, cacheCreationInputTokens: 7774 },
+        },
+      }),
+    )
+
+    assert.deepEqual(facts?.conversationTokens, { input: 6, output: 363, cacheRead: 95472, cacheWrite: 7774 })
+    assert.deepEqual(facts?.tokens, { input: 1200, output: 384, cacheRead: 95472, cacheWrite: 7774 })
+  })
+})
+
+test('an answer matches whichever path separator it uses', () => {
+  assert.equal(answerMatches('src\\pricing.js', ['src/pricing.js']), true)
+  assert.equal(answerMatches('The rate is in src/pricing.js.', ['src/pricing.js']), true)
+  assert.equal(answerMatches('src/cart.js', ['src/pricing.js']), false)
 })
 
 describe('deriveResult', () => {

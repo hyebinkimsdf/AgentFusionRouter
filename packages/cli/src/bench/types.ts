@@ -22,8 +22,8 @@ export type TaskSet = {
 export type Arm = {
   id: string
   label: string
-  /** The session model, as `claude --model` takes it. */
-  model: string
+  /** The session model, as `claude --model` takes it (`opus`, `opusplan`); absent, the account's default. */
+  model?: string
   /** The plugin's settings for this arm. */
   plugin: Record<string, string | number | boolean>
 }
@@ -53,7 +53,10 @@ export type ClaudeFacts = {
   durationMs?: number
   numTurns?: number
   permissionDenials: number
+  /** Every request of the session, by `modelUsage`: the conversation and Claude Code's own side requests (titles, summaries). */
   tokens: Tokens
+  /** The conversation's requests alone, by the top-level `usage`: what the plugin can see. */
+  conversationTokens?: Tokens
   byModel: Record<string, { tokens: Tokens; costUsd?: number }>
 }
 

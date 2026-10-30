@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Benchmark 20261030-085716</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --good-text: #006300; --critical: #d03b3b; --warning: #fab219; --warning-wash: #fff6dd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 40px; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 36px 0 12px; }
+h3 { font-size: 14px; margin: 20px 0 8px; }
+p { margin: 0 0 10px; }
+.sub, .note { color: var(--ink-2); }
+.note { font-size: 12px; margin-top: 2px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.tiles { display: grid; gap: 10px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 10px; }
+.tile .label { color: var(--ink-2); font-size: 12px; }
+.tile .value { font-size: 22px; font-weight: 600; }
+.charts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.chart { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+figcaption { font-weight: 600; margin-bottom: 8px; }
+/* Charts keep their drawn size, so their text matches the page's; they shrink on narrow screens. */
+.chart svg { display: block; max-width: 100%; height: auto; }
+svg .lbl { fill: var(--ink-2); font-size: 12px; }
+svg .val { fill: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+svg .small { font-size: 11px; }
+svg .axis { stroke: var(--axis); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; color: var(--ink-2); font-size: 12px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
+.num { text-align: right; }
+.pass { color: var(--good-text); font-weight: 600; }
+.fail { color: var(--critical); font-weight: 600; }
+.banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
+.banner strong { display: block; font-size: 15px; }
+.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; }
+code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body><main>
+<h1>Agent Fusion Router benchmark</h1>
+<p class="sub">Run <code>20261030-085716</code> · task set <strong>shop</strong> (1 tasks) · 1 arms · 1 repetition · 2026-10-30T08:57:16.670Z</p>
+
+<h2>Result by arm</h2>
+<div class="cards"><div class="card">
+<div><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</strong></div>
+<div class="note">opus · plugin route</div>
+<div class="tiles">
+<div class="tile"><div class="label">Success</div><div class="value">1/1</div><div class="note">100%</div></div>
+<div class="tile"><div class="label">Cost per completed task</div><div class="value">$0.0020</div><div class="note">total $0.0020</div></div>
+<div class="tile"><div class="label">Mean time per run</div><div class="value">9s</div></div>
+<div class="tile"><div class="label">Tokens</div><div class="value">62.2K</div><div class="note">317 output</div></div>
+</div></div></div>
+<h2>Comparison</h2>
+<div class="charts">
+<figure class="chart"><figcaption>Cost per completed task (lower is better)</figcaption>
+<svg viewBox="0 0 560 42" width="560" role="img" aria-label="Cost per completed task (lower is better)">
+  <line x1="150" y1="0" x2="150" y2="42" class="axis"/>
+<g><title>Auto routing: $0.0020</title>
+  <text x="0" y="21" dominant-baseline="middle" class="lbl">Auto routing</text>
+  <path d="M150,12h316a4,4 0 0 1 4,4v10a4,4 0 0 1 -4,4h-316z" fill="var(--s1)"/>
+  <text x="476" y="21" dominant-baseline="middle" class="val">$0.0020</text></g>
+</svg></figure>
+<figure class="chart"><figcaption>Success rate</figcaption>
+<svg viewBox="0 0 560 42" width="560" role="img" aria-label="Success rate">
+  <line x1="150" y1="0" x2="150" y2="42" class="axis"/>
+<g><title>Auto routing: 100% (1/1)</title>
+  <text x="0" y="21" dominant-baseline="middle" class="lbl">Auto routing</text>
+  <path d="M150,12h316a4,4 0 0 1 4,4v10a4,4 0 0 1 -4,4h-316z" fill="var(--s1)"/>
+  <text x="476" y="21" dominant-baseline="middle" class="val">100% (1/1)</text></g>
+</svg></figure>
+</div>
+<h3>All measures</h3>
+<div class="scroll"><table>
+<thead><tr><th>Arm</th><th class="num">Valid runs</th><th class="num">Success</th><th class="num">Total cost</th><th class="num">Per completed task</th><th class="num">Mean time</th><th class="num">Mean turns</th></tr></thead>
+<tbody><tr><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1/1</td><td class="num">1 (100%)</td><td class="num">$0.0020</td><td class="num">$0.0020</td><td class="num">9s</td><td class="num">3.0</td></tr></tbody>
+</table></div>
+<div style="height:12px"></div>
+<div class="scroll"><table>
+<thead><tr><th>Arm</th><th class="num">Input</th><th class="num">Output</th><th class="num">Cache read</th><th class="num">Cache write</th><th class="num">Escalations</th><th class="num">Permission denials</th><th class="num">Lines changed</th></tr></thead>
+<tbody><tr><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">6</td><td class="num">317</td><td class="num">55.2K</td><td class="num">6.7K</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr></tbody>
+</table></div>
+<p class="note">Cost is what Claude Code reported for each session (<code>total_cost_usd</code>), at API list prices; on a subscription the same work counts against plan limits instead. Per completed task = total cost ÷ successes, so failed runs count. Invalid runs are left out of every figure.</p>
+
+<h2>By task</h2>
+<figure class="chart"><figcaption>Cost per task by arm (✓ every run passed)</figcaption>
+<div class="legend"><span><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</span></div>
+<svg viewBox="0 0 760 30" width="760" role="img" aria-label="Cost per task by arm (✓ every run passed)">
+  <line x1="170" y1="0" x2="170" y2="30" class="axis"/>
+<text x="0" y="10" dominant-baseline="middle" class="lbl">find-tax-rate</text>
+<g><title>find-tax-rate · Auto routing: $0.0020 ✓</title>
+  <path d="M170,4h496a4,4 0 0 1 4,4v4a4,4 0 0 1 -4,4h-496z" fill="var(--s1)"/>
+  <text x="676" y="10" dominant-baseline="middle" class="val small">$0.0020 ✓</text></g>
+</svg></figure>
+<div class="scroll"><table>
+<thead><tr><th>Task</th><th>Kind</th><th>Expected tier</th><th>Auto routing</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code></td><td>lookup</td><td>light</td><td><span class="pass">✓ Pass</span> 1/1 · $0.0020 · 9s · <span class="sub">light</span></td></tr></tbody>
+</table></div>
+
+<h2>Every run</h2>
+<div class="scroll"><table>
+<thead><tr><th>Task</th><th>Arm</th><th class="num">Rep</th><th>Result</th><th class="num">Claude cost</th><th class="num">Plugin estimate</th><th class="num">Difference</th><th class="num">Time</th><th class="num">Turns</th><th>Router tier</th><th>Models answered</th><th class="num">Diff (+/−)</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code></td><td><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Auto routing</td><td class="num">1</td><td><span class="pass">✓ Pass</span></td><td class="num">$0.0020</td><td class="num">$0.0015</td><td class="num">-24.5%</td><td class="num">9s</td><td class="num">3</td><td>light</td><td>claude-haiku-5-5</td><td class="num">+0 / −0</td></tr></tbody>
+</table></div>
+<h3>Invalid runs</h3>
+<p>No invalid runs.</p>
+
+<h2>Verification</h2>
+<h3>Are the checks sound?</h3>
+<p class="sub">Before any model ran, each task's hidden check was run on the untouched project (it must fail) and on the reference solution (it must pass).</p>
+<div class="scroll"><table>
+<thead><tr><th>Task</th><th>Check fails on the untouched project</th><th>Check passes with the reference solution</th><th>Sound</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code></td><td><span class="pass">✓ Pass</span></td><td><span class="pass">✓ Pass</span></td><td><span class="pass">✓ Pass</span></td></tr></tbody>
+</table></div>
+<h3>Does the plugin record what Claude Code reports?</h3>
+<p class="sub">For each run, the plugin's estimate from its own step records against Claude Code's reported cost. Mean absolute difference 24.5%, largest 24.5%. Requests Claude Code makes outside a turn (titles, summaries) are not seen by the plugin.</p>
+<h3>How often did the router pick the expected tier?</h3>
+<p class="sub">1 of 1 decisions (100%), counted over every arm: observe-mode arms record the same decision without applying it.</p>
+<div class="scroll"><table>
+<thead><tr><th>Expected (row) → decided (column)</th><th class="num">light</th><th class="num">standard</th><th class="num">heavy</th></tr></thead>
+<tbody><tr><td>light</td><td class="num">1</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>standard</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr>
+<tr><td>heavy</td><td class="num">0</td><td class="num">0</td><td class="num">0</td></tr></tbody>
+</table></div>
+
+<h2>Evidence</h2>
+<div class="scroll"><table>
+<thead><tr><th></th><th></th></tr></thead>
+<tbody><tr><td>Claude Code</td><td><code>2.1.312 (Claude Code)</code></td></tr>
+<tr><td>Node</td><td><code>v24.16.0</code></td></tr>
+<tr><td>OS</td><td><code>win32 10.0.19045</code></td></tr>
+<tr><td>Repository commit</td><td><code>88655434728a75d89b8cb3cefca0988d8f83ac1f</code></td></tr>
+<tr><td>Uncommitted changes</td><td><code>yes</code></td></tr>
+<tr><td>Plugin bundle SHA-256</td><td><code>e46dcdfa0a166853cd66d97d0643324b1784e144cee699886865e4ce86aa2727</code></td></tr>
+<tr><td>Task set file</td><td><code>examples/shop/tasks.json</code></td></tr>
+<tr><td>Task set SHA-256</td><td><span class="hash">06fa193f165113d87e657fccd4605c9749b5992838ecfe0e4acd9c3e0cb7e3b2</span></td></tr>
+<tr><td>Budget cap per run</td><td>$0.2000</td></tr>
+<tr><td>Started</td><td>2026-10-30T08:57:16.670Z</td></tr>
+<tr><td>Finished</td><td>2026-10-30T08:57:29.247Z</td></tr></tbody>
+</table></div>
+<h3>Data hash</h3>
+<p>SHA-256 of <code>evidence.sha256</code>, which lists the SHA-256 of every raw file in this run folder:</p>
+<p class="hash"><strong>9a6734f16bcb473cbe8f65583331c314e200c7b14462d0fad9602e594a194f75</strong></p>
+<p class="sub">To check it, run these in the run folder. The first command re-hashes every file; the second recomputes every figure on this page from the raw files.</p>
+<pre>sha256sum -c evidence.sha256
+sha256sum evidence.sha256
+node packages/cli/dist/cli.js bench verify benchmarks/results/20261030-085716</pre>
+
+<footer>Agent Fusion Router · run 20261030-085716 · data SHA-256 9a6734f16bcb473cbe8f65583331c314e200c7b14462d0fad9602e594a194f75 · prices as of 2026-10-06</footer>
+</main></body>
+</html>

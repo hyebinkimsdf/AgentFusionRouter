@@ -6,7 +6,7 @@ export type Price = {
   output: number
   /** Cache reads. */
   cacheRead: number
-  /** Cache writes at the 5-minute TTL (1.25x input). 1-hour writes cost more. */
+  /** Cache writes at the 1-hour TTL (2x input), the one Claude Code writes. */
   cacheWrite: number
 }
 
@@ -27,11 +27,15 @@ export type ModelEntry = {
  */
 export const PRICES_AS_OF = '2026-10-06'
 
+// Claude Code writes the prompt cache with the 1-hour TTL: its own usage report
+// counts every write as `cacheCreationEphemeral1hInputTokens`, billed at 2x
+// input. A 5-minute write would be 1.25x, and pricing at that rate read 25%
+// low against Claude Code's total on a measured run.
 const price = (input: number, output: number, cacheRead = input * 0.1): Price => ({
   input,
   output,
   cacheRead,
-  cacheWrite: input * 1.25,
+  cacheWrite: input * 2,
 })
 
 /** Newest first within each family: alias lookup takes the first match. */
@@ -57,19 +61,19 @@ export const CLAUDE_MODELS: readonly ModelEntry[] = [
 
 const FAMILY_RANK: Record<Family, number> = { haiku: 0, sonnet: 1, opus: 2, fable: 3 }
 
-const BY_ID_LENGTH = [...CLAUDE_MODELS].sort((a, b) => b.id.length - a.id.length)
-
 /**
  * Finds a model by full id (dated or suffixed ids such as `-20260101` or
  * `[1m]` match their base id) or by family alias (`opus` is the newest Opus).
+ * `models` defaults to this release's catalog; a benchmark passes the one it
+ * was run with, so its costs recompute the same after prices change.
  */
-export const findModel = (idOrAlias: string): ModelEntry | undefined => {
+export const findModel = (idOrAlias: string, models: readonly ModelEntry[] = CLAUDE_MODELS): ModelEntry | undefined => {
   const name = idOrAlias.toLowerCase().trim()
 
   return (
-    CLAUDE_MODELS.find(m => m.id === name) ??
-    BY_ID_LENGTH.find(m => name.startsWith(m.id)) ??
-    CLAUDE_MODELS.find(m => m.family === name)
+    models.find(m => m.id === name) ??
+    [...models].sort((a, b) => b.id.length - a.id.length).find(m => name.startsWith(m.id)) ??
+    models.find(m => m.family === name)
   )
 }
 

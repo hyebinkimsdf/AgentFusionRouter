@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --test:*)",
+      "Bash(npm test:*)",
+      "PowerShell(node --test:*)",
+      "PowerShell(npm test:*)"
+    ]
+  },
+  "pluginConfigs": {
+    "agent-fusion-router": {
+      "options": {
+        "mode": "route",
+        "standardModel": "sonnet",
+        "logDir": "C:\\Users\\user\\Desktop\\새 폴더\\agentfusionrouter\\benchmarks\\results\\20261030-090215\\runs\\find-tax-rate__auto__r1\\plugin-logs"
+      }
+    },
+    "agent-fusion-router@inline": {
+      "options": {
+        "mode": "route",
+        "standardModel": "sonnet",
+        "logDir": "C:\\Users\\user\\Desktop\\새 폴더\\agentfusionrouter\\benchmarks\\results\\20261030-090215\\runs\\find-tax-rate__auto__r1\\plugin-logs"
+      }
+    }
+  }
+}

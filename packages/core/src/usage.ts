@@ -1,3 +1,4 @@
+import type { ModelEntry } from './catalog.ts'
 import { PRICES_AS_OF, findModel } from './catalog.ts'
 import type { Effort, Mode, Product, Tier } from './types.ts'
 
@@ -74,8 +75,8 @@ const addTokens = (a: Tokens, b: Tokens): Tokens => ({
 export const promptTokens = (t: Tokens): number => t.input + t.cacheRead + t.cacheWrite
 
 /** List-price estimate in USD, or undefined for a model the catalog lacks. */
-export const estimateCostUsd = (tokens: Tokens, model: string): number | undefined => {
-  const entry = findModel(model)
+export const estimateCostUsd = (tokens: Tokens, model: string, models?: readonly ModelEntry[]): number | undefined => {
+  const entry = findModel(model, models)
   if (!entry) return undefined
 
   const long = entry.longContext

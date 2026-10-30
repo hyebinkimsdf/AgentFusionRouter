@@ -1,0 +1,29 @@
+{
+  "runId": "20261030-085716",
+  "simulated": false,
+  "startedAt": "2026-10-30T08:57:16.670Z",
+  "finishedAt": "2026-10-30T08:57:29.247Z",
+  "taskSet": {
+    "name": "shop",
+    "file": "examples/shop/tasks.json",
+    "sha256": "06fa193f165113d87e657fccd4605c9749b5992838ecfe0e4acd9c3e0cb7e3b2"
+  },
+  "reps": 1,
+  "budgetUsd": 0.2,
+  "environment": {
+    "Claude Code": "2.1.312 (Claude Code)",
+    "Node": "v24.16.0",
+    "OS": "win32 10.0.19045",
+    "Repository commit": "88655434728a75d89b8cb3cefca0988d8f83ac1f",
+    "Uncommitted changes": "yes",
+    "Plugin bundle SHA-256": "e46dcdfa0a166853cd66d97d0643324b1784e144cee699886865e4ce86aa2727"
+  },
+  "validation": [
+    {
+      "taskId": "find-tax-rate",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    }
+  ]
+}

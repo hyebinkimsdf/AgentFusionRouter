@@ -3,7 +3,8 @@ import { appendFile, copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'n
 import { release, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 
-import type { UsageRecord } from '@agent-fusion-router/core'
+import type { ModelEntry, UsageRecord } from '@agent-fusion-router/core'
+import { CLAUDE_MODELS, PRICES_AS_OF } from '@agent-fusion-router/core'
 
 import { capturePage } from '../capture.ts'
 import type { RunInfo } from '../html/bench.ts'
@@ -45,7 +46,8 @@ export type RunOptions = {
 /** Tools the agent may run without asking: only the test runner. Edits are allowed by the permission mode. */
 const ALLOWED = ['Bash(node --test:*)', 'Bash(npm test:*)', 'PowerShell(node --test:*)', 'PowerShell(npm test:*)']
 
-const runName = (taskId: string, armId: string, rep: number) => `${taskId}__${armId}__r${rep}`
+/** A single session's folder name inside a run's `runs/`. */
+export const runName = (taskId: string, armId: string, rep: number) => `${taskId}__${armId}__r${rep}`
 
 const stamp = (d: Date): string => d.toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15)
 
@@ -70,8 +72,7 @@ const runClaude = (
     '-p',
     '--output-format',
     'json',
-    '--model',
-    arm.model,
+    ...(arm.model === undefined ? [] : ['--model', arm.model]),
     '--plugin-dir',
     opts.pluginDir,
     '--settings',
@@ -142,6 +143,8 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
 
   await copyFile(opts.tasksFile, join(runDir, 'tasks.json'))
   await writeFile(join(runDir, 'arms.json'), `${JSON.stringify(arms, null, 2)}\n`)
+  // The prices this run is estimated with, so `verify` recomputes the same figures after the catalog changes.
+  await writeFile(join(runDir, 'prices.json'), `${JSON.stringify({ asOf: PRICES_AS_OF, models: CLAUDE_MODELS }, null, 2)}\n`)
 
   const results: RunResult[] = []
   const total = opts.reps * taskList.length * arms.length
@@ -211,6 +214,7 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
           check: check.outcome,
           numstat,
           needsPlugin: arm.plugin.mode === 'route',
+          prices: CLAUDE_MODELS,
         })
         await writeFile(join(dir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`)
         results.push(result)
@@ -271,7 +275,8 @@ export const reportBench = async (runDir: string, capture: boolean): Promise<voi
   const { run, tasks, arms, results } = await loadRun(runDir)
   const taskList = tasks.tasks.filter(t => results.some(r => r.taskId === t.id))
   const summary = summarizeBench(taskList, arms, results)
-  const html = renderBenchReport({ run, tasks: taskList, arms, results, summary, dataHash: await dataHash(runDir) })
+  const { prices } = await runPrices(runDir)
+  const html = renderBenchReport({ run, tasks: taskList, arms, results, summary, prices, dataHash: await dataHash(runDir) })
   const htmlPath = join(runDir, 'report.html')
   await writeFile(htmlPath, html)
   console.log(`Report: ${htmlPath}`)
@@ -287,22 +292,86 @@ export const reportBench = async (runDir: string, capture: boolean): Promise<voi
   await writeReportHashes(runDir)
 }
 
+/**
+ * The price table of runs made before `prices.json` was saved with each run
+ * (up to 2026-10-30): today's catalog with cache writes at the 5-minute rate.
+ */
+const pricesBeforeSnapshots = (): ModelEntry[] => {
+  const fiveMinute = (p: ModelEntry['price']) => ({ ...p, cacheWrite: p.input * 1.25 })
+
+  return CLAUDE_MODELS.map(m => ({
+    ...m,
+    price: fiveMinute(m.price),
+    ...(m.longContext ? { longContext: { ...m.longContext, price: fiveMinute(m.longContext.price) } } : {}),
+  }))
+}
+
+/** The price table a run was made with: its `prices.json`, or the table used before those were saved. */
+const runPrices = async (runDir: string): Promise<{ prices: ModelEntry[]; saved: boolean }> => {
+  const saved = await readFile(join(runDir, 'prices.json'), 'utf8').then(
+    text => (JSON.parse(text) as { models: ModelEntry[] }).models,
+    () => undefined,
+  )
+
+  return { prices: saved ?? pricesBeforeSnapshots(), saved: saved !== undefined }
+}
+
+/** A run's result computed afresh from its raw files, with this release's derivation. */
+const deriveFromFiles = async (
+  runDir: string,
+  r: Pick<RunResult, 'taskId' | 'armId' | 'rep'>,
+  arms: readonly Arm[],
+  prices: readonly ModelEntry[],
+): Promise<RunResult> => {
+  const dir = join(runDir, 'runs', runName(r.taskId, r.armId, r.rep))
+
+  return deriveResult({
+    meta: JSON.parse(await readFile(join(dir, 'meta.json'), 'utf8')) as RunMeta,
+    claudeStdout: await readFile(join(dir, 'claude.json'), 'utf8'),
+    records: (await readRecords(join(dir, 'plugin-logs'))).records as UsageRecord[],
+    check: JSON.parse(await readFile(join(dir, 'check.json'), 'utf8')) as CheckOutcome,
+    numstat: await readFile(join(dir, 'diff.numstat'), 'utf8'),
+    needsPlugin: arms.find(a => a.id === r.armId)?.plugin.mode === 'route',
+    prices,
+  })
+}
+
+/** `value` cut down to the keys `shape` has, at every depth, in `shape`'s key order. */
+const recordedFields = (value: unknown, shape: unknown): unknown => {
+  if (shape === null || typeof shape !== 'object' || value === null || typeof value !== 'object') return value
+  if (Array.isArray(shape)) return value
+
+  const source = value as Record<string, unknown>
+
+  return Object.fromEntries(Object.keys(shape).map(k => [k, recordedFields(source[k], (shape as Record<string, unknown>)[k])]))
+}
+
+export type RunCheck = {
+  runId: string
+  simulated: boolean
+  dataHash: string
+  runs: number
+  /** Anything that fails verification. */
+  problems: string[]
+  /** How it was verified, where that is worth saying. */
+  notes: string[]
+}
+
 /** Re-hashes every file and recomputes every figure from the raw files. */
-export const verifyBench = async (runDir: string): Promise<boolean> => {
+export const checkRun = async (runDir: string): Promise<RunCheck> => {
   const problems = [...(await checkHashes(runDir, EVIDENCE_FILE)), ...(await checkHashes(runDir, REPORT_HASH_FILE))]
+  const notes: string[] = []
   const { run, tasks, arms, results } = await loadRun(runDir)
+  const { prices, saved } = await runPrices(runDir)
+  if (!saved) {
+    notes.push('No prices.json: the run predates saved price tables, so costs are recomputed with the table it was made with (cache writes at the 5-minute rate).')
+  }
 
   for (const stored of results) {
-    const dir = join(runDir, 'runs', runName(stored.taskId, stored.armId, stored.rep))
-    const recomputed = deriveResult({
-      meta: JSON.parse(await readFile(join(dir, 'meta.json'), 'utf8')) as RunMeta,
-      claudeStdout: await readFile(join(dir, 'claude.json'), 'utf8'),
-      records: (await readRecords(join(dir, 'plugin-logs'))).records as UsageRecord[],
-      check: JSON.parse(await readFile(join(dir, 'check.json'), 'utf8')) as CheckOutcome,
-      numstat: await readFile(join(dir, 'diff.numstat'), 'utf8'),
-      needsPlugin: arms.find(a => a.id === stored.armId)?.plugin.mode === 'route',
-    })
-    if (JSON.stringify(recomputed) !== JSON.stringify(stored)) {
+    const recomputed = await deriveFromFiles(runDir, stored, arms, prices)
+    // Compared on the fields the run recorded: a field added to results later
+    // was never claimed by an older run, so it cannot contradict it.
+    if (JSON.stringify(recordedFields(recomputed, stored)) !== JSON.stringify(stored)) {
       problems.push(`${runName(stored.taskId, stored.armId, stored.rep)}/result.json does not match its raw files`)
     }
   }
@@ -313,13 +382,39 @@ export const verifyBench = async (runDir: string): Promise<boolean> => {
     problems.push('results.json does not match the per-run results')
   }
 
-  console.log(`Run ${run.runId}${run.simulated ? ' (simulated)' : ''}`)
-  console.log(`Data SHA-256: ${await dataHash(runDir).catch(() => 'missing')}`)
-  if (problems.length === 0) {
-    console.log(`OK: ${results.length} runs; every file matches its hash and every figure matches the raw files.`)
+  return {
+    runId: run.runId,
+    simulated: run.simulated,
+    dataHash: await dataHash(runDir).catch(() => 'missing'),
+    runs: results.length,
+    problems,
+    notes,
+  }
+}
+
+export const verifyBench = async (runDir: string): Promise<boolean> => {
+  const check = await checkRun(runDir)
+
+  console.log(`Run ${check.runId}${check.simulated ? ' (simulated)' : ''}`)
+  console.log(`Data SHA-256: ${check.dataHash}`)
+  for (const note of check.notes) console.log(`Note: ${note}`)
+  if (check.problems.length === 0) {
+    console.log(`OK: ${check.runs} runs; every file matches its hash and every figure matches the raw files.`)
     return true
   }
-  for (const p of problems) console.log(`FAIL: ${p}`)
+  for (const p of check.problems) console.log(`FAIL: ${p}`)
 
   return false
+}
+
+/**
+ * A run folder for `bench compare`: results recomputed from the raw files, so
+ * an older run shows every figure this release derives, and the verification.
+ */
+export const loadForComparison = async (runDir: string) => {
+  const { run, arms, results } = await loadRun(runDir)
+  const { prices } = await runPrices(runDir)
+  const recomputed = await Promise.all(results.map(r => deriveFromFiles(runDir, r, arms, prices)))
+
+  return { run, arms, results: recomputed, prices, check: await checkRun(runDir) }
 }

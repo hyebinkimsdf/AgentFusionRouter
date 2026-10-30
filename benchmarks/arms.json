@@ -1,20 +1,18 @@
 [
   {
-    "id": "opus-fixed",
-    "label": "Opus fixed",
-    "model": "opus",
+    "id": "default",
+    "label": "Default",
     "plugin": { "mode": "observe" }
   },
   {
-    "id": "sonnet-fixed",
-    "label": "Sonnet fixed",
-    "model": "sonnet",
+    "id": "opusplan",
+    "label": "opusplan",
+    "model": "opusplan",
     "plugin": { "mode": "observe" }
   },
   {
     "id": "auto",
     "label": "Auto routing",
-    "model": "opus",
     "plugin": { "mode": "route", "standardModel": "sonnet" }
   }
 ]

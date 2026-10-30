@@ -1,0 +1,11 @@
+[
+  {
+    "id": "auto",
+    "label": "Auto routing",
+    "model": "opus",
+    "plugin": {
+      "mode": "route",
+      "standardModel": "sonnet"
+    }
+  }
+]

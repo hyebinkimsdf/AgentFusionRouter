@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparison: Before fix and After fix</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --good-text: #006300; --critical: #d03b3b; --warning: #fab219; --warning-wash: #fff6dd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 40px; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 36px 0 12px; }
+h3 { font-size: 14px; margin: 20px 0 8px; }
+p { margin: 0 0 10px; }
+.sub, .note { color: var(--ink-2); }
+.note { font-size: 12px; margin-top: 2px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.tiles { display: grid; gap: 10px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 10px; }
+.tile .label { color: var(--ink-2); font-size: 12px; }
+.tile .value { font-size: 22px; font-weight: 600; }
+.charts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.chart { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+figcaption { font-weight: 600; margin-bottom: 8px; }
+/* Charts keep their drawn size, so their text matches the page's; they shrink on narrow screens. */
+.chart svg { display: block; max-width: 100%; height: auto; }
+svg .lbl { fill: var(--ink-2); font-size: 12px; }
+svg .val { fill: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+svg .small { font-size: 11px; }
+svg .axis { stroke: var(--axis); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; color: var(--ink-2); font-size: 12px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
+.num { text-align: right; }
+.pass { color: var(--good-text); font-weight: 600; }
+.fail { color: var(--critical); font-weight: 600; }
+.banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
+.banner strong { display: block; font-size: 15px; }
+/* A hash wraps rather than overflow: a screenshot must show every character. */
+.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body><main>
+<h1>Run comparison</h1>
+<p class="sub"><strong>Before fix</strong> (<code>20261030-085716</code>) and <strong>After fix</strong> (<code>20261030-090443</code>) · generated 2026-10-30T09:16:23.169Z</p>
+
+<h2>Runs</h2>
+<div class="cards"><div class="card">
+<div><strong>Before fix</strong></div>
+<div class="note">Run <code>20261030-085716</code> · started 2026-10-30T08:57:16.670Z</div>
+<div class="scroll"><table>
+<thead><tr><th></th><th></th></tr></thead>
+<tbody><tr><td>Claude Code</td><td><code>2.1.312 (Claude Code)</code></td></tr>
+<tr><td>Repository commit</td><td><code>88655434728a75d89b8cb3cefca0988d8f83ac1f</code></td></tr>
+<tr><td>Plugin bundle SHA-256</td><td><span class="hash">e46dcdfa0a166853cd66d97d0643324b1784e144cee699886865e4ce86aa2727</span></td></tr>
+<tr><td>Data SHA-256</td><td><span class="hash"><strong>9a6734f16bcb473cbe8f65583331c314e200c7b14462d0fad9602e594a194f75</strong></span></td></tr></tbody>
+</table></div>
+<p style="margin-top:10px"><span class="pass">✓ Verified</span>: every file matches its hash and every figure matches the raw files (1 runs).</p>
+<p class="note">No prices.json: the run predates saved price tables, so costs are recomputed with the table it was made with (cache writes at the 5-minute rate).</p>
+</div><div class="card">
+<div><strong>After fix</strong></div>
+<div class="note">Run <code>20261030-090443</code> · started 2026-10-30T09:04:43.693Z</div>
+<div class="scroll"><table>
+<thead><tr><th></th><th></th></tr></thead>
+<tbody><tr><td>Claude Code</td><td><code>2.1.312 (Claude Code)</code></td></tr>
+<tr><td>Repository commit</td><td><code>88655434728a75d89b8cb3cefca0988d8f83ac1f</code></td></tr>
+<tr><td>Plugin bundle SHA-256</td><td><span class="hash">536533af228bf1562aa6ccee7d604c06d203a33964e4e85ebf8d68f8f90f1a10</span></td></tr>
+<tr><td>Data SHA-256</td><td><span class="hash"><strong>3c4e83a797be7bec1d2a9b2bbc586f352390143002a6c987cbee70615ab1f91a</strong></span></td></tr></tbody>
+</table></div>
+<p style="margin-top:10px"><span class="pass">✓ Verified</span>: every file matches its hash and every figure matches the raw files (1 runs).</p>
+
+</div></div>
+
+<h2>Cost: Claude Code's report against the plugin's estimate</h2>
+<p class="sub">Claude Code's total is <code>total_cost_usd</code> from its own report of the session. The plugin's estimate is computed from the tokens it recorded at each request of the conversation, with the run's price table. Claude Code also makes requests outside the conversation (session titles, summaries) that the plugin never sees: their cost is Claude Code's total tokens less the conversation's (<code>usage</code>), at the same prices. "Accounted for" checks that plugin plus outside equals Claude Code's total.</p>
+<div class="scroll"><table>
+<thead><tr><th>Run of</th><th>Run</th><th class="num">Claude Code total</th><th class="num">Plugin estimate</th><th class="num">Difference</th><th class="num">Outside the conversation</th><th class="num">Plugin + outside</th><th>Accounted for</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>Before fix</td><td class="num">$0.00204753</td><td class="num">$0.00154630</td><td class="num"><span class="fail">-24.48%</span></td><td class="num">$0.00000000</td><td class="num">$0.00154630</td><td><span class="fail">off by −$0.00050123</span></td></tr>
+<tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>After fix</td><td class="num">$0.00284224</td><td class="num">$0.00271234</td><td class="num"><span class="fail">-4.57%</span></td><td class="num">$0.00012990</td><td class="num">$0.00284224</td><td><span class="pass">✓ to the last digit</span></td></tr></tbody>
+</table></div>
+
+<h2>Tokens and outcome</h2>
+<p class="sub">Tokens as Claude Code reported them for every request of the session. "Plugin tokens" says whether the plugin recorded exactly the conversation's four counts.</p>
+<div class="scroll"><table>
+<thead><tr><th>Run of</th><th>Run</th><th class="num">Input</th><th class="num">Output</th><th class="num">Cache read</th><th class="num">Cache write</th><th>Plugin tokens</th><th>Result</th><th>Model answered</th><th>Tier</th><th class="num">Time</th></tr></thead>
+<tbody><tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>Before fix</td><td class="num">6</td><td class="num">317</td><td class="num">55183</td><td class="num">6683</td><td><span class="pass">✓ same as the conversation</span></td><td><span class="pass">✓ Pass</span></td><td>claude-haiku-5-5</td><td>light</td><td class="num">9s</td></tr>
+<tr><td><code>find-tax-rate</code> · Auto routing · rep 1</td><td>After fix</td><td class="num">1200</td><td class="num">403</td><td class="num">95474</td><td class="num">7830</td><td><span class="pass">✓ same as the conversation</span></td><td><span class="pass">✓ Pass</span></td><td>claude-haiku-5-5</td><td>light</td><td class="num">8s</td></tr></tbody>
+</table></div>
+
+<footer>Agent Fusion Router · Before fix data SHA-256 9a6734f16bcb473cbe8f65583331c314e200c7b14462d0fad9602e594a194f75 · After fix data SHA-256 3c4e83a797be7bec1d2a9b2bbc586f352390143002a6c987cbee70615ab1f91a</footer>
+</main></body>
+</html>

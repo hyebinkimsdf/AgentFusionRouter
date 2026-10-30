@@ -14,7 +14,7 @@ var price = (input, output, cacheRead = input * 0.1) => ({
   input,
   output,
   cacheRead,
-  cacheWrite: input * 1.25
+  cacheWrite: input * 2
 });
 var CLAUDE_MODELS = [
   { id: "claude-fable-5-1", family: "fable", price: price(10, 50, 0.25) },
@@ -36,10 +36,9 @@ var CLAUDE_MODELS = [
   { id: "claude-haiku-4-5", family: "haiku", price: price(1, 5) }
 ];
 var FAMILY_RANK = { haiku: 0, sonnet: 1, opus: 2, fable: 3 };
-var BY_ID_LENGTH = [...CLAUDE_MODELS].sort((a, b) => b.id.length - a.id.length);
-var findModel = (idOrAlias) => {
+var findModel = (idOrAlias, models = CLAUDE_MODELS) => {
   const name = idOrAlias.toLowerCase().trim();
-  return CLAUDE_MODELS.find((m) => m.id === name) ?? BY_ID_LENGTH.find((m) => name.startsWith(m.id)) ?? CLAUDE_MODELS.find((m) => m.family === name);
+  return models.find((m) => m.id === name) ?? [...models].sort((a, b) => b.id.length - a.id.length).find((m) => name.startsWith(m.id)) ?? models.find((m) => m.family === name);
 };
 var familyOf = (idOrAlias) => {
   const listed = findModel(idOrAlias)?.family;
@@ -294,8 +293,8 @@ var addTokens = (a, b) => ({
   cacheWrite: a.cacheWrite + b.cacheWrite
 });
 var promptTokens = (t) => t.input + t.cacheRead + t.cacheWrite;
-var estimateCostUsd = (tokens, model) => {
-  const entry = findModel(model);
+var estimateCostUsd = (tokens, model, models) => {
+  const entry = findModel(model, models);
   if (!entry) return void 0;
   const long = entry.longContext;
   const p = long && promptTokens(tokens) > long.aboveInputTokens ? long.price : entry.price;

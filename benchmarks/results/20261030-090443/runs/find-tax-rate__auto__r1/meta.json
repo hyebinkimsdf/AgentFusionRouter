@@ -1,0 +1,10 @@
+{
+  "taskId": "find-tax-rate",
+  "armId": "auto",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T09:04:45.700Z",
+  "wallMs": 7668,
+  "exitCode": 0,
+  "timedOut": false
+}

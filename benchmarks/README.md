@@ -8,11 +8,15 @@ Routing saves money only if the cheaper model still finishes the job. A light mo
 
 | Arm | Session model | Plugin | What it answers |
 |---|---|---|---|
-| `opus-fixed` | `opus` | observe | One high-capability model for everything |
-| `sonnet-fixed` | `sonnet` | observe | One standard model for everything |
-| `auto` | `opus` | route, standard tier → `sonnet` | Light tasks to Haiku, ordinary work to Sonnet, heavy work and escalations to Opus |
+| `default` | the account's default (no `--model`) | observe | Claude Code as it comes |
+| `opusplan` | `opusplan` | observe | Claude Code's own phase-based switch: Opus in plan mode, Sonnet otherwise |
+| `auto` | the account's default | route, standard tier → `sonnet` | This router: light tasks to Haiku, ordinary work to Sonnet, heavy work and escalations to Opus |
 
-The fixed arms run the plugin in observe mode. It changes nothing there, but it records what it would have chosen, so every arm logs the same fields. The `auto` arm sets the standard tier to Sonnet. Without that, ordinary work would stay on the Opus session model and only two models would ever run.
+`default` and `auto` start from the same model, so the router is the only difference between them. The arms that do not route run the plugin in observe mode. It changes nothing there, but it records what it would have chosen, so every arm logs the same fields. The `auto` arm sets the standard tier to Sonnet; without that, ordinary work would stay on the session model.
+
+**opusplan in a headless run.** opusplan uses Opus only while Claude Code is in plan mode, which a person normally enters and approves. A `claude -p` run starts in `acceptEdits` mode, so opusplan may run on Sonnet throughout. The report lists the models that actually answered each arm, from the plugin's records and Claude Code's `modelUsage`, so this shows in the results rather than being assumed.
+
+[`arms.fixed-models.json`](arms.fixed-models.json) compares fixed Opus, fixed Sonnet, and routing instead: `--arms benchmarks/arms.fixed-models.json`.
 
 ## Tasks
 
@@ -62,6 +66,7 @@ If the plugin records nothing in a routing arm, the run is marked invalid: routi
 |---|---|
 | `run.json` | Environment (Claude Code version, Node, OS, repository commit, plugin bundle hash), task set hash, check validation |
 | `tasks.json`, `arms.json` | Exactly what was run |
+| `prices.json` | The price table the plugin estimates were made with, so they recompute the same after prices change |
 | `run.log` | The console output |
 | `runs/<task>__<arm>__r<n>/` | `prompt.txt`, `settings.json`, `claude.json` (Claude Code's own report), `claude.stderr.txt`, `plugin-logs/`, `check.json` and `check.txt`, `diff.patch` and `diff.numstat`, `meta.json` (wall time, exit code), `result.json` |
 | `results.json` | The figures in the report |
@@ -86,8 +91,18 @@ node packages/cli/dist/cli.js bench verify benchmarks/results/<run id>
 
 The report also checks itself:
 
-- **Cost cross-check:** the plugin's estimate from its own records against Claude Code's `total_cost_usd`, per run. A large gap means the plugin missed requests.
+- **Cost accounted for:** Claude Code's `total_cost_usd` covers every request of the session. That includes its own side requests (session titles, summaries), which the plugin never sees. Per run, the report prices those side requests from Claude Code's total tokens (`modelUsage`) less the conversation's (`usage`). It then checks that plugin estimate + side requests = Claude Code's total, to the last digit. A gap means the plugin missed a request or priced one wrongly.
 - **Classifier accuracy:** the router's tier against each task's expected tier, counted over every arm.
+
+### Comparing two runs
+
+```bash
+node packages/cli/dist/cli.js bench compare benchmarks/results/<a> benchmarks/results/<b> --label-a "Before" --label-b "After"
+```
+
+This writes `benchmarks/comparisons/<a>_vs_<b>/` with a page (`comparison.html`), its screenshot (`comparison.png`), and their hashes (`comparison.sha256`). The page verifies both runs and shows them side by side: each run's data hash and verification status, then per task the cost reconciliation and the tokens. Figures are recomputed from the raw files, so an older run shows everything the current release derives.
+
+The first comparison, [`20261030-085716_vs_20261030-090443`](comparisons/20261030-085716_vs_20261030-090443/comparison.png), records a fix found this way. Before it, the plugin priced cache writes at the 5-minute rate, but Claude Code writes with the 1-hour TTL, so the estimate came up short by $0.00050123 (−24.5%). After it, the estimate plus Claude Code's side requests equals Claude Code's total to the last digit.
 
 ## Measures
 

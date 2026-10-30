@@ -1,10 +1,13 @@
+import type { ModelEntry } from '@agent-fusion-router/core'
 import { PRICES_AS_OF, TIERS } from '@agent-fusion-router/core'
 
 import type { BenchSummary } from '../bench/summary.ts'
+import { unaccountedUsd } from '../bench/summary.ts'
 import type { Arm, RunResult, Task } from '../bench/types.ts'
 import type { TaskValidation } from '../bench/validate.ts'
 import {
   SERIES,
+  accounted,
   barChart,
   compact,
   duration,
@@ -38,17 +41,21 @@ export type BenchPage = {
   results: readonly RunResult[]
   summary: BenchSummary
   dataHash: string
+  /** The price table the run was made with. */
+  prices: readonly ModelEntry[]
 }
 
 const armColor = (arms: readonly Arm[], id: string): string => SERIES[arms.findIndex(a => a.id === id) % SERIES.length] ?? SERIES[0]
+
+/** The models that answered an arm's conversations, as the plugin recorded them. */
+const modelsUsed = (results: readonly RunResult[], armId: string): string =>
+  [...new Set(results.filter(r => r.armId === armId).flatMap(r => r.plugin.models))].sort().join(', ') || 'unknown'
 
 const armName = (arms: readonly Arm[], id: string): string => {
   const arm = arms.find(a => a.id === id)
 
   return arm === undefined ? esc(id) : `${swatch(armColor(arms, id))}${esc(arm.label)}`
 }
-
-const signedPct = (n: number | undefined): string => (n === undefined ? '—' : `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`)
 
 export const renderBenchReport = (p: BenchPage): string => {
   const { run, tasks, arms, results, summary } = p
@@ -66,7 +73,7 @@ ${banner}`
     .map(
       a => `<div class="card">
 <div><strong>${armName(arms, a.armId)}</strong></div>
-<div class="note">${esc(arms.find(x => x.id === a.armId)?.model ?? '')} · plugin ${esc(String(arms.find(x => x.id === a.armId)?.plugin.mode ?? 'observe'))}</div>
+<div class="note">${esc(arms.find(x => x.id === a.armId)?.model ?? 'account default model')} · plugin ${esc(String(arms.find(x => x.id === a.armId)?.plugin.mode ?? 'observe'))} · answered by ${esc(modelsUsed(results, a.armId))}</div>
 <div class="tiles">
 ${tile('Success', `${a.successes}/${a.validRuns}`, pct(a.successRate))}
 ${tile('Cost per completed task', usd(a.costPerSuccessUsd), `total ${usd(a.costUsd)}`)}
@@ -158,7 +165,7 @@ ${table(
   )
 
   const runRows = table(
-    ['Task', 'Arm', 'Rep', 'Result', 'Claude cost', 'Plugin estimate', 'Difference', 'Time', 'Turns', 'Router tier', 'Models answered', 'Diff (+/−)'],
+    ['Task', 'Arm', 'Rep', 'Result', 'Claude cost', 'Plugin estimate', 'Cost accounted for', 'Time', 'Turns', 'Router tier', 'Models answered', 'Diff (+/−)'],
     results.map(r => [
       `<code>${esc(r.taskId)}</code>`,
       armName(arms, r.armId),
@@ -166,14 +173,14 @@ ${table(
       r.valid ? passMark(r.success) : `<span class="fail">Invalid: ${esc(r.invalidReason ?? '')}</span>`,
       usd(r.claude?.costUsd),
       usd(r.plugin.costUsd),
-      signedPct(summary.crossCheck.rows.find(c => c.taskId === r.taskId && c.armId === r.armId && c.rep === r.rep)?.diffPct),
+      accounted(unaccountedUsd(r, p.prices)),
       duration(r.wallMs),
       String(r.claude?.numTurns ?? '—'),
       esc(r.plugin.decidedTier ?? '—'),
       esc(r.plugin.models.join(', ') || '—'),
       `+${r.diff.added} / −${r.diff.removed}`,
     ]),
-    [2, 4, 5, 6, 7, 8, 11],
+    [2, 4, 5, 7, 8, 11],
   )
 
   const { classifier, crossCheck } = summary
@@ -231,7 +238,7 @@ ${invalid}
 <p class="sub">Before any model ran, each task's hidden check was run on the untouched project (it must fail) and on the reference solution (it must pass).</p>
 ${validation}
 <h3>Does the plugin record what Claude Code reports?</h3>
-<p class="sub">For each run, the plugin's estimate from its own step records against Claude Code's reported cost. Mean absolute difference ${crossCheck.meanAbsDiffPct === undefined ? '—' : `${crossCheck.meanAbsDiffPct.toFixed(1)}%`}, largest ${crossCheck.maxAbsDiffPct === undefined ? '—' : `${crossCheck.maxAbsDiffPct.toFixed(1)}%`}. Requests Claude Code makes outside a turn (titles, summaries) are not seen by the plugin.</p>
+<p class="sub">For each run, the plugin's estimate from its own step records against Claude Code's reported cost. Mean absolute difference ${crossCheck.meanAbsDiffPct === undefined ? '—' : `${crossCheck.meanAbsDiffPct.toFixed(1)}%`}, largest ${crossCheck.maxAbsDiffPct === undefined ? '—' : `${crossCheck.maxAbsDiffPct.toFixed(1)}%`}. The plugin sees the conversation's requests only; Claude Code also makes its own side requests (session titles, summaries). "Cost accounted for" in the table above adds those side requests, priced from Claude Code's total tokens less the conversation's, and checks the sum against Claude Code's total.</p>
 <h3>How often did the router pick the expected tier?</h3>
 <p class="sub">${classifier.scored === 0 ? 'No decisions recorded.' : `${classifier.correct} of ${classifier.scored} decisions (${pct(classifier.correct / classifier.scored)}), counted over every arm: observe-mode arms record the same decision without applying it.`}</p>
 ${matrix}

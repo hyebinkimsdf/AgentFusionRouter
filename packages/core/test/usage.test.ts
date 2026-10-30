@@ -38,10 +38,19 @@ describe('findModel', () => {
 
 describe('estimateCostUsd', () => {
   test('prices each token kind at its own rate', () => {
-    // Opus 5.5: $4 in, $20 out, $0.20 cache read, $5 cache write per MTok.
+    // Opus 5.5: $4 in, $20 out, $0.20 cache read, $8 cache write (1-hour) per MTok.
     const cost = estimateCostUsd(tokens(1_000_000, 100_000, 1_000_000, 100_000), 'claude-opus-5-5')
 
-    assert.equal(cost?.toFixed(4), (4 + 2 + 0.2 + 0.5).toFixed(4))
+    assert.equal(cost?.toFixed(4), (4 + 2 + 0.2 + 0.8).toFixed(4))
+  })
+
+  test('matches what Claude Code reported for a real run', () => {
+    // Benchmark run 20261030-085716, find-tax-rate on Haiku 5.5: Claude Code's
+    // modelUsage reported these tokens, all cache writes at the 1-hour TTL, and
+    // costUSD 0.00204753.
+    const cost = estimateCostUsd(tokens(6, 317, 55_183, 6_683), 'claude-haiku-5-5')
+
+    assert.equal(cost?.toFixed(8), '0.00204753')
   })
 
   test('uses the long-context price past the threshold', () => {

@@ -1,0 +1,65 @@
+{
+  "taskId": "find-tax-rate",
+  "armId": "auto",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0,
+    "answerOk": true
+  },
+  "wallMs": 7668,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.0028422400000000002,
+    "durationMs": 5416,
+    "numTurns": 3,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 1200,
+      "output": 403,
+      "cacheRead": 95474,
+      "cacheWrite": 7830
+    },
+    "conversationTokens": {
+      "input": 6,
+      "output": 382,
+      "cacheRead": 95474,
+      "cacheWrite": 7830
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1200,
+          "output": 403,
+          "cacheRead": 95474,
+          "cacheWrite": 7830
+        },
+        "costUsd": 0.0028422400000000002
+      }
+    }
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 3,
+    "tokens": {
+      "input": 6,
+      "output": 382,
+      "cacheRead": 95474,
+      "cacheWrite": 7830
+    },
+    "costUsd": 0.0027123400000000006,
+    "decidedTier": "light",
+    "routedRequests": 3,
+    "escalations": 0,
+    "models": [
+      "claude-haiku-5-5"
+    ]
+  },
+  "diff": {
+    "files": 0,
+    "added": 0,
+    "removed": 0
+  }
+}

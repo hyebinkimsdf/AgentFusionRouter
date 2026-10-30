@@ -31,7 +31,10 @@ export const simulateAgent = async (input: {
 }): Promise<{ stdout: string; wallMs: number }> => {
   const { task, arm, rep } = input
   const session = `sim-${task.id}-${arm.id}-${rep}`
-  const requested = findModel(arm.model)?.id ?? arm.model
+  // The account's default is unknown here: a simulated run stands in Opus for
+  // it. opusplan uses Opus only in plan mode, which a headless run never enters.
+  const sessionModel = arm.model === 'opusplan' ? 'sonnet' : (arm.model ?? 'opus')
+  const requested = findModel(sessionModel)?.id ?? sessionModel
   const policy = {
     ...DEFAULT_POLICY,
     mode: arm.plugin.mode === 'route' ? ('route' as const) : ('observe' as const),

@@ -7,6 +7,18 @@ export const esc = (value: unknown): string =>
 export const usd = (n: number | undefined): string =>
   n === undefined ? '—' : `$${n.toFixed(n !== 0 && Math.abs(n) < 1 ? 4 : 2)}`
 
+/** Full precision, for figures whose exact agreement is the point. */
+export const exactUsd = (n: number | undefined): string =>
+  n === undefined ? '—' : `${n < 0 ? '−' : ''}$${Math.abs(n).toFixed(8)}`
+
+/** Whether a cost reconciles: plugin + outside the conversation − Claude Code's total. */
+export const accounted = (unaccounted: number | undefined): string =>
+  unaccounted === undefined
+    ? '—'
+    : Math.abs(unaccounted) < 5e-9
+      ? '<span class="pass">✓ to the last digit</span>'
+      : `<span class="fail">off by ${exactUsd(unaccounted)}</span>`
+
 export const pct = (n: number): string => `${Math.round(n * 100)}%`
 
 export const duration = (ms: number): string => {
@@ -183,7 +195,8 @@ th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
 .fail { color: var(--critical); font-weight: 600; }
 .banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
 .banner strong { display: block; font-size: 15px; }
-.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; }
+/* A hash wraps rather than overflow: a screenshot must show every character. */
+.hash { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; word-break: break-all; white-space: normal; }
 code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
 pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
 footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }

@@ -20,3 +20,10 @@ First release, Claude Code only.
   - `verify` re-hashes every file and recomputes every figure.
   - `--simulate` exercises the pipeline without calling a model, and marks its output as simulated.
 - Example task set `examples/shop`: six tasks from light to heavy, with hidden checks and reference solutions.
+- `bench compare <a> <b>`: two runs side by side as a page and a screenshot, each verified, with every cost reconciled against Claude Code's total.
+
+### Fixed
+
+- Cost estimates priced cache writes at the 5-minute rate (1.25× input). Claude Code writes with the 1-hour TTL (2× input), so estimates read about 25% low on a measured run. They now match Claude Code's per-model cost exactly.
+- An answer naming a path with Windows separators (`src\pricing.js`) failed the answer check.
+- Each benchmark run now saves its price table (`prices.json`). `verify` recomputes older runs with the table they were made with.

@@ -1,4 +1,4 @@
-import type { Tokens, UsageRecord } from '@agent-fusion-router/core'
+import type { ModelEntry, Tokens, UsageRecord } from '@agent-fusion-router/core'
 import { emptyTokens, estimateCostUsd } from '@agent-fusion-router/core'
 
 import type { CheckOutcome, ClaudeFacts, PluginFacts, RunMeta, RunResult } from './types.ts'
@@ -45,6 +45,8 @@ export const parseClaudeOutput = (stdout: string): ClaudeFacts | undefined => {
     tokens = add(tokens, t)
   }
 
+  const usage = json.usage as Record<string, unknown> | undefined
+
   return {
     isError: json.is_error === true,
     costUsd: typeof json.total_cost_usd === 'number' ? json.total_cost_usd : undefined,
@@ -52,6 +54,16 @@ export const parseClaudeOutput = (stdout: string): ClaudeFacts | undefined => {
     numTurns: typeof json.num_turns === 'number' ? json.num_turns : undefined,
     permissionDenials: Array.isArray(json.permission_denials) ? json.permission_denials.length : 0,
     tokens,
+    ...(usage === undefined
+      ? {}
+      : {
+          conversationTokens: {
+            input: num(usage.input_tokens),
+            output: num(usage.output_tokens),
+            cacheRead: num(usage.cache_read_input_tokens),
+            cacheWrite: num(usage.cache_creation_input_tokens),
+          },
+        }),
     byModel,
   }
 }
@@ -70,7 +82,8 @@ export const claudeAnswer = (stdout: string): string => {
   }
 }
 
-export const pluginFacts = (records: readonly UsageRecord[]): PluginFacts => {
+/** What the plugin recorded, priced with `prices` (the run's own price table) when given. */
+export const pluginFacts = (records: readonly UsageRecord[], prices?: readonly ModelEntry[]): PluginFacts => {
   let tokens = emptyTokens()
   let costUsd = 0
   let requests = 0
@@ -92,7 +105,7 @@ export const pluginFacts = (records: readonly UsageRecord[]): PluginFacts => {
     if (r.model) models.add(r.model)
     if (r.tokens) {
       tokens = add(tokens, r.tokens)
-      costUsd += estimateCostUsd(r.tokens, r.model ?? r.requestedModel) ?? 0
+      costUsd += estimateCostUsd(r.tokens, r.model ?? r.requestedModel, prices) ?? 0
     }
   }
 
@@ -121,11 +134,13 @@ export type RawRun = {
   numstat: string
   /** The arm asked the plugin to route: no plugin records then means no routing. */
   needsPlugin: boolean
+  /** The price table the run was made with (`prices.json`); absent, this release's. */
+  prices?: readonly ModelEntry[]
 }
 
 export const deriveResult = (raw: RawRun): RunResult => {
   const claude = parseClaudeOutput(raw.claudeStdout)
-  const plugin = pluginFacts(raw.records)
+  const plugin = pluginFacts(raw.records, raw.prices)
   const success = raw.check.testsPassed && raw.check.answerOk !== false
 
   const invalidReason = raw.meta.timedOut

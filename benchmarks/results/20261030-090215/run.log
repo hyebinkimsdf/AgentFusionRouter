@@ -1,0 +1,4 @@
+Run 20261030-090215
+Validating task checks...
+  ok   find-tax-rate (fails before: true, passes with solution: true)
+[1/1] find-tax-rate × auto (rep 1): FAIL · $0.0028 · 10s

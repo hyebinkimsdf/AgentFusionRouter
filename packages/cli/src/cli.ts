@@ -1,11 +1,14 @@
-import { stat, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { basename, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
 import { DEFAULT_POLICY, PRICES_AS_OF, analyzeTask, formatReport, route, summarize } from '@agent-fusion-router/core'
 
-import { reportBench, runBench, verifyBench, loadTasks } from './bench/run.ts'
+import type { ComparisonInfo } from './bench/records.ts'
+import { writeIndex } from './bench/records.ts'
+import { loadForComparison, loadTasks, reportBench, runBench, verifyBench } from './bench/run.ts'
+import { renderComparison } from './html/compare.ts'
 import { sha256 } from './bench/evidence.ts'
 import { validateTasks } from './bench/validate.ts'
 import { capturePage } from './capture.ts'
@@ -43,6 +46,13 @@ Benchmarks (run from the repository root)
     --no-png              Skip the screenshot
   bench report <dir>    Rewrite a run's report.html and report.png
   bench verify <dir>    Re-hash every file and recompute every figure from the raw files
+  bench compare <a> <b> Two runs side by side, as a page and a screenshot, each verified
+    --label-a <text>      Name for the first run (default: its run id)
+    --label-b <text>      Name for the second run
+    --out <dir>           Where to write it (default benchmarks/comparisons/<a>_vs_<b>)
+  bench index           List every run and comparison in benchmarks/index.html, re-verified
+    --include-simulated   Also list simulated runs
+  (run and compare refresh benchmarks/index.html themselves)
 `
 
 const DEFAULT_DIR = join(homedir(), '.agent-fusion-router', 'logs')
@@ -151,11 +161,15 @@ const bench = async (args: string[]): Promise<void> => {
       timeout: { type: 'string', default: '15' },
       claude: { type: 'string' },
       'plugin-dir': { type: 'string', default: 'plugins/claude/agent-fusion-router' },
-      out: { type: 'string', default: 'benchmarks/results' },
+      out: { type: 'string' },
       simulate: { type: 'boolean', default: false },
       'no-png': { type: 'boolean', default: false },
+      'label-a': { type: 'string' },
+      'label-b': { type: 'string' },
+      'include-simulated': { type: 'boolean', default: false },
     },
   })
+  const refreshIndex = async () => console.log(`Index: ${resolve(await writeIndex('benchmarks', values['include-simulated']))}`)
 
   switch (sub) {
     case 'validate': {
@@ -171,7 +185,7 @@ const bench = async (args: string[]): Promise<void> => {
       const runDir = await runBench({
         tasksFile: values.tasks,
         armsFile: values.arms,
-        outRoot: values.out,
+        outRoot: values.out ?? 'benchmarks/results',
         reps: Math.max(1, Number(values.reps) || 1),
         simulate: values.simulate,
         claudeBin: values.claude ?? process.env.CLAUDE_BIN ?? 'claude',
@@ -183,6 +197,11 @@ const bench = async (args: string[]): Promise<void> => {
         capture: !values['no-png'],
       })
       console.log(`\nRun folder: ${runDir}`)
+      if (values.out === undefined) await refreshIndex()
+      return
+    }
+    case 'index': {
+      await refreshIndex()
       return
     }
     case 'report': {
@@ -197,8 +216,43 @@ const bench = async (args: string[]): Promise<void> => {
       if (!(await verifyBench(resolve(dir)))) process.exitCode = 1
       return
     }
+    case 'compare': {
+      const [dirA, dirB] = positionals
+      if (dirA === undefined || dirB === undefined) throw new Error('bench compare needs two run folders')
+
+      const [a, b] = await Promise.all([loadForComparison(resolve(dirA)), loadForComparison(resolve(dirB))])
+      const out = resolve(values.out ?? join('benchmarks', 'comparisons', `${a.run.runId}_vs_${b.run.runId}`))
+      await mkdir(out, { recursive: true })
+
+      const info: ComparisonInfo = {
+        labelA: values['label-a'] ?? a.run.runId,
+        labelB: values['label-b'] ?? b.run.runId,
+        runA: a.run.runId,
+        runB: b.run.runId,
+        generatedAt: new Date().toISOString(),
+      }
+      const html = renderComparison({ label: info.labelA, ...a }, { label: info.labelB, ...b }, info.generatedAt)
+      const htmlPath = join(out, 'comparison.html')
+      const pngPath = join(out, 'comparison.png')
+      await writeFile(join(out, 'comparison.json'), `${JSON.stringify(info, null, 2)}\n`)
+      await writeFile(htmlPath, html)
+      console.log(`Comparison: ${htmlPath}`)
+      if (!values['no-png']) {
+        await capturePage(htmlPath, pngPath)
+        console.log(`Screenshot: ${pngPath}`)
+      }
+
+      const files = [join(out, 'comparison.json'), htmlPath, ...(values['no-png'] ? [] : [pngPath])]
+      const hashes = await Promise.all(files.map(async f => `${sha256(await readFile(f))}  ${basename(f)}`))
+      await writeFile(join(out, 'comparison.sha256'), `${hashes.join('\n')}\n`)
+      for (const c of [a.check, b.check]) {
+        console.log(`${c.runId}: ${c.problems.length === 0 ? 'verified' : `NOT verified (${c.problems.length} problems)`}`)
+      }
+      if (values.out === undefined) await refreshIndex()
+      return
+    }
     default:
-      throw new Error(`bench needs validate, run, report or verify\n\n${USAGE}`)
+      throw new Error(`bench needs validate, run, report, verify, compare or index\n\n${USAGE}`)
   }
 }
 

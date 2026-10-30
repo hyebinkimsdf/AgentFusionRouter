@@ -55,7 +55,7 @@ export const runCheck = async (
   await overlay(join(checksDir, task.id), join(workspace, 'test', 'hidden'))
 
   const tests = spawnSync(process.execPath, ['--test'], { cwd: workspace, encoding: 'utf8', timeout: 120_000 })
-  const answerOk = task.answerIncludes?.every(s => answer.includes(s))
+  const answerOk = task.answerIncludes === undefined ? undefined : answerMatches(answer, task.answerIncludes)
 
   return {
     outcome: {
@@ -65,6 +65,16 @@ export const runCheck = async (
     },
     output: `${tests.stdout ?? ''}${tests.stderr ?? ''}`,
   }
+}
+
+/**
+ * Whether an answer contains every expected string. Paths compare with `/`:
+ * an agent on Windows may answer `src\pricing.js`, which is just as right.
+ */
+export const answerMatches = (answer: string, expected: readonly string[]): boolean => {
+  const normalized = answer.replace(/\\/g, '/')
+
+  return expected.every(s => normalized.includes(s.replace(/\\/g, '/')))
 }
 
 /** A task's reference answer, for tasks that ask a question. */

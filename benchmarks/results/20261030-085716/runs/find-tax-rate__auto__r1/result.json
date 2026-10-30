@@ -1,0 +1,59 @@
+{
+  "taskId": "find-tax-rate",
+  "armId": "auto",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0,
+    "answerOk": true
+  },
+  "wallMs": 9280,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.00204753,
+    "durationMs": 6627,
+    "numTurns": 3,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 6,
+      "output": 317,
+      "cacheRead": 55183,
+      "cacheWrite": 6683
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 6,
+          "output": 317,
+          "cacheRead": 55183,
+          "cacheWrite": 6683
+        },
+        "costUsd": 0.00204753
+      }
+    }
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 3,
+    "tokens": {
+      "input": 6,
+      "output": 317,
+      "cacheRead": 55183,
+      "cacheWrite": 6683
+    },
+    "costUsd": 0.001546305,
+    "decidedTier": "light",
+    "routedRequests": 3,
+    "escalations": 0,
+    "models": [
+      "claude-haiku-5-5"
+    ]
+  },
+  "diff": {
+    "files": 0,
+    "added": 0,
+    "removed": 0
+  }
+}

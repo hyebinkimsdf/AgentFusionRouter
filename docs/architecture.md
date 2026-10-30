@@ -41,7 +41,7 @@ Subagent steps are not rerouted after they start. Their model is chosen at spawn
 
 ### Why decisions stick to a turn
 
-Prompt caches are per model. Switching models mid-conversation sends the whole context to a cold cache on the new model, written at 1.25× the input price. The router therefore:
+Prompt caches are per model. Switching models mid-conversation sends the whole context to a cold cache on the new model, written at 2× the input price (Claude Code writes with the 1-hour TTL). The router therefore:
 
 1. decides once per turn, and again only after an escalation;
 2. never switches down when the last request's context exceeds `cacheGuardTokens`; it lowers effort on the current model instead;

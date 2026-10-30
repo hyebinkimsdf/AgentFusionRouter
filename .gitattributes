@@ -1,2 +1,3 @@
 # Benchmark results are hashed byte for byte: never convert their line endings.
 benchmarks/results/** -text
+benchmarks/comparisons/** -text

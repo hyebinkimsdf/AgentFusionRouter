@@ -1,0 +1,74 @@
+{
+  "arms": [
+    {
+      "armId": "auto",
+      "label": "Auto routing",
+      "runs": 1,
+      "validRuns": 1,
+      "successes": 1,
+      "successRate": 1,
+      "costUsd": 0.00204753,
+      "costPerSuccessUsd": 0.00204753,
+      "meanWallMs": 9280,
+      "tokens": {
+        "input": 6,
+        "output": 317,
+        "cacheRead": 55183,
+        "cacheWrite": 6683
+      },
+      "meanTurns": 3,
+      "permissionDenials": 0,
+      "escalations": 0,
+      "linesChanged": 0
+    }
+  ],
+  "cells": [
+    {
+      "taskId": "find-tax-rate",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.00204753,
+      "meanWallMs": 9280,
+      "decidedTiers": [
+        "light"
+      ]
+    }
+  ],
+  "classifier": {
+    "scored": 1,
+    "correct": 1,
+    "matrix": {
+      "light": {
+        "light": 1,
+        "standard": 0,
+        "heavy": 0
+      },
+      "standard": {
+        "light": 0,
+        "standard": 0,
+        "heavy": 0
+      },
+      "heavy": {
+        "light": 0,
+        "standard": 0,
+        "heavy": 0
+      }
+    }
+  },
+  "crossCheck": {
+    "rows": [
+      {
+        "taskId": "find-tax-rate",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.00204753,
+        "pluginCostUsd": 0.001546305,
+        "diffPct": -24.479494805936913
+      }
+    ],
+    "meanAbsDiffPct": 24.479494805936913,
+    "maxAbsDiffPct": 24.479494805936913
+  },
+  "invalid": []
+}
