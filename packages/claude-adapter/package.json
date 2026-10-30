@@ -1,0 +1,11 @@
+{
+  "name": "@agent-fusion-router/claude-adapter",
+  "version": "0.1.0",
+  "description": "The Claude Code hooks module. Built into plugins/claude/agent-fusion-router/hooks/register.js.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "@agent-fusion-router/core": "*"
+  }
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "opus-fixed",
+    "label": "Opus fixed",
+    "model": "opus",
+    "plugin": { "mode": "observe" }
+  },
+  {
+    "id": "sonnet-fixed",
+    "label": "Sonnet fixed",
+    "model": "sonnet",
+    "plugin": { "mode": "observe" }
+  },
+  {
+    "id": "auto",
+    "label": "Auto routing",
+    "model": "opus",
+    "plugin": { "mode": "route", "standardModel": "sonnet" }
+  }
+]

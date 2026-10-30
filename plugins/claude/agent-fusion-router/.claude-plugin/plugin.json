@@ -1,0 +1,84 @@
+{
+  "name": "agent-fusion-router",
+  "version": "0.1.0",
+  "description": "Routes each Claude Code turn to the model it needs: clear, small tasks to a light model, failed verifications up a tier. Records tokens and estimated cost locally. Starts in observe mode.",
+  "author": { "name": "hyebinkimsdf" },
+  "license": "MIT",
+  "keywords": ["routing", "cost", "models", "usage"],
+  "userConfig": {
+    "mode": {
+      "type": "string",
+      "title": "Mode",
+      "description": "observe records what the router would do and changes nothing; route applies it.",
+      "options": ["observe", "route"],
+      "default": "observe"
+    },
+    "strategy": {
+      "type": "string",
+      "title": "Strategy",
+      "description": "model switches models per tier; effort keeps your model and changes effort only, which keeps the prompt cache.",
+      "options": ["model", "effort"],
+      "default": "model"
+    },
+    "lightModel": {
+      "type": "string",
+      "title": "Light tier model",
+      "description": "Alias or id for clear, small tasks. Empty keeps the session model.",
+      "default": "haiku"
+    },
+    "standardModel": {
+      "type": "string",
+      "title": "Standard tier model",
+      "description": "Alias or id for ordinary work. Empty keeps the session model.",
+      "default": ""
+    },
+    "heavyModel": {
+      "type": "string",
+      "title": "Heavy tier model",
+      "description": "Alias or id for ambiguous, wide or risky work, and for escalations. Never replaces a more capable session model.",
+      "default": "opus"
+    },
+    "minLightConfidence": {
+      "type": "number",
+      "title": "Light tier confidence",
+      "description": "0 to 1. Below this a light-looking task runs at the standard tier.",
+      "default": 0.5
+    },
+    "cacheGuardTokens": {
+      "type": "number",
+      "title": "Cache guard (tokens)",
+      "description": "Above this context size, a downgrade keeps the current model: re-caching the context on a new model can cost more than it saves.",
+      "default": 50000
+    },
+    "failuresBeforeEscalation": {
+      "type": "number",
+      "title": "Failures before escalation",
+      "description": "Consecutive failed test, build or lint commands in one turn that move it up a tier.",
+      "default": 2
+    },
+    "maxEscalationsPerTurn": {
+      "type": "number",
+      "title": "Escalations per turn",
+      "description": "The most tiers one turn may climb.",
+      "default": 1
+    },
+    "routeSubagents": {
+      "type": "boolean",
+      "title": "Route subagents",
+      "description": "Start clearly light subagent tasks on the light model. An explicit model on the Agent call is always kept.",
+      "default": true
+    },
+    "showStatus": {
+      "type": "boolean",
+      "title": "Show status",
+      "description": "Show each turn's tier in the status line.",
+      "default": true
+    },
+    "logDir": {
+      "type": "string",
+      "title": "Log folder",
+      "description": "Where usage records go. Empty: ~/.agent-fusion-router/logs",
+      "default": ""
+    }
+  }
+}

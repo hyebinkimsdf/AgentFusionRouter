@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Typecheck, unit tests, and a check that the committed plugin bundle matches its source.
+      # The adapter's typecheck and the plugin tests need Claude Code itself; run them locally.
+      - run: npm run check

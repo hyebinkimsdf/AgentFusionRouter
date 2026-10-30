@@ -1,0 +1,11 @@
+{
+  "name": "@agent-fusion-router/core",
+  "version": "0.1.0",
+  "description": "Task analysis, model routing, escalation and usage accounting shared by every adapter.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

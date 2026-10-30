@@ -1,0 +1,23 @@
+{
+  "name": "agent-fusion-router-repo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test \"packages/*/test/*.test.ts\"",
+    "typecheck": "tsc -p packages/core && tsc -p packages/core/test && tsc -p packages/cli",
+    "typecheck:claude": "node scripts/sync-claude-types.mjs && tsc -p packages/claude-adapter",
+    "check": "npm run typecheck && npm test && node scripts/build.mjs --check"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "agent-fusion-router",
+  "version": "0.1.0",
+  "description": "Reports what Agent Fusion Router recorded: tokens, estimated cost and routing decisions per model and tier.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "agent-fusion-router": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@agent-fusion-router/core": "*"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "//": ".types/ holds Claude Code's API declarations, copied by scripts/sync-claude-types.mjs; it is not committed.",
+  "extends": "../../tsconfig.base.json",
+  "include": ["src"],
+  "files": [".types/claude-code.d.ts"]
+}

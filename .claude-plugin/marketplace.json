@@ -1,0 +1,14 @@
+{
+  "name": "agent-fusion-router",
+  "owner": { "name": "hyebinkimsdf" },
+  "metadata": {
+    "description": "Agent Fusion Router: model routing and local usage reports for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "agent-fusion-router",
+      "source": "./plugins/claude/agent-fusion-router",
+      "description": "Routes each Claude Code turn to the model it needs and records tokens and estimated cost locally."
+    }
+  ]
+}

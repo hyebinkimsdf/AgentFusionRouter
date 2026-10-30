@@ -1,0 +1,12 @@
+node_modules/
+packages/cli/dist/
+packages/claude-adapter/.types/
+# Written by Claude Code when it loads the plugin from this folder.
+.claude-plugin/types/
+plugins/**/.claude-plugin/types/
+*.log
+.DS_Store
+# A run's log is part of its hashed evidence: keep it.
+!benchmarks/results/**/run.log
+# Simulated runs call no model; their numbers are invented. Keep them out of the record.
+benchmarks/results/*-simulated/
