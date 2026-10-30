@@ -1,0 +1,10 @@
+{
+  "taskId": "tax-rule-registry",
+  "armId": "opusplan",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T09:29:27.622Z",
+  "wallMs": 23861,
+  "exitCode": 0,
+  "timedOut": false
+}

@@ -1,0 +1,134 @@
+{
+  "asOf": "2026-10-06",
+  "models": [
+    {
+      "id": "claude-fable-5-1",
+      "family": "fable",
+      "price": {
+        "input": 10,
+        "output": 50,
+        "cacheRead": 0.25,
+        "cacheWrite": 20
+      }
+    },
+    {
+      "id": "claude-fable-5",
+      "family": "fable",
+      "price": {
+        "input": 10,
+        "output": 50,
+        "cacheRead": 1,
+        "cacheWrite": 20
+      }
+    },
+    {
+      "id": "claude-opus-5-5",
+      "family": "opus",
+      "price": {
+        "input": 4,
+        "output": 20,
+        "cacheRead": 0.2,
+        "cacheWrite": 8
+      }
+    },
+    {
+      "id": "claude-opus-5",
+      "family": "opus",
+      "price": {
+        "input": 5,
+        "output": 25,
+        "cacheRead": 0.5,
+        "cacheWrite": 10
+      }
+    },
+    {
+      "id": "claude-opus-4-8",
+      "family": "opus",
+      "price": {
+        "input": 5,
+        "output": 25,
+        "cacheRead": 0.5,
+        "cacheWrite": 10
+      }
+    },
+    {
+      "id": "claude-opus-4-7",
+      "family": "opus",
+      "price": {
+        "input": 5,
+        "output": 25,
+        "cacheRead": 0.5,
+        "cacheWrite": 10
+      }
+    },
+    {
+      "id": "claude-opus-4-6",
+      "family": "opus",
+      "price": {
+        "input": 5,
+        "output": 25,
+        "cacheRead": 0.5,
+        "cacheWrite": 10
+      }
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "family": "sonnet",
+      "price": {
+        "input": 2,
+        "output": 10,
+        "cacheRead": 0.2,
+        "cacheWrite": 4
+      }
+    },
+    {
+      "id": "claude-sonnet-5",
+      "family": "sonnet",
+      "price": {
+        "input": 2,
+        "output": 10,
+        "cacheRead": 0.2,
+        "cacheWrite": 4
+      }
+    },
+    {
+      "id": "claude-sonnet-4-6",
+      "family": "sonnet",
+      "price": {
+        "input": 3,
+        "output": 15,
+        "cacheRead": 0.30000000000000004,
+        "cacheWrite": 6
+      }
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "family": "haiku",
+      "price": {
+        "input": 0.1,
+        "output": 0.5,
+        "cacheRead": 0.010000000000000002,
+        "cacheWrite": 0.2
+      },
+      "longContext": {
+        "aboveInputTokens": 100000,
+        "price": {
+          "input": 0.5,
+          "output": 2.5,
+          "cacheRead": 0.05,
+          "cacheWrite": 1
+        }
+      }
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "family": "haiku",
+      "price": {
+        "input": 1,
+        "output": 5,
+        "cacheRead": 0.1,
+        "cacheWrite": 2
+      }
+    }
+  ]
+}

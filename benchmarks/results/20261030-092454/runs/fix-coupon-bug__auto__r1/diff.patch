@@ -1,0 +1,13 @@
+diff --git a/src/cart.js b/src/cart.js
+index cff26a3..b5be918 100644
+--- a/src/cart.js
++++ b/src/cart.js
+@@ -21,7 +21,7 @@ export const subtotalOf = cart => cart.items.reduce((sum, i) => sum + i.price *
+ export const calcTotal = cart => {
+   const subtotal = subtotalOf(cart)
+   const discount = subtotal - applyCoupon(subtotal, cart.coupon)
+-  const taxable = applyCoupon(subtotal - discount, cart.coupon)
++  const taxable = subtotal - discount
+   const tax = applyTax(taxable, cart.region)
+ 
+   return { subtotal, discount, tax, total: taxable + tax }

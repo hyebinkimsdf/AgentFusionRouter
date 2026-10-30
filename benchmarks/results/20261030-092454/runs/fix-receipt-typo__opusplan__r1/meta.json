@@ -1,0 +1,10 @@
+{
+  "taskId": "fix-receipt-typo",
+  "armId": "opusplan",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T09:25:57.504Z",
+  "wallMs": 13060,
+  "exitCode": 0,
+  "timedOut": false
+}

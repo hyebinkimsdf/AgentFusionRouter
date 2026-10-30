@@ -1,0 +1,56 @@
+diff --git a/src/cart.js b/src/cart.js
+index cff26a3..ca87eba 100644
+--- a/src/cart.js
++++ b/src/cart.js
+@@ -13,6 +13,9 @@ export const addItem = (cart, item) => {
+   return { ...cart, items }
+ }
+ 
++/** Removes the item with the given SKU; an unknown SKU leaves the items unchanged. */
++export const removeItem = (cart, sku) => ({ ...cart, items: cart.items.filter(i => i.sku !== sku) })
++
+ export const useCoupon = (cart, coupon) => ({ ...cart, coupon })
+ 
+ export const subtotalOf = cart => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
+diff --git a/test/cart.test.js b/test/cart.test.js
+index 4c945b7..6c7d4ea 100644
+--- a/test/cart.test.js
++++ b/test/cart.test.js
+@@ -1,9 +1,10 @@
+ import assert from 'node:assert/strict'
+ import { test } from 'node:test'
+ 
+-import { addItem, calcTotal, createCart } from '../src/cart.js'
++import { addItem, calcTotal, createCart, removeItem } from '../src/cart.js'
+ 
+ const pen = { sku: 'PEN', name: 'Pen', price: 1500, qty: 1 }
++const cup = { sku: 'CUP', name: 'Cup', price: 4000, qty: 1 }
+ 
+ test('adding the same SKU raises its quantity', () => {
+   const cart = addItem(addItem(createCart(), pen), { ...pen, qty: 2 })
+@@ -19,6 +20,25 @@ test('adding never changes the original cart', () => {
+   assert.equal(cart.items.length, 0)
+ })
+ 
++test('removing a SKU drops only that item', () => {
++  const cart = removeItem(addItem(addItem(createCart(), pen), cup), 'PEN')
++
++  assert.deepEqual(cart.items, [cup])
++})
++
++test('removing an unknown SKU returns an equal cart', () => {
++  const cart = addItem(createCart(), pen)
++
++  assert.deepEqual(removeItem(cart, 'NOPE'), cart)
++})
++
++test('removing never changes the original cart', () => {
++  const cart = addItem(createCart(), pen)
++  removeItem(cart, 'PEN')
++
++  assert.deepEqual(cart.items, [pen])
++})
++
+ test('totals without a coupon add Korean tax', () => {
+   const cart = addItem(createCart('KR'), { ...pen, qty: 2 })
+ 

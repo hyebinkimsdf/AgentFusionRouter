@@ -1,0 +1,10 @@
+{
+  "taskId": "fix-receipt-typo",
+  "armId": "default",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T09:25:47.967Z",
+  "wallMs": 8528,
+  "exitCode": 0,
+  "timedOut": false
+}

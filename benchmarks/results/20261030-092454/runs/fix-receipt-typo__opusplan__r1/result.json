@@ -1,0 +1,73 @@
+{
+  "taskId": "fix-receipt-typo",
+  "armId": "opusplan",
+  "rep": 1,
+  "valid": true,
+  "success": false,
+  "check": {
+    "testsPassed": false,
+    "testsExitCode": 1
+  },
+  "wallMs": 13060,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.0421789,
+    "durationMs": 10762,
+    "numTurns": 3,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 1206,
+      "output": 349,
+      "cacheRead": 95444,
+      "cacheWrite": 7303
+    },
+    "conversationTokens": {
+      "input": 6,
+      "output": 328,
+      "cacheRead": 95444,
+      "cacheWrite": 7303
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1200,
+          "output": 21,
+          "cacheRead": 0,
+          "cacheWrite": 0
+        },
+        "costUsd": 0.0001305
+      },
+      "claude-sonnet-5-5": {
+        "tokens": {
+          "input": 6,
+          "output": 328,
+          "cacheRead": 95444,
+          "cacheWrite": 7303
+        },
+        "costUsd": 0.0420484
+      }
+    }
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 3,
+    "tokens": {
+      "input": 6,
+      "output": 328,
+      "cacheRead": 95444,
+      "cacheWrite": 7303
+    },
+    "costUsd": 0.05159280000000001,
+    "decidedTier": "light",
+    "routedRequests": 0,
+    "escalations": 0,
+    "models": [
+      "claude-sonnet-5-5"
+    ]
+  },
+  "diff": {
+    "files": 1,
+    "added": 1,
+    "removed": 1
+  }
+}

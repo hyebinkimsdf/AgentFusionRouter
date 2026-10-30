@@ -1,0 +1,1 @@
+Fix the typo in the receipt's total label in src/format.js: it prints "Totla" instead of "Total".

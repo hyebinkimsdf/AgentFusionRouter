@@ -9,7 +9,7 @@ var bumpTier = (tier, steps = 1) => {
 };
 
 // packages/core/src/catalog.ts
-var PRICES_AS_OF = "2026-10-06";
+var PRICES_AS_OF = "2026-10-30";
 var price = (input, output, cacheRead = input * 0.1) => ({
   input,
   output,
@@ -24,7 +24,8 @@ var CLAUDE_MODELS = [
   { id: "claude-opus-4-8", family: "opus", price: price(5, 25) },
   { id: "claude-opus-4-7", family: "opus", price: price(5, 25) },
   { id: "claude-opus-4-6", family: "opus", price: price(5, 25) },
-  { id: "claude-sonnet-5-5", family: "sonnet", price: price(2, 10, 0.2) },
+  // Cache hits at 0.05x input, like Opus 5.5: $0.10, not the usual 0.1x.
+  { id: "claude-sonnet-5-5", family: "sonnet", price: price(2, 10, 0.1) },
   { id: "claude-sonnet-5", family: "sonnet", price: price(2, 10) },
   { id: "claude-sonnet-4-6", family: "sonnet", price: price(3, 15) },
   {

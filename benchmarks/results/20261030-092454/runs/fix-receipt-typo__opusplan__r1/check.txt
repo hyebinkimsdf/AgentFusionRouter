@@ -1,0 +1,43 @@
+✔ adding the same SKU raises its quantity (1.6848ms)
+✔ adding never changes the original cart (0.3665ms)
+✔ totals without a coupon add Korean tax (2.0988ms)
+✔ the receipt lists each item and the subtotal (41.9946ms)
+✖ the receipt labels the total correctly (41.252ms)
+✔ a coupon takes its percentage off (1.8095ms)
+✔ an unknown coupon takes nothing off (0.3843ms)
+✔ tax follows the region (0.2978ms)
+✔ an unknown region is an error (0.5849ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 275.2988
+
+✖ failing tests:
+
+test at test\hidden\receipt-label.test.js:7:1
+✖ the receipt labels the total correctly (41.252ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^Total: KRW 1,650$/m. Input:
+  
+  'Pen x1  KRW 1,500\n' +
+    '\n' +
+    'Subtotal: KRW 1,500\n' +
+    'Discount: -KRW 0\n' +
+    'Tax: KRW 150\n' +
+    'Total:KRW 1,650'
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-VYmsyc/test/hidden/receipt-label.test.js:11:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Pen x1  KRW 1,500\n\nSubtotal: KRW 1,500\nDiscount: -KRW 0\nTax: KRW 150\nTotal:KRW 1,650',
+    expected: /^Total: KRW 1,650$/m,
+    operator: 'match',
+    diff: 'simple'
+  }

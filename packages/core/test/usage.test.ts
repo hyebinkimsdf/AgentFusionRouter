@@ -53,6 +53,21 @@ describe('estimateCostUsd', () => {
     assert.equal(cost?.toFixed(8), '0.00204753')
   })
 
+  test('matches what Claude Code reported for Sonnet 5.5', () => {
+    // Run 20261030-092454, add-remove-item on Sonnet 5.5: costUSD 0.0465546.
+    // Cache reads are $0.10/MTok on Sonnet 5.5 (0.05x input), not 0.1x.
+    const cost = estimateCostUsd(tokens(6, 526, 95_986, 7_921), 'claude-sonnet-5-5')
+
+    assert.equal(cost?.toFixed(8), '0.04655460')
+  })
+
+  test('matches what Claude Code reported for Opus 5.5', () => {
+    // Same run, tax-rule-registry on Opus 5.5: costUSD 0.1741976.
+    const cost = estimateCostUsd(tokens(8, 2_859, 131_968, 11_324), 'claude-opus-5-5')
+
+    assert.equal(cost?.toFixed(8), '0.17419760')
+  })
+
   test('uses the long-context price past the threshold', () => {
     const short = estimateCostUsd(tokens(100_000, 0), 'claude-haiku-5-5') ?? 0
     const long = estimateCostUsd(tokens(100_001, 0), 'claude-haiku-5-5') ?? 0

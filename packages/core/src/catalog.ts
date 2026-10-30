@@ -21,11 +21,12 @@ export type ModelEntry = {
 }
 
 /**
- * Anthropic first-party list prices as of this date. They are estimates for
- * the usage report, never a bill: Bedrock, Vertex and subscription plans are
- * priced differently. Update from https://claude.com/pricing.
+ * Anthropic first-party list prices as of this date, checked row by row
+ * against https://platform.claude.com/docs/en/about-claude/pricing. They are
+ * estimates for the usage report, never a bill: Bedrock, Vertex and
+ * subscription plans are priced differently.
  */
-export const PRICES_AS_OF = '2026-10-06'
+export const PRICES_AS_OF = '2026-10-30'
 
 // Claude Code writes the prompt cache with the 1-hour TTL: its own usage report
 // counts every write as `cacheCreationEphemeral1hInputTokens`, billed at 2x
@@ -47,7 +48,8 @@ export const CLAUDE_MODELS: readonly ModelEntry[] = [
   { id: 'claude-opus-4-8', family: 'opus', price: price(5, 25) },
   { id: 'claude-opus-4-7', family: 'opus', price: price(5, 25) },
   { id: 'claude-opus-4-6', family: 'opus', price: price(5, 25) },
-  { id: 'claude-sonnet-5-5', family: 'sonnet', price: price(2, 10, 0.2) },
+  // Cache hits at 0.05x input, like Opus 5.5: $0.10, not the usual 0.1x.
+  { id: 'claude-sonnet-5-5', family: 'sonnet', price: price(2, 10, 0.1) },
   { id: 'claude-sonnet-5', family: 'sonnet', price: price(2, 10) },
   { id: 'claude-sonnet-4-6', family: 'sonnet', price: price(3, 15) },
   {

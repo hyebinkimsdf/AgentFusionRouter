@@ -1,0 +1,1 @@
+Add a removeItem(cart, sku) function to src/cart.js that returns a new cart without the item with that SKU. Removing a SKU that is not in the cart returns an equal cart, and the original cart must not change.

@@ -1,0 +1,64 @@
+{
+  "taskId": "fix-receipt-typo",
+  "armId": "auto",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0
+  },
+  "wallMs": 10127,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.0032036000000000005,
+    "durationMs": 7821,
+    "numTurns": 4,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 1208,
+      "output": 474,
+      "cacheRead": 130060,
+      "cacheWrite": 7726
+    },
+    "conversationTokens": {
+      "input": 8,
+      "output": 455,
+      "cacheRead": 130060,
+      "cacheWrite": 7726
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1208,
+          "output": 474,
+          "cacheRead": 130060,
+          "cacheWrite": 7726
+        },
+        "costUsd": 0.0032036000000000005
+      }
+    }
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 4,
+    "tokens": {
+      "input": 8,
+      "output": 455,
+      "cacheRead": 130060,
+      "cacheWrite": 7726
+    },
+    "costUsd": 0.0030741000000000006,
+    "decidedTier": "light",
+    "routedRequests": 4,
+    "escalations": 0,
+    "models": [
+      "claude-haiku-5-5"
+    ]
+  },
+  "diff": {
+    "files": 1,
+    "added": 1,
+    "removed": 1
+  }
+}

@@ -137,7 +137,11 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
     Node: process.version,
     OS: `${process.platform} ${release()}`,
     'Repository commit': shell('git', ['rev-parse', 'HEAD'], repoRoot) || 'no commits yet',
-    'Uncommitted changes': shell('git', ['status', '--porcelain'], repoRoot) === '' ? 'no' : 'yes',
+    // Benchmark output is left out: this run's own folder exists by now.
+    'Uncommitted changes':
+      shell('git', ['status', '--porcelain', '--', '.', ':!benchmarks/results', ':!benchmarks/comparisons', ':!benchmarks/index.html'], repoRoot) === ''
+        ? 'no'
+        : 'yes',
     'Plugin bundle SHA-256': sha256(await readFile(join(opts.pluginDir, 'hooks', 'register.js'))),
   }
 

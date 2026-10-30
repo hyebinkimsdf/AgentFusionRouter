@@ -25,5 +25,6 @@ First release, Claude Code only.
 ### Fixed
 
 - Cost estimates priced cache writes at the 5-minute rate (1.25× input). Claude Code writes with the 1-hour TTL (2× input), so estimates read about 25% low on a measured run. They now match Claude Code's per-model cost exactly.
+- Sonnet 5.5 cache reads were priced at $0.20/MTok; they cost $0.10 (0.05× input, like Opus 5.5). The benchmark's cost reconciliation caught it: every Sonnet run was off and every Opus and Haiku run matched. Every price in the catalog has been rechecked against the official pricing page.
 - An answer naming a path with Windows separators (`src\pricing.js`) failed the answer check.
 - Each benchmark run now saves its price table (`prices.json`). `verify` recomputes older runs with the table they were made with.

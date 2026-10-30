@@ -52,27 +52,33 @@ export type BenchSummary = {
 
 export const runCost = (r: RunResult): number => r.claude?.costUsd ?? r.plugin.costUsd
 
+const minus = (a: Tokens, b: Tokens): Tokens => ({
+  input: a.input - b.input,
+  output: a.output - b.output,
+  cacheRead: a.cacheRead - b.cacheRead,
+  cacheWrite: a.cacheWrite - b.cacheWrite,
+})
+
 /**
- * What Claude Code spent outside the conversation (titles, summaries): its
- * total tokens less the conversation's, priced at the one model it used.
- * Undefined where that cannot be told apart: no conversation figure, or
- * several models in one session.
+ * What Claude Code spent outside the conversation (titles, summaries), model
+ * by model: a model the conversation never used is all side requests; on the
+ * conversation's own model, the side requests are its tokens less the
+ * conversation's. Undefined where that cannot be told apart: no conversation
+ * figure, a conversation on several models, or a model without a price.
  */
 export const outsideConversationUsd = (r: RunResult, prices: readonly ModelEntry[]): number | undefined => {
-  const models = Object.keys(r.claude?.byModel ?? {})
-  const [model] = models
   const conversation = r.claude?.conversationTokens
-  if (!r.claude || !conversation || models.length !== 1 || model === undefined) return undefined
+  const [conversationModel, ...more] = r.plugin.models
+  if (!r.claude || !conversation || conversationModel === undefined || more.length > 0) return undefined
 
-  const t = r.claude.tokens
-  const outside: Tokens = {
-    input: t.input - conversation.input,
-    output: t.output - conversation.output,
-    cacheRead: t.cacheRead - conversation.cacheRead,
-    cacheWrite: t.cacheWrite - conversation.cacheWrite,
+  let total = 0
+  for (const [model, { tokens }] of Object.entries(r.claude.byModel)) {
+    const cost = estimateCostUsd(model === conversationModel ? minus(tokens, conversation) : tokens, model, prices)
+    if (cost === undefined) return undefined
+    total += cost
   }
 
-  return estimateCostUsd(outside, model, prices)
+  return total
 }
 
 /** Plugin estimate + outside the conversation − Claude Code's total: 0 when every cent is accounted for. */

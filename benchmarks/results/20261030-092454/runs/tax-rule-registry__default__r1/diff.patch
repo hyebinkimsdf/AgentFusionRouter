@@ -1,0 +1,74 @@
+diff --git a/src/pricing.js b/src/pricing.js
+index 2b458ae..251b98f 100644
+--- a/src/pricing.js
++++ b/src/pricing.js
+@@ -1,10 +1,20 @@
+ // Amounts are whole currency units (won, cents) so totals never carry float error.
+ 
+-export const TAX_RATES = {
+-  KR: 0.1,
+-  US: 0.08,
++// Region -> (amount) => tax. A Map so names like 'toString' never hit Object.prototype.
++const taxRules = new Map()
++
++/** Sets the tax rule for a region, replacing any rule it already had. */
++export const registerTaxRule = (region, rule) => {
++  if (typeof rule !== 'function') throw new TypeError(`Tax rule for region ${region} must be a function`)
++
++  taxRules.set(region, rule)
+ }
+ 
++registerTaxRule('KR', (amount) => Math.round(amount * 0.1))
++registerTaxRule('US', (amount) => Math.round(amount * 0.08))
++// 10% consumption tax, fractions of a yen dropped. Integer math keeps floor() off float error.
++registerTaxRule('JP', (amount) => Math.floor((amount * 10) / 100))
++
+ export const COUPONS = {
+   WELCOME10: 0.1,
+   VIP20: 0.2,
+@@ -17,10 +27,10 @@ export const applyCoupon = (amount, coupon) => {
+   return Math.round(amount * (1 - rate))
+ }
+ 
+-/** The tax owed on an amount in a region, rounded to a whole unit. */
++/** The tax owed on an amount in a region, as computed by that region's registered rule. */
+ export const applyTax = (amount, region) => {
+-  const rate = TAX_RATES[region]
+-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)
++  const rule = taxRules.get(region)
++  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)
+ 
+-  return Math.round(amount * rate)
++  return rule(amount)
+ }
+diff --git a/test/pricing.test.js b/test/pricing.test.js
+index 57885e7..f23c427 100644
+--- a/test/pricing.test.js
++++ b/test/pricing.test.js
+@@ -1,7 +1,7 @@
+ import assert from 'node:assert/strict'
+ import { test } from 'node:test'
+ 
+-import { applyCoupon, applyTax } from '../src/pricing.js'
++import { applyCoupon, applyTax, registerTaxRule } from '../src/pricing.js'
+ 
+ test('a coupon takes its percentage off', () => {
+   assert.equal(applyCoupon(10000, 'WELCOME10'), 9000)
+@@ -20,4 +20,17 @@ test('tax follows the region', () => {
+ 
+ test('an unknown region is an error', () => {
+   assert.throws(() => applyTax(1000, 'ZZ'))
++  assert.throws(() => applyTax(1000, 'toString'))
++})
++
++test('Japan rounds consumption tax down to a whole yen', () => {
++  assert.equal(applyTax(1000, 'JP'), 100)
++  assert.equal(applyTax(1099, 'JP'), 109)
++  assert.equal(applyTax(9, 'JP'), 0)
++})
++
++test('a registered rule decides the tax for its region', () => {
++  registerTaxRule('XX', (amount) => amount * 2)
++  assert.equal(applyTax(5, 'XX'), 10)
++  assert.throws(() => registerTaxRule('XX', 0.1), TypeError)
+ })

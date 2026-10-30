@@ -1,0 +1,43 @@
+diff --git a/src/pricing.js b/src/pricing.js
+index 2b458ae..a3ebac4 100644
+--- a/src/pricing.js
++++ b/src/pricing.js
+@@ -1,10 +1,20 @@
+ // Amounts are whole currency units (won, cents) so totals never carry float error.
+ 
+-export const TAX_RATES = {
+-  KR: 0.1,
+-  US: 0.08,
++const taxRules = new Map()
++
++/** Registers the tax rule for a region; `rule` is (amount) => tax. Replaces any existing rule. */
++export const registerTaxRule = (region, rule) => {
++  if (typeof rule !== 'function') throw new TypeError(`Tax rule for region ${region} must be a function`)
++
++  taxRules.set(region, rule)
+ }
+ 
++const roundedRate = (rate) => (amount) => Math.round(amount * rate)
++
++registerTaxRule('KR', roundedRate(0.1))
++registerTaxRule('US', roundedRate(0.08))
++registerTaxRule('JP', (amount) => Math.floor(amount * 0.1))
++
+ export const COUPONS = {
+   WELCOME10: 0.1,
+   VIP20: 0.2,
+@@ -17,10 +27,10 @@ export const applyCoupon = (amount, coupon) => {
+   return Math.round(amount * (1 - rate))
+ }
+ 
+-/** The tax owed on an amount in a region, rounded to a whole unit. */
++/** The tax owed on an amount in a region, as computed by that region's registered rule. */
+ export const applyTax = (amount, region) => {
+-  const rate = TAX_RATES[region]
+-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)
++  const rule = taxRules.get(region)
++  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)
+ 
+-  return Math.round(amount * rate)
++  return rule(amount)
+ }

@@ -1,0 +1,439 @@
+{
+  "arms": [
+    {
+      "armId": "default",
+      "label": "Default",
+      "runs": 6,
+      "validRuns": 6,
+      "successes": 6,
+      "successRate": 1,
+      "costUsd": 0.7910434,
+      "costPerSuccessUsd": 0.13184056666666666,
+      "meanWallMs": 19433.333333333332,
+      "tokens": {
+        "input": 7371,
+        "output": 8659,
+        "cacheRead": 791033,
+        "cacheWrite": 57656
+      },
+      "meanTurns": 8.166666666666666,
+      "permissionDenials": 1,
+      "escalations": 0,
+      "linesChanged": 88
+    },
+    {
+      "armId": "opusplan",
+      "label": "opusplan",
+      "runs": 6,
+      "validRuns": 6,
+      "successes": 5,
+      "successRate": 0.8333333333333334,
+      "costUsd": 0.3323349,
+      "costPerSuccessUsd": 0.06646698,
+      "meanWallMs": 15821.833333333334,
+      "tokens": {
+        "input": 7369,
+        "output": 5780,
+        "cacheRead": 750861,
+        "cacheWrite": 50941
+      },
+      "meanTurns": 5.833333333333333,
+      "permissionDenials": 2,
+      "escalations": 0,
+      "linesChanged": 45
+    },
+    {
+      "armId": "auto",
+      "label": "Auto routing",
+      "runs": 6,
+      "validRuns": 6,
+      "successes": 6,
+      "successRate": 1,
+      "costUsd": 0.37820591000000003,
+      "costPerSuccessUsd": 0.06303431833333334,
+      "meanWallMs": 16238.333333333334,
+      "tokens": {
+        "input": 7371,
+        "output": 6868,
+        "cacheRead": 790489,
+        "cacheWrite": 52792
+      },
+      "meanTurns": 5.5,
+      "permissionDenials": 2,
+      "escalations": 0,
+      "linesChanged": 64
+    }
+  ],
+  "cells": [
+    {
+      "taskId": "find-tax-rate",
+      "armId": "default",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0712601,
+      "meanWallMs": 6382,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "find-tax-rate",
+      "armId": "opusplan",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0410536,
+      "meanWallMs": 13672,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "find-tax-rate",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0027860100000000002,
+      "meanWallMs": 8644,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "default",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0943429,
+      "meanWallMs": 8528,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "opusplan",
+      "runs": 1,
+      "successes": 0,
+      "costUsd": 0.0421789,
+      "meanWallMs": 13060,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0032036000000000005,
+      "meanWallMs": 10127,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "default",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1600823,
+      "meanWallMs": 26711,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "opusplan",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.08360250000000001,
+      "meanWallMs": 19851,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.06608750000000001,
+      "meanWallMs": 16077,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "default",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1472367,
+      "meanWallMs": 23591,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "opusplan",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0459685,
+      "meanWallMs": 8758,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0466879,
+      "meanWallMs": 12317,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "default",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1437809,
+      "meanWallMs": 19434,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "opusplan",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0530717,
+      "meanWallMs": 15729,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0473198,
+      "meanWallMs": 9923,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "default",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1743405,
+      "meanWallMs": 31954,
+      "decidedTiers": [
+        "heavy"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "opusplan",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.06645970000000001,
+      "meanWallMs": 23861,
+      "decidedTiers": [
+        "heavy"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.2121211,
+      "meanWallMs": 40342,
+      "decidedTiers": [
+        "heavy"
+      ]
+    }
+  ],
+  "classifier": {
+    "scored": 18,
+    "correct": 18,
+    "matrix": {
+      "light": {
+        "light": 6,
+        "standard": 0,
+        "heavy": 0
+      },
+      "standard": {
+        "light": 0,
+        "standard": 9,
+        "heavy": 0
+      },
+      "heavy": {
+        "light": 0,
+        "standard": 0,
+        "heavy": 3
+      }
+    }
+  },
+  "crossCheck": {
+    "rows": [
+      {
+        "taskId": "find-tax-rate",
+        "armId": "default",
+        "rep": 1,
+        "claudeCostUsd": 0.0712601,
+        "pluginCostUsd": 0.0711302,
+        "diffPct": -0.1822899490738888
+      },
+      {
+        "taskId": "find-tax-rate",
+        "armId": "opusplan",
+        "rep": 1,
+        "claudeCostUsd": 0.0410536,
+        "pluginCostUsd": 0.05046540000000001,
+        "diffPct": 22.92563867724147
+      },
+      {
+        "taskId": "find-tax-rate",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0027860100000000002,
+        "pluginCostUsd": 0.0026561100000000006,
+        "diffPct": -4.662581972067567
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "default",
+        "rep": 1,
+        "claudeCostUsd": 0.0943429,
+        "pluginCostUsd": 0.09421240000000002,
+        "diffPct": -0.13832519458271672
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "opusplan",
+        "rep": 1,
+        "claudeCostUsd": 0.0421789,
+        "pluginCostUsd": 0.05159280000000001,
+        "diffPct": 22.31897939491075
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0032036000000000005,
+        "pluginCostUsd": 0.0030741000000000006,
+        "diffPct": -4.0423273816955865
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "default",
+        "rep": 1,
+        "claudeCostUsd": 0.1600823,
+        "pluginCostUsd": 0.15995140000000002,
+        "diffPct": -0.08177043933026283
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "opusplan",
+        "rep": 1,
+        "claudeCostUsd": 0.08360250000000001,
+        "pluginCostUsd": 0.1035992,
+        "diffPct": 23.91878233306419
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.06608750000000001,
+        "pluginCostUsd": 0.08257020000000001,
+        "diffPct": 24.940722526952904
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "default",
+        "rep": 1,
+        "claudeCostUsd": 0.1472367,
+        "pluginCostUsd": 0.1471034,
+        "diffPct": -0.09053449309852969
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "opusplan",
+        "rep": 1,
+        "claudeCostUsd": 0.0459685,
+        "pluginCostUsd": 0.055435399999999996,
+        "diffPct": 20.594320023494333
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0466879,
+        "pluginCostUsd": 0.0561532,
+        "diffPct": 20.273561243919737
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "default",
+        "rep": 1,
+        "claudeCostUsd": 0.1437809,
+        "pluginCostUsd": 0.1436516,
+        "diffPct": -0.08992849537038569
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "opusplan",
+        "rep": 1,
+        "claudeCostUsd": 0.0530717,
+        "pluginCostUsd": 0.06609380000000001,
+        "diffPct": 24.536805868287633
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0473198,
+        "pluginCostUsd": 0.056805999999999995,
+        "diffPct": 20.04699935333622
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "default",
+        "rep": 1,
+        "claudeCostUsd": 0.1743405,
+        "pluginCostUsd": 0.1741976,
+        "diffPct": -0.08196603772502738
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "opusplan",
+        "rep": 1,
+        "claudeCostUsd": 0.06645970000000001,
+        "pluginCostUsd": 0.0792316,
+        "diffPct": 19.217510762161112
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.2121211,
+        "pluginCostUsd": 0.2119782,
+        "diffPct": -0.06736717846550926
+      }
+    ],
+    "meanAbsDiffPct": 11.567245073598768,
+    "maxAbsDiffPct": 24.940722526952904
+  },
+  "invalid": []
+}

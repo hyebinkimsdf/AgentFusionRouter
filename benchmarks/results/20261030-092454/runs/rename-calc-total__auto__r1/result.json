@@ -1,0 +1,73 @@
+{
+  "taskId": "rename-calc-total",
+  "armId": "auto",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0
+  },
+  "wallMs": 16077,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.06608750000000001,
+    "durationMs": 13351,
+    "numTurns": 10,
+    "permissionDenials": 1,
+    "tokens": {
+      "input": 1204,
+      "output": 1381,
+      "cacheRead": 166141,
+      "cacheWrite": 8938
+    },
+    "conversationTokens": {
+      "input": 10,
+      "output": 1357,
+      "cacheRead": 166141,
+      "cacheWrite": 8938
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1194,
+          "output": 24,
+          "cacheRead": 0,
+          "cacheWrite": 0
+        },
+        "costUsd": 0.0001314
+      },
+      "claude-sonnet-5-5": {
+        "tokens": {
+          "input": 10,
+          "output": 1357,
+          "cacheRead": 166141,
+          "cacheWrite": 8938
+        },
+        "costUsd": 0.0659561
+      }
+    }
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 5,
+    "tokens": {
+      "input": 10,
+      "output": 1357,
+      "cacheRead": 166141,
+      "cacheWrite": 8938
+    },
+    "costUsd": 0.08257020000000001,
+    "decidedTier": "standard",
+    "routedRequests": 5,
+    "escalations": 0,
+    "models": [
+      "claude-sonnet-5-5"
+    ]
+  },
+  "diff": {
+    "files": 4,
+    "added": 6,
+    "removed": 6
+  }
+}

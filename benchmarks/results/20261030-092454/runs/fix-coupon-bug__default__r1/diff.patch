@@ -1,0 +1,36 @@
+diff --git a/src/cart.js b/src/cart.js
+index cff26a3..b5be918 100644
+--- a/src/cart.js
++++ b/src/cart.js
+@@ -21,7 +21,7 @@ export const subtotalOf = cart => cart.items.reduce((sum, i) => sum + i.price *
+ export const calcTotal = cart => {
+   const subtotal = subtotalOf(cart)
+   const discount = subtotal - applyCoupon(subtotal, cart.coupon)
+-  const taxable = applyCoupon(subtotal - discount, cart.coupon)
++  const taxable = subtotal - discount
+   const tax = applyTax(taxable, cart.region)
+ 
+   return { subtotal, discount, tax, total: taxable + tax }
+diff --git a/test/cart.test.js b/test/cart.test.js
+index 4c945b7..8752f80 100644
+--- a/test/cart.test.js
++++ b/test/cart.test.js
+@@ -1,7 +1,7 @@
+ import assert from 'node:assert/strict'
+ import { test } from 'node:test'
+ 
+-import { addItem, calcTotal, createCart } from '../src/cart.js'
++import { addItem, calcTotal, createCart, useCoupon } from '../src/cart.js'
+ 
+ const pen = { sku: 'PEN', name: 'Pen', price: 1500, qty: 1 }
+ 
+@@ -24,3 +24,9 @@ test('totals without a coupon add Korean tax', () => {
+ 
+   assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })
+ })
++
++test('a coupon is applied once, and tax is charged on the discounted amount', () => {
++  const cart = useCoupon(addItem(createCart('KR'), { ...pen, qty: 2 }), 'WELCOME10')
++
++  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 300, tax: 270, total: 2970 })
++})
