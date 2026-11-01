@@ -16,6 +16,7 @@ export const createLog = () => {
   let dir: string | undefined
   let lines: string[] = []
   let fileIndex = 0
+  let date: string | undefined
   let isFlushing = false
   let error: string | undefined
 
@@ -34,13 +35,18 @@ export const createLog = () => {
 
     add(record: UsageRecord): void {
       if (dir === undefined) return
-      if (lines.length >= FILE_LINES) {
+
+      const recordDate = new Date(record.ts).toISOString().slice(0, 10)
+      if (recordDate !== date) {
+        date = recordDate
+        lines = []
+        fileIndex = 0
+      } else if (lines.length >= FILE_LINES) {
         lines = []
         fileIndex += 1
       }
       lines.push(JSON.stringify(record))
 
-      const date = new Date(record.ts).toISOString().slice(0, 10)
       pending.set(`${dir}/${date}_${record.session}_${part}-${fileIndex}.jsonl`, `${lines.join('\n')}\n`)
     },
 

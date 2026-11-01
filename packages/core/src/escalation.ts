@@ -1,12 +1,26 @@
 /**
  * Commands whose exit status says whether the work is done: tests, builds,
- * type checks and linters. Matched anywhere in a compound command.
+ * type checks and linters. The boundary before each name is the true start
+ * of a shell command (`^` or a chain separator), never plain whitespace, so
+ * a name used as another command's argument (`echo npm test`) is not read
+ * as that command running.
  */
 const VERIFICATION_COMMAND =
-  /(?:^|[\s;&|(])(?:(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|lint|typecheck|type-check|check|verify)\b|npx\s+(?:tsc|jest|vitest|eslint|playwright\s+test)\b|(?:tsc|jest|vitest|mocha|pytest|phpunit|rspec|eslint|ruff|mypy|pyright)(?=[\s;&|)]|$)|go\s+(?:test|build|vet)\b|cargo\s+(?:test|build|check|clippy)\b|(?:mvn|\.\/mvnw|mvnw)\s+(?:test|verify|package)\b|(?:gradle|\.\/gradlew|gradlew)\s+(?:test|build|check)\b|make\s+(?:test|check)\b|dotnet\s+(?:test|build)\b|python3?\s+-m\s+(?:pytest|unittest|mypy)\b|node\s+--test\b|deno\s+(?:test|check|lint)\b)/
+  /(?:^|[;&|(])\s*(?:(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|lint|typecheck|type-check|check|verify)\b|npx\s+(?:tsc|jest|vitest|eslint|playwright\s+test)\b|(?:tsc|jest|vitest|mocha|pytest|phpunit|rspec|eslint|ruff|mypy|pyright)(?=[\s;&|)]|$)|go\s+(?:test|build|vet)\b|cargo\s+(?:test|build|check|clippy)\b|(?:mvn|\.\/mvnw|mvnw)\s+(?:test|verify|package)\b|(?:gradle|\.\/gradlew|gradlew)\s+(?:test|build|check)\b|make\s+(?:test|check)\b|dotnet\s+(?:test|build)\b|python3?\s+-m\s+(?:pytest|unittest|mypy)\b|node\s+--test\b|deno\s+(?:test|check|lint)\b)/
 
-export const isVerificationCommand = (command: string): boolean =>
-  VERIFICATION_COMMAND.test(` ${command}`)
+/**
+ * A chain operator's overall exit status reflects only its last segment
+ * (`cmd1; cmd2` reports `cmd2`'s status; `cmd1 || cmd2` succeeds even when
+ * `cmd1` failed). So a verification command is trusted only when it is that
+ * last segment — otherwise the tool result cannot be read as its pass/fail.
+ */
+const lastSegment = (command: string): string => {
+  const parts = command.split(/&&|\|\||[;&|]/)
+
+  return parts[parts.length - 1] ?? command
+}
+
+export const isVerificationCommand = (command: string): boolean => VERIFICATION_COMMAND.test(lastSegment(command))
 
 export type EscalationPolicy = {
   /** Consecutive failed verifications that move the turn up a tier. */

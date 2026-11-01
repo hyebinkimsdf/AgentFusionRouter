@@ -159,15 +159,20 @@ export type RawRun = {
 export const deriveResult = (raw: RawRun): RunResult => {
   const claude = parseClaudeOutput(raw.claudeStdout)
   const plugin = pluginFacts(raw.records, raw.prices)
-  const success = raw.check.testsPassed && raw.check.answerOk !== false
+  const timedOut = raw.meta.timedOut
+  // A timeout is the model and task running out of a real budget: a
+  // genuine failure to count, not an environment problem to throw out.
+  const success = !timedOut && raw.check.testsPassed && raw.check.answerOk !== false
 
-  const invalidReason = raw.meta.timedOut
-    ? 'timed out'
+  const invalidReason = timedOut
+    ? undefined
     : claude === undefined
       ? 'Claude Code printed no result'
-      : raw.needsPlugin && !plugin.loaded
-        ? 'the plugin recorded nothing, so routing did not run'
-        : undefined
+      : raw.meta.exitCode !== 0
+        ? `Claude Code exited with code ${raw.meta.exitCode}`
+        : raw.needsPlugin && !plugin.loaded
+          ? 'the plugin recorded nothing, so routing did not run'
+          : undefined
 
   return {
     taskId: raw.meta.taskId,
@@ -176,6 +181,7 @@ export const deriveResult = (raw: RawRun): RunResult => {
     valid: invalidReason === undefined,
     ...(invalidReason === undefined ? {} : { invalidReason }),
     success,
+    timedOut,
     check: raw.check,
     wallMs: raw.meta.wallMs,
     claude,

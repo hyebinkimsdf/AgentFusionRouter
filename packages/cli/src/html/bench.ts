@@ -239,7 +239,11 @@ ${table(
       `<code>${esc(r.taskId)}</code>`,
       armName(arms, r.armId),
       String(r.rep),
-      r.valid ? passMark(r.success) : `<span class="fail">Invalid: ${esc(r.invalidReason ?? '')}</span>`,
+      !r.valid
+        ? `<span class="fail">Invalid: ${esc(r.invalidReason ?? '')}</span>`
+        : r.timedOut
+          ? '<span class="fail">✗ Timed out</span>'
+          : passMark(r.success),
       r.claude?.costUsd === undefined ? 'unknown' : usd(r.claude.costUsd),
       duration(r.wallMs),
       String(r.claude?.numTurns ?? '—'),

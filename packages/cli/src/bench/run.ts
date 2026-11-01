@@ -267,7 +267,13 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
         await writeFile(join(dir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`)
         results.push(result)
 
-        const verdict = result.valid ? (result.success ? 'pass' : 'FAIL') : `INVALID (${result.invalidReason})`
+        const verdict = !result.valid
+          ? `INVALID (${result.invalidReason})`
+          : result.timedOut
+            ? 'FAIL (timed out)'
+            : result.success
+              ? 'pass'
+              : 'FAIL'
         await log(
           `[${n}/${total}] ${task.id} × ${arm.id} (rep ${rep}): ${verdict} · ${usd(result.claude?.costUsd ?? result.plugin.costUsd)} · ${duration(result.wallMs)}`,
         )

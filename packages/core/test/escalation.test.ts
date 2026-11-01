@@ -20,8 +20,25 @@ describe('isVerificationCommand', () => {
     test(`verifies: ${command}`, () => assert.equal(isVerificationCommand(command), true))
   }
 
-  for (const command of ['npm install', 'git status', 'ls tests', 'cat jest.config.js', 'echo test']) {
+  for (const command of [
+    'npm install',
+    'git status',
+    'ls tests',
+    'cat jest.config.js',
+    'echo test',
+    // A test runner's name used as plain text, not run: not a verification.
+    'echo npm test; false',
+    'echo "run npm test before committing"',
+    // The exit code reported is the chain's last command, not the test run's own.
+    'npm test || true',
+    'npm test; rm -rf tmp',
+    'npm test | tee out.txt',
+  ]) {
     test(`does not verify: ${command}`, () => assert.equal(isVerificationCommand(command), false))
+  }
+
+  for (const command of ['cd web && yarn test --watch=false', 'npm run build && npm test', 'echo starting; npm test']) {
+    test(`verifies, as the chain's last command: ${command}`, () => assert.equal(isVerificationCommand(command), true))
   }
 })
 

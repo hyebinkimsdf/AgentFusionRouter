@@ -91,6 +91,8 @@ export type RunResult = {
   valid: boolean
   invalidReason?: string
   success: boolean
+  /** The run was killed for taking longer than its budget: always a failure. */
+  timedOut: boolean
   check: CheckOutcome
   wallMs: number
   /** Claude Code's own report of the session (`claude -p --output-format json`). */

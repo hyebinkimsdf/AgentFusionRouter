@@ -8,7 +8,7 @@ Agent Fusion Router classifies a task, selects a model tier, and tracks the resu
 
 > **0.1.0 · Unreleased · Claude Code adapter implemented**
 >
-> The plugin starts in **observe mode** and changes no requests until you enable `route`. Codex support is planned. The benchmark CLI runs sample tasks and produces a web report with hash-verified evidence; no live comparison results are published yet.
+> The plugin starts in **observe mode** and changes no requests until you enable `route`. Codex support is planned. The benchmark CLI runs sample tasks and produces a web report with hash-verified evidence. The repository holds one preliminary live comparison (six sample tasks, three arms, one repetition each — see "Project status" below); the sample is too small to support a general success-rate or cost-savings claim.
 
 ## Why Agent Fusion Router?
 
@@ -30,11 +30,11 @@ This project makes routing decisions explicit and records the usage needed to ev
 | Claude Code adapter | Implemented: lifecycle hooks, settings, status line, commands, usage logging, subagent routing |
 | Usage CLI | Implemented: `report` (text, JSON, or web page with screenshot), `explain`, `doctor` |
 | Task briefs | Library utilities implemented; automatic task splitting is not connected to the adapter |
-| Benchmark CLI | Implemented: `bench validate`, `run`, `report`, `verify`; six sample tasks with hidden checks; web report, full-page screenshot, SHA-256 evidence. Live runs not yet performed |
+| Benchmark CLI | Implemented: `bench validate`, `run`, `report`, `verify`; six sample tasks with hidden checks; web report, full-page screenshot, SHA-256 evidence |
 | Codex adapter | Design notes only |
-| Performance results | No measured comparison published |
+| Performance results | **One preliminary live run** — six sample tasks × three arms (Opus-fixed / opusplan / auto-route) × one repetition: auto-route matched Opus-fixed's 6/6 success at about 52% of its cost ($0.378 vs $0.791). One repetition on the sample tasks alone is a thin basis for a general claim |
 
-The [development status](docs/development-status.md) records the implementation inventory, verification results, and remaining work. Local verification on **2026-10-30** passed `npm run check`: **88 tests** (76 core, 12 benchmark), core/test/CLI typechecks, and plugin bundle consistency. Existing verification notes record 5 plugin tests passing on Claude Code 2.1.312; those engine checks were not rerun during this documentation update.
+The [development status](docs/development-status.md) records the implementation inventory, verification results, and remaining work. Local verification on **2026-11-01** passed `npm run check`: **112 tests** (added regression tests while fixing 5 reproducible bugs in routing decisions, usage logging, and benchmark aggregation), core/test/CLI typechecks, and plugin bundle consistency. Existing verification notes record 5 plugin tests passing on Claude Code 2.1.312; those engine checks were not rerun during this documentation update.
 
 ## Quick start
 

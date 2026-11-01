@@ -63,7 +63,7 @@ export const renderWork = (input: {
         const folder = `runs/${r.taskId}__${r.armId}__r${r.rep}`
 
         return `<div class="card work">
-<div class="head"><strong>${swatch(color(r.armId))}${esc(arm?.label ?? r.armId)}</strong>${run.reps > 1 ? ` · rep ${r.rep}` : ''} · ${r.valid ? passMark(r.success) : '<span class="fail">Invalid</span>'}</div>
+<div class="head"><strong>${swatch(color(r.armId))}${esc(arm?.label ?? r.armId)}</strong>${run.reps > 1 ? ` · rep ${r.rep}` : ''} · ${!r.valid ? '<span class="fail">Invalid</span>' : r.timedOut ? '<span class="fail">✗ Timed out</span>' : passMark(r.success)}</div>
 <div class="note">Model: <strong>${esc(modelNames(r))}</strong> · ${usd(r.claude?.costUsd)} · ${duration(r.wallMs)} · ${r.claude?.numTurns ?? '—'} turns · +${r.diff.added} / −${r.diff.removed} lines</div>
 <h4>Change</h4>
 ${renderPatch(work?.patch ?? '', `${folder}/diff.patch`)}

@@ -2,7 +2,7 @@ import type { Analysis } from './analyzer.ts'
 import type { TierTarget } from './catalog.ts'
 import { CLAUDE_TIER_DEFAULTS, capabilityRank } from './catalog.ts'
 import type { Effort, Mode, Tier } from './types.ts'
-import { bumpTier } from './types.ts'
+import { bumpTier, tierRank } from './types.ts'
 
 /**
  * `model` switches models per tier. `effort` keeps the session's model and
@@ -71,12 +71,16 @@ export const route = (input: RouteInput, policy: RoutePolicy = DEFAULT_POLICY): 
   let tier = analysis.tier
 
   if (analysis.followUp && input.previousTier) {
-    tier = input.previousTier
     reasons.push(`follow-up:${analysis.followUp}`)
 
     if (analysis.followUp === 'failure' || input.lastVerificationFailed) {
-      tier = bumpTier(tier)
+      const bumped = bumpTier(input.previousTier)
+      // A failure follow-up can also name harder new work than the attempt
+      // that just failed; never let the previous tier cap it back down.
+      tier = tierRank(tier) > tierRank(bumped) ? tier : bumped
       reasons.push('escalate:previous-attempt-failed')
+    } else {
+      tier = input.previousTier
     }
   } else if (tier === 'light' && analysis.confidence < policy.minLightConfidence) {
     tier = 'standard'

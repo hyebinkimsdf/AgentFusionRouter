@@ -167,10 +167,26 @@ describe('deriveResult', () => {
     assert.equal(r.success, false)
   })
 
-  test('a timeout is invalid', () => {
+  test('a timeout counts as a failure, not an environment error', () => {
     const r = deriveResult({ meta: { ...META, timedOut: true }, claudeStdout: '', records: [], check: PASSED, numstat: '', needsPlugin: false })
 
-    assert.equal(r.invalidReason, 'timed out')
+    assert.equal(r.valid, true)
+    assert.equal(r.timedOut, true)
+    assert.equal(r.success, false, 'the task did not finish in budget, even though the check happened to pass')
+  })
+
+  test('a non-zero exit is invalid even when stdout parses as JSON', () => {
+    const r = deriveResult({
+      meta: { ...META, exitCode: 1 },
+      claudeStdout: '{}',
+      records: [],
+      check: PASSED,
+      numstat: '',
+      needsPlugin: false,
+    })
+
+    assert.equal(r.valid, false)
+    assert.match(r.invalidReason ?? '', /exited with code 1/)
   })
 
   test('the first main-loop step gives the router tier', () => {
@@ -234,6 +250,22 @@ describe('summarizeBench', () => {
 
     assert.equal(s.invalid.length, 1)
     assert.equal(s.arms.find(a => a.armId === 'auto')?.costUsd.toFixed(2), '0.35')
+  })
+
+  test('a timeout lowers the success rate instead of being left out of it', () => {
+    const timedOut = deriveResult({
+      meta: { ...META, taskId: 'b', armId: 'auto', rep: 2, timedOut: true },
+      claudeStdout: '',
+      records: [step({ tier: 'standard' } as Partial<UsageRecord>)],
+      check: PASSED,
+      numstat: '',
+      needsPlugin: true,
+    })
+    const auto = summarizeBench(tasks, arms, [...results, timedOut]).arms.find(a => a.armId === 'auto')
+
+    // 1 success out of 3 valid runs, not 1 out of 2 with the timeout dropped.
+    assert.equal(auto?.validRuns, 3)
+    assert.equal(auto?.successRate.toFixed(2), '0.33')
   })
 
   test('an unknown session cost is never counted as $0', () => {

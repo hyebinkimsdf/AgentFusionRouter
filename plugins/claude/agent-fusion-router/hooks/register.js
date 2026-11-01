@@ -189,11 +189,13 @@ var route = (input, policy = DEFAULT_POLICY) => {
   const reasons = [];
   let tier = analysis.tier;
   if (analysis.followUp && input.previousTier) {
-    tier = input.previousTier;
     reasons.push(`follow-up:${analysis.followUp}`);
     if (analysis.followUp === "failure" || input.lastVerificationFailed) {
-      tier = bumpTier(tier);
+      const bumped = bumpTier(input.previousTier);
+      tier = tierRank(tier) > tierRank(bumped) ? tier : bumped;
       reasons.push("escalate:previous-attempt-failed");
+    } else {
+      tier = input.previousTier;
     }
   } else if (tier === "light" && analysis.confidence < policy.minLightConfidence) {
     tier = "standard";
@@ -252,8 +254,12 @@ var routeSpawn = (input, policy = DEFAULT_POLICY) => {
 };
 
 // packages/core/src/escalation.ts
-var VERIFICATION_COMMAND = /(?:^|[\s;&|(])(?:(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|lint|typecheck|type-check|check|verify)\b|npx\s+(?:tsc|jest|vitest|eslint|playwright\s+test)\b|(?:tsc|jest|vitest|mocha|pytest|phpunit|rspec|eslint|ruff|mypy|pyright)(?=[\s;&|)]|$)|go\s+(?:test|build|vet)\b|cargo\s+(?:test|build|check|clippy)\b|(?:mvn|\.\/mvnw|mvnw)\s+(?:test|verify|package)\b|(?:gradle|\.\/gradlew|gradlew)\s+(?:test|build|check)\b|make\s+(?:test|check)\b|dotnet\s+(?:test|build)\b|python3?\s+-m\s+(?:pytest|unittest|mypy)\b|node\s+--test\b|deno\s+(?:test|check|lint)\b)/;
-var isVerificationCommand = (command) => VERIFICATION_COMMAND.test(` ${command}`);
+var VERIFICATION_COMMAND = /(?:^|[;&|(])\s*(?:(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|lint|typecheck|type-check|check|verify)\b|npx\s+(?:tsc|jest|vitest|eslint|playwright\s+test)\b|(?:tsc|jest|vitest|mocha|pytest|phpunit|rspec|eslint|ruff|mypy|pyright)(?=[\s;&|)]|$)|go\s+(?:test|build|vet)\b|cargo\s+(?:test|build|check|clippy)\b|(?:mvn|\.\/mvnw|mvnw)\s+(?:test|verify|package)\b|(?:gradle|\.\/gradlew|gradlew)\s+(?:test|build|check)\b|make\s+(?:test|check)\b|dotnet\s+(?:test|build)\b|python3?\s+-m\s+(?:pytest|unittest|mypy)\b|node\s+--test\b|deno\s+(?:test|check|lint)\b)/;
+var lastSegment = (command) => {
+  const parts = command.split(/&&|\|\||[;&|]/);
+  return parts[parts.length - 1] ?? command;
+};
+var isVerificationCommand = (command) => VERIFICATION_COMMAND.test(lastSegment(command));
 var DEFAULT_ESCALATION = {
   failuresBeforeEscalation: 2,
   maxEscalationsPerTurn: 1
@@ -455,6 +461,7 @@ var createLog = () => {
   let dir;
   let lines = [];
   let fileIndex = 0;
+  let date;
   let isFlushing = false;
   let error;
   return {
@@ -469,12 +476,16 @@ var createLog = () => {
     },
     add(record) {
       if (dir === void 0) return;
-      if (lines.length >= FILE_LINES) {
+      const recordDate = new Date(record.ts).toISOString().slice(0, 10);
+      if (recordDate !== date) {
+        date = recordDate;
+        lines = [];
+        fileIndex = 0;
+      } else if (lines.length >= FILE_LINES) {
         lines = [];
         fileIndex += 1;
       }
       lines.push(JSON.stringify(record));
-      const date = new Date(record.ts).toISOString().slice(0, 10);
       pending.set(`${dir}/${date}_${record.session}_${part}-${fileIndex}.jsonl`, `${lines.join("\n")}
 `);
     },

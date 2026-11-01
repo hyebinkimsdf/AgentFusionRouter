@@ -103,7 +103,7 @@ export const renderComparison = (a: ComparedRun, b: ComparedRun, generatedAt: st
           String(t?.cacheRead ?? '—'),
           String(t?.cacheWrite ?? '—'),
           sameTokens(r),
-          r.valid ? passMark(r.success) : `<span class="fail">Invalid</span>`,
+          !r.valid ? `<span class="fail">Invalid</span>` : r.timedOut ? `<span class="fail">✗ Timed out</span>` : passMark(r.success),
           esc(r.plugin.models.join(', ') || '—'),
           esc(r.plugin.decidedTier ?? '—'),
           duration(r.wallMs),
