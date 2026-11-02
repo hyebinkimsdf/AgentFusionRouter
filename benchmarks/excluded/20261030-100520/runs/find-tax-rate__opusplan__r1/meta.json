@@ -1,0 +1,10 @@
+{
+  "taskId": "find-tax-rate",
+  "armId": "opusplan",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T10:05:29.641Z",
+  "wallMs": 23790,
+  "exitCode": 0,
+  "timedOut": false
+}

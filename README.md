@@ -205,13 +205,13 @@ node packages/cli/dist/cli.js bench verify "<run-folder>"
 node packages/cli/dist/cli.js bench report "<run-folder>" --no-png
 ```
 
-A live run calls `claude -p` once per task, arm, and repetition in a fresh copy of the project. `--budget` is passed to Claude Code **per run**, not as an experiment-wide budget: six tasks and three arms at three repetitions produce **54 runs**. The default [auto arm](benchmarks/arms.json) sets `standardModel: "sonnet"`; the plugin's normal default keeps the session model.
+A live run calls `claude -p` once per task, arm, and repetition in a fresh copy of the project. `--budget` is passed to Claude Code **per run**, not as an experiment-wide budget: six tasks and three arms at three repetitions produce **54 runs**. `--max-total-usd` adds a total cap: the benchmark stops before a run whose whole cap would not fit in it. The default [auto arm](benchmarks/arms.json) sets `standardModel: "sonnet"`; the plugin's normal default keeps the session model.
 
 Each run folder contains raw evidence, a web report (`report.html`), and `evidence.sha256`. Omit `--no-png` to attempt a full-page screenshot (`report.png`) with an installed browser. The report and screenshot display the hash of the evidence list, and `bench verify` recomputes each result and summary from the raw files.
 
-Simulation uses invented usage and timing values to exercise the workflow; it cannot establish model quality or cost savings, and its reports say so. No live benchmark results are included yet. See the [protocol](benchmarks/README.md).
+Simulation uses invented usage and timing values to exercise the workflow; it cannot establish model quality or cost savings, and its reports say so. Simulated runs are never committed. See the [protocol](benchmarks/README.md).
 
-An existing local **18-run simulation** passed evidence verification on 2026-10-30; its details are recorded in the [development status](docs/development-status.md). Benchmark evidence includes task prompts, model output, code diffs, check output, and settings. This is broader than plugin usage logging; review those files before sharing them.
+The committed runs under [`benchmarks/results/`](benchmarks/results/) are **live runs**, not simulations: 21 `claude -p` sessions in four folders, including one 18-session comparison (`20261030-092454`). They passed evidence verification on 2026-10-30, and the [records page](benchmarks/index.html) lists them with links to Claude Code's own output; details are in the [development status](docs/development-status.md). Benchmark evidence includes task prompts, model output, code diffs, check output, and settings. This is broader than plugin usage logging; review those files before sharing them.
 
 ## Repository structure
 

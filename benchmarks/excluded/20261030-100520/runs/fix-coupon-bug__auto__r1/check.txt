@@ -1,0 +1,76 @@
+✔ adding the same SKU raises its quantity (2.1305ms)
+✔ adding never changes the original cart (0.2928ms)
+✔ totals without a coupon add Korean tax (1.4845ms)
+✔ the receipt lists each item and the subtotal (36.8613ms)
+✖ a coupon is applied once, and tax is charged on the discounted amount (5.3589ms)
+✖ a larger coupon in another region (0.743ms)
+✔ a coupon takes its percentage off (1.7486ms)
+✔ an unknown coupon takes nothing off (0.3539ms)
+✔ tax follows the region (0.2438ms)
+✔ an unknown region is an error (0.4556ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 228.8259
+
+✖ failing tests:
+
+test at test\hidden\coupon-total.test.js:10:1
+✖ a coupon is applied once, and tax is charged on the discounted amount (5.3589ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      discount: 1000,
+      subtotal: 10000,
+  +   tax: 810,
+  +   total: 8910
+  -   tax: 900,
+  -   total: 9900
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-jbu1Ux/test/hidden/coupon-total.test.js:13:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { subtotal: 10000, discount: 1000, tax: 810, total: 8910 },
+    expected: { subtotal: 10000, discount: 1000, tax: 900, total: 9900 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at test\hidden\coupon-total.test.js:16:1
+✖ a larger coupon in another region (0.743ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+      discount: 2000,
+      subtotal: 10000,
+  +   tax: 512,
+  +   total: 6912
+  -   tax: 640,
+  -   total: 8640
+    }
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-jbu1Ux/test/hidden/coupon-total.test.js:19:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { subtotal: 10000, discount: 2000, tax: 512, total: 6912 },
+    expected: { subtotal: 10000, discount: 2000, tax: 640, total: 8640 },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

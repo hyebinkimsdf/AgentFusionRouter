@@ -13,7 +13,7 @@ import type { Work } from '../html/work.ts'
 import { renderWork } from '../html/work.ts'
 import { duration, usd } from '../html/page.ts'
 import { readRecords } from '../logs.ts'
-import { claudeAnswer, deriveResult } from './derive.ts'
+import { claudeAnswer, deriveResult, hitLimit, parseClaudeOutput } from './derive.ts'
 import { EVIDENCE_FILE, REPORT_HASH_FILE, checkHashes, dataHash, sha256, writeEvidence, writeReportHashes } from './evidence.ts'
 import { simulateAgent } from './simulate.ts'
 import { summarizeBench } from './summary.ts'
@@ -39,6 +39,8 @@ export type RunOptions = {
   claudeBin: string
   pluginDir: string
   budgetUsd: number
+  /** Stop before a run whose whole cap would take the run's computed cost past this. */
+  maxTotalUsd?: number
   timeoutMs: number
   onlyTasks: string[]
   onlyArms: string[]
@@ -138,7 +140,9 @@ const runClaude = (opts: RunOptions, arm: Arm, prompt: string, workspace: string
 
   const plan = invokeClaude(opts, arm, prompt, workspace, settingsFile, { mode: 'plan', persist: true })
   const session = sessionOf(plan.stdout)
-  if (session === undefined || plan.timedOut) return plan
+  // A plan that ended in an error (an API error, its budget, a crash) was never
+  // made: approving it would only spend on a run that is judged by the plan.
+  if (session === undefined || plan.timedOut || plan.exitCode !== 0 || parseClaudeOutput(plan.stdout)?.isError !== false) return plan
 
   const execute = invokeClaude(opts, arm, APPROVE_PLAN, workspace, settingsFile, { mode: 'acceptEdits', persist: true, resume: session })
 
@@ -197,13 +201,25 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
   const results: RunResult[] = []
   const total = opts.reps * taskList.length * arms.length
   let n = 0
+  let stopped: string | undefined
+  /** Claude Code's computed cost of every session so far, invalid ones included; an unknown one at its whole cap. */
+  let spentUsd = 0
 
-  for (let rep = 1; rep <= opts.reps; rep += 1) {
+  runs: for (let rep = 1; rep <= opts.reps; rep += 1) {
     for (const [ti, task] of taskList.entries()) {
       // Rotate the arm order per task, so no arm always runs first.
       const order = arms.map((_, i) => arms[(i + ti + rep) % arms.length] as Arm)
 
       for (const arm of order) {
+        // Each invocation gets the whole --budget, so every run has the same
+        // cap: a run starts only if all of it fits in what the total leaves.
+        const capUsd = opts.budgetUsd * (arm.planThenExecute ? 2 : 1)
+        if (opts.maxTotalUsd !== undefined && spentUsd + capUsd > opts.maxTotalUsd) {
+          stopped = `The next run could spend up to ${usd(capUsd)}, and ${usd(spentUsd)} of the ${usd(opts.maxTotalUsd)} total budget is spent, after ${n} of ${total} runs`
+          await log(`Stopped: ${stopped}. Not started: ${total - n} of ${total} runs.`)
+          break runs
+        }
+
         n += 1
         const dir = join(runDir, 'runs', runName(task.id, arm.id, rep))
         const logDir = join(dir, 'plugin-logs')
@@ -266,17 +282,27 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
         })
         await writeFile(join(dir, 'result.json'), `${JSON.stringify(result, null, 2)}\n`)
         results.push(result)
+        spentUsd += result.claude?.costUsd ?? capUsd
 
         const verdict = !result.valid
           ? `INVALID (${result.invalidReason})`
           : result.timedOut
             ? 'FAIL (timed out)'
-            : result.success
-              ? 'pass'
-              : 'FAIL'
+            : result.claude?.budgetExhausted
+              ? 'FAIL (budget spent)'
+              : result.success
+                ? 'pass'
+                : 'FAIL'
         await log(
           `[${n}/${total}] ${task.id} × ${arm.id} (rep ${rep}): ${verdict} · ${usd(result.claude?.costUsd ?? result.plugin.costUsd)} · ${duration(result.wallMs)}`,
         )
+
+        // Every later session would end the same way, and none would say anything about a model.
+        if (hitLimit(result.claude)) {
+          stopped = `Claude Code hit a usage or rate limit (HTTP 429) on run ${n} of ${total}: "${claudeAnswer(agent.stdout)}"`
+          await log(`Stopped: ${stopped}. Not started: ${total - n} of ${total} runs; run again once the limit resets.`)
+          break runs
+        }
       }
     }
   }
@@ -289,11 +315,15 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
     taskSet: { name: tasks.set.name, file: opts.tasksFile, sha256: sha256(await readFile(opts.tasksFile)) },
     reps: opts.reps,
     budgetUsd: opts.budgetUsd,
+    ...(opts.maxTotalUsd === undefined ? {} : { maxTotalUsd: opts.maxTotalUsd }),
     environment,
     validation,
+    ...(stopped === undefined ? {} : { stopped }),
   }
   await writeFile(join(runDir, 'run.json'), `${JSON.stringify(run, null, 2)}\n`)
-  await writeFile(join(runDir, 'results.json'), `${JSON.stringify(summarizeBench(taskList, arms, results), null, 2)}\n`)
+  // Over the tasks that ran, as `verify` and the report recompute it: a stopped run did not reach them all.
+  const ran = taskList.filter(t => results.some(r => r.taskId === t.id))
+  await writeFile(join(runDir, 'results.json'), `${JSON.stringify(summarizeBench(ran, arms, results), null, 2)}\n`)
 
   // From here on nothing is written to the hashed files, run.log included.
   const hash = await writeEvidence(runDir)

@@ -1,0 +1,10 @@
+{
+  "taskId": "tax-rule-registry",
+  "armId": "auto",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T10:08:12.676Z",
+  "wallMs": 3356,
+  "exitCode": 1,
+  "timedOut": false
+}

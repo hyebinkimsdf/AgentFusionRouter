@@ -6,7 +6,8 @@ packages/claude-adapter/.types/
 plugins/**/.claude-plugin/types/
 *.log
 .DS_Store
-# A run's log is part of its hashed evidence: keep it.
+# A run's log is part of its hashed evidence: keep it, excluded runs' too.
 !benchmarks/results/**/run.log
+!benchmarks/excluded/**/run.log
 # Simulated runs call no model; their numbers are invented. Keep them out of the record.
 benchmarks/results/*-simulated/

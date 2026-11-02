@@ -4,7 +4,7 @@ import { describe, test } from 'node:test'
 import type { UsageRecord } from '@agent-fusion-router/core'
 import { CLAUDE_MODELS } from '@agent-fusion-router/core'
 
-import { deriveResult, diffStats, parseClaudeOutput } from '../src/bench/derive.ts'
+import { deriveResult, diffStats, hitLimit, parseClaudeOutput } from '../src/bench/derive.ts'
 import { answerMatches } from '../src/bench/workspace.ts'
 import { outsideConversationTokens, priceCheck, summarizeBench } from '../src/bench/summary.ts'
 import type { Arm, RunResult, Task } from '../src/bench/types.ts'
@@ -41,6 +41,33 @@ const step = (over: Partial<UsageRecord> = {}): UsageRecord =>
     ...over,
   }) as UsageRecord
 
+// Run 20261030-100520: 11 of 18 sessions ended like this, before any model answered.
+const LIMIT_OUTPUT = JSON.stringify({
+  type: 'result',
+  subtype: 'success',
+  is_error: true,
+  terminal_reason: 'api_error',
+  api_error_status: 429,
+  api_error: 'usage_limit_reached',
+  result: "You've hit your 5-hour limit · resets 7:50pm (Asia/Seoul)",
+  num_turns: 1,
+  total_cost_usd: 0,
+  modelUsage: {},
+})
+
+const OVERLOADED_OUTPUT = JSON.stringify({ ...(JSON.parse(LIMIT_OUTPUT) as object), api_error_status: 529, api_error: 'overloaded' })
+
+// The result Claude Code 2.1.312 prints when --max-budget-usd stops a session (its result schema).
+const BUDGET_OUTPUT = JSON.stringify({
+  type: 'result',
+  subtype: 'error_max_budget_usd',
+  is_error: true,
+  terminal_reason: 'budget_exhausted',
+  num_turns: 6,
+  total_cost_usd: 1.02,
+  modelUsage: { 'claude-opus-5-5': { inputTokens: 10, outputTokens: 900, cacheReadInputTokens: 400000, cacheCreationInputTokens: 30000, costUSD: 1.02 } },
+})
+
 const META = { taskId: 'a', armId: 'auto', rep: 1, simulated: false, startedAt: '', wallMs: 1000, exitCode: 0, timedOut: false }
 const PASSED = { testsPassed: true, testsExitCode: 0 }
 
@@ -71,6 +98,46 @@ describe('parseClaudeOutput', () => {
 
     assert.deepEqual(facts?.conversationTokens, { input: 6, output: 363, cacheRead: 95472, cacheWrite: 7774 })
     assert.deepEqual(facts?.tokens, { input: 1200, output: 384, cacheRead: 95472, cacheWrite: 7774 })
+  })
+
+  test('reads an API error, and a usage limit as a limit', () => {
+    const facts = parseClaudeOutput(LIMIT_OUTPUT)
+
+    assert.deepEqual(facts?.apiErrors, [{ status: 429, error: 'usage_limit_reached' }])
+    assert.equal(hitLimit(facts), true)
+    assert.equal(parseClaudeOutput(CLAUDE_OUTPUT)?.apiErrors, undefined)
+    assert.equal(hitLimit(parseClaudeOutput(CLAUDE_OUTPUT)), false)
+  })
+
+  test('an API error while planning is kept after the execute line', () => {
+    const facts = parseClaudeOutput(`${OVERLOADED_OUTPUT}\n${CLAUDE_OUTPUT}\n`)
+
+    assert.deepEqual(facts?.apiErrors, [{ status: 529, error: 'overloaded' }])
+    assert.equal(hitLimit(facts), false, 'an overload is not a limit: later sessions may run')
+  })
+
+  test('a limit after another API error is still a limit', () => {
+    const facts = parseClaudeOutput(`${OVERLOADED_OUTPUT}\n${LIMIT_OUTPUT}\n`)
+
+    assert.deepEqual(facts?.apiErrors, [
+      { status: 529, error: 'overloaded' },
+      { status: 429, error: 'usage_limit_reached' },
+    ])
+    assert.equal(hitLimit(facts), true)
+  })
+
+  test('a limit in the plan and again in the execute is one limit, seen twice', () => {
+    // Run 20261030-100520, rename-calc-total × opusplan: the plan stopped on its second turn.
+    const facts = parseClaudeOutput(`${LIMIT_OUTPUT}\n${LIMIT_OUTPUT}\n`)
+
+    assert.equal(facts?.apiErrors?.length, 2)
+    assert.equal(hitLimit(facts), true)
+  })
+
+  test('reads a spent --max-budget-usd cap', () => {
+    assert.equal(parseClaudeOutput(BUDGET_OUTPUT)?.budgetExhausted, true)
+    assert.equal(parseClaudeOutput(CLAUDE_OUTPUT)?.budgetExhausted, false)
+    assert.equal(parseClaudeOutput(LIMIT_OUTPUT)?.budgetExhausted, false)
   })
 })
 
@@ -189,6 +256,39 @@ describe('deriveResult', () => {
     assert.match(r.invalidReason ?? '', /exited with code 1/)
   })
 
+  test('a session that hit a usage limit is invalid, not a failed task, and says why', () => {
+    // The hidden tests fail because nothing was changed; that says nothing about the model.
+    const failed = { testsPassed: false, testsExitCode: 1 }
+    for (const exitCode of [1, 0]) {
+      const r = deriveResult({ meta: { ...META, exitCode }, claudeStdout: LIMIT_OUTPUT, records: [step()], check: failed, numstat: '', needsPlugin: true })
+
+      assert.equal(r.valid, false)
+      assert.equal(r.invalidReason, 'Claude Code stopped on an API error: usage_limit_reached (HTTP 429)')
+    }
+  })
+
+  test('the reason names every API error, in order', () => {
+    const r = deriveResult({ meta: { ...META, exitCode: 1 }, claudeStdout: `${OVERLOADED_OUTPUT}\n${LIMIT_OUTPUT}`, records: [], check: PASSED, numstat: '', needsPlugin: false })
+
+    assert.equal(r.invalidReason, 'Claude Code stopped on an API error: overloaded (HTTP 529), then usage_limit_reached (HTTP 429)')
+  })
+
+  test('a spent budget is a counted failure, whatever the exit code, even when the check passes', () => {
+    for (const exitCode of [1, 0]) {
+      const r = deriveResult({ meta: { ...META, exitCode }, claudeStdout: BUDGET_OUTPUT, records: [step()], check: PASSED, numstat: '', needsPlugin: true })
+
+      assert.equal(r.valid, true)
+      assert.equal(r.success, false, 'the task did not finish in budget')
+    }
+  })
+
+  test('a spent budget does not excuse a routing arm whose plugin recorded nothing', () => {
+    const r = deriveResult({ meta: { ...META, exitCode: 1 }, claudeStdout: BUDGET_OUTPUT, records: [], check: PASSED, numstat: '', needsPlugin: true })
+
+    assert.equal(r.valid, false)
+    assert.match(r.invalidReason ?? '', /routing did not run/)
+  })
+
   test('the first main-loop step gives the router tier', () => {
     const r = deriveResult({
       meta: META,
@@ -250,6 +350,14 @@ describe('summarizeBench', () => {
 
     assert.equal(s.invalid.length, 1)
     assert.equal(s.arms.find(a => a.armId === 'auto')?.costUsd.toFixed(2), '0.35')
+  })
+
+  test('what the run used counts the invalid runs the figures leave out', () => {
+    const s = summarizeBench(tasks, arms, [...results, { ...result('a', 'auto', true, 9, false), rep: 2 }])
+
+    assert.equal(s.spend.costUsd.toFixed(2), '9.95')
+    assert.equal(s.spend.invalidCostUsd, 9)
+    assert.equal(s.spend.unknownCostRuns, undefined)
   })
 
   test('a timeout lowers the success rate instead of being left out of it', () => {

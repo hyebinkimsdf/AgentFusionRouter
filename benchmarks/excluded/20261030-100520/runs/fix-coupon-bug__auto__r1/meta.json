@@ -1,0 +1,10 @@
+{
+  "taskId": "fix-coupon-bug",
+  "armId": "auto",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T10:07:45.259Z",
+  "wallMs": 3151,
+  "exitCode": 1,
+  "timedOut": false
+}

@@ -1,6 +1,7 @@
 import type { ModelEntry } from '@agent-fusion-router/core'
 import { PRICES_AS_OF, TIERS } from '@agent-fusion-router/core'
 
+import { hitLimit } from '../bench/derive.ts'
 import type { PriceCorrection } from '../bench/run.ts'
 import type { BenchSummary } from '../bench/summary.ts'
 import { outsideConversationTokens, priceCheck } from '../bench/summary.ts'
@@ -34,8 +35,12 @@ export type RunInfo = {
   taskSet: { name: string; file: string; sha256: string }
   reps: number
   budgetUsd: number
+  /** The total the run was allowed to spend, by Claude Code's computed cost, when one was set. */
+  maxTotalUsd?: number
   environment: Record<string, string>
   validation: TaskValidation[]
+  /** Why the run ended before every task ran in every arm; absent, it ran them all. */
+  stopped?: string
 }
 
 export type BenchPage = {
@@ -70,6 +75,11 @@ export const renderBenchReport = (p: BenchPage): string => {
     ? `<div class="banner" role="note"><strong>⚠ Simulated run: no model was called</strong>
 The numbers below were generated to test the runner, the report and the evidence files. They are not experiment results.</div>`
     : ''
+  const stoppedBanner =
+    run.stopped === undefined
+      ? ''
+      : `<div class="banner" role="note"><strong>⚠ Stopped early: not every task ran in every arm</strong>
+${esc(run.stopped)}. The runs not made are missing from every figure${results.some(r => hitLimit(r.claude)) ? ', and the run that hit the limit is listed as invalid' : ''}.</div>`
 
   const { correction } = p
   const correctionNote =
@@ -98,6 +108,7 @@ ${table(
   const header = `<h1>Agent Fusion Router benchmark</h1>
 <p class="sub">Run <code>${esc(run.runId)}</code> · task set <strong>${esc(run.taskSet.name)}</strong> (${tasks.length} tasks) · ${arms.length} arms · ${run.reps} repetition${run.reps === 1 ? '' : 's'} · ${esc(run.startedAt)} · <a href="work.html">Work produced</a>: every change and answer, model by model</p>
 ${banner}
+${stoppedBanner}
 ${correctionNote}`
 
   const cards = summary.arms
@@ -243,7 +254,9 @@ ${table(
         ? `<span class="fail">Invalid: ${esc(r.invalidReason ?? '')}</span>`
         : r.timedOut
           ? '<span class="fail">✗ Timed out</span>'
-          : passMark(r.success),
+          : r.claude?.budgetExhausted
+            ? '<span class="fail">✗ Budget spent</span>'
+            : passMark(r.success),
       r.claude?.costUsd === undefined ? 'unknown' : usd(r.claude.costUsd),
       duration(r.wallMs),
       String(r.claude?.numTurns ?? '—'),
@@ -310,6 +323,7 @@ ${table(
       ['Task set file', `<code>${esc(run.taskSet.file)}</code>`],
       ['Task set SHA-256', `<span class="hash">${esc(run.taskSet.sha256)}</span>`],
       ['Budget cap per run', usd(run.budgetUsd)],
+      ...(run.maxTotalUsd === undefined ? [] : [['Total budget', usd(run.maxTotalUsd)]]),
       ['Started', esc(run.startedAt)],
       ['Finished', esc(run.finishedAt)],
     ],
@@ -336,6 +350,8 @@ ${perTask}
 ${runRows}
 <h3>Invalid runs</h3>
 ${invalid}
+<h3>What the run used</h3>
+<p class="sub">Claude Code computed <strong>${exactUsd(summary.spend.costUsd)}</strong>${summary.spend.unknownCostRuns ? ` + ${summary.spend.unknownCostRuns} session(s) with unknown cost` : ''} over all ${results.length} sessions, invalid ones included: ${exactUsd(summary.spend.invalidCostUsd)} of it in the ${summary.invalid.length} invalid session${summary.invalid.length === 1 ? '' : 's'}. Every figure above leaves invalid runs out; this total is for budgeting the next run. It is computed at list prices, not a bill.</p>
 
 <h2>Verification</h2>
 <h3>Are the checks sound?</h3>

@@ -1,0 +1,4 @@
+Rename the function calcTotal to calculateTotal everywhere in the project, including the tests.
+
+[after the plan]
+Your plan is approved. Implement it now.

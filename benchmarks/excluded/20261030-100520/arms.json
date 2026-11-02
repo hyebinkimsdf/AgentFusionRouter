@@ -1,0 +1,26 @@
+[
+  {
+    "id": "default",
+    "label": "Default",
+    "plugin": {
+      "mode": "observe"
+    }
+  },
+  {
+    "id": "opusplan",
+    "label": "opusplan (plan, then execute)",
+    "model": "opusplan",
+    "planThenExecute": true,
+    "plugin": {
+      "mode": "observe"
+    }
+  },
+  {
+    "id": "auto",
+    "label": "Auto routing",
+    "plugin": {
+      "mode": "route",
+      "standardModel": "sonnet"
+    }
+  }
+]

@@ -69,6 +69,10 @@ export type ClaudeFacts = {
   /** The conversation's requests alone, by the top-level `usage`: what the plugin can see. */
   conversationTokens?: Tokens
   byModel: Record<string, { tokens: Tokens; costUsd?: number }>
+  /** Every invocation that ended on an API error (`terminal_reason: "api_error"`), in order, such as a usage limit: no verdict on the model. */
+  apiErrors?: { status?: number; error?: string }[]
+  /** The session stopped at its `--max-budget-usd` cap (`subtype: "error_max_budget_usd"`): the task ran out of a real budget. */
+  budgetExhausted: boolean
 }
 
 export type PluginFacts = {

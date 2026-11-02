@@ -7,12 +7,18 @@ export type IndexRun = {
   tasks: number
   arms: string[]
   reps: number
+  /** Set when the run ended before every task ran in every arm. */
+  stopped?: string
   runs: number
+  /** Successes are out of these: invalid runs are listed, never counted. */
+  validRuns: number
   successes: number
   /** Claude Code's computed session cost, summed over the sessions that report one. */
   claudeCostUsd: number
   /** Sessions with no reported cost: never counted as $0. */
   unknownCostRuns: number
+  /** Claude Code's computed cost of every session, invalid ones included: what the run used, not a performance figure. */
+  spend: { costUsd: number; unknownCostRuns: number }
   /** The plugin's per-request estimates, summed, with the current price table. */
   pluginEstimateUsd: number
   /** Model entries where this project's table computes what Claude Code computed. */
@@ -56,13 +62,21 @@ const runCard = (r: IndexRun): string => {
   return `<div class="card entry">
 <div class="shot">${shot(r.screenshot, r.report)}</div>
 <div class="facts">
-<div><strong><a href="${esc(r.report)}">${esc(r.runId)}</a></strong> ${r.simulated ? '<span class="fail">SIMULATED: not a result</span>' : ''}</div>
+<div><strong><a href="${esc(r.report)}">${esc(r.runId)}</a></strong> ${r.simulated ? '<span class="fail">SIMULATED: not a result</span>' : ''}${r.stopped === undefined ? '' : ` <span class="fail" title="${esc(r.stopped)}">Stopped early</span>`}</div>
 <div class="note">${esc(r.startedAt)} · ${r.tasks} task${r.tasks === 1 ? '' : 's'} × ${r.arms.length} arm${r.arms.length === 1 ? '' : 's'} (${esc(r.arms.join(', '))}) × ${r.reps} rep${r.work === undefined ? '' : ` · <a href="${esc(r.work)}">Work produced</a>`}</div>
 ${table(
   ['', ''],
   [
-    ['Success', `${r.successes}/${r.runs}`],
+    ['Success', `${r.successes}/${r.validRuns}${r.runs === r.validRuns ? '' : ` <span class="fail">· ${r.runs - r.validRuns} invalid, not counted</span>`}`],
     ['Claude Code computed', r.unknownCostRuns === 0 ? exactUsd(r.claudeCostUsd) : `${exactUsd(r.claudeCostUsd)} + ${r.unknownCostRuns} unknown`],
+    ...(r.runs === r.validRuns
+      ? []
+      : [
+          [
+            'All sessions, invalid included',
+            `${exactUsd(r.spend.costUsd)}${r.spend.unknownCostRuns === 0 ? '' : ` + ${r.spend.unknownCostRuns} unknown`} <span class="note">(what the run used)</span>`,
+          ],
+        ]),
     ['Plugin estimate', exactUsd(r.pluginEstimateUsd)],
     ['Difference', r.unknownCostRuns === 0 ? signedUsd(r.claudeCostUsd - r.pluginEstimateUsd) : 'unknown'],
     [

@@ -1,0 +1,4 @@
+Customers report that the order total is too low when they use a coupon. Find the bug and fix it.
+
+[after the plan]
+Your plan is approved. Implement it now.

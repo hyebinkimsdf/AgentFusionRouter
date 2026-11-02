@@ -65,6 +65,15 @@ export const parseClaudeOutput = (stdout: string): ClaudeFacts | undefined => {
           {} as Record<string, unknown>,
         )
 
+  // Every line: a plan that ended on an API error was never executed as planned,
+  // and a later line can add a limit to an earlier error of another kind.
+  const apiErrors = results
+    .filter(r => r.terminal_reason === 'api_error')
+    .map(r => ({
+      ...(typeof r.api_error_status === 'number' ? { status: r.api_error_status } : {}),
+      ...(typeof r.api_error === 'string' ? { error: r.api_error } : {}),
+    }))
+
   return {
     isError: json.is_error === true,
     costUsd: typeof json.total_cost_usd === 'number' ? json.total_cost_usd : undefined,
@@ -83,8 +92,16 @@ export const parseClaudeOutput = (stdout: string): ClaudeFacts | undefined => {
           },
         }),
     byModel,
+    ...(apiErrors.length === 0 ? {} : { apiErrors }),
+    budgetExhausted: results.some(r => r.subtype === 'error_max_budget_usd'),
   }
 }
+
+/** Claude Code hit a usage or rate limit: every later session on the account fails the same way until it resets. */
+export const hitLimit = (claude: ClaudeFacts | undefined): boolean => claude?.apiErrors?.some(e => e.status === 429) === true
+
+const describeApiErrors = (errors: NonNullable<ClaudeFacts['apiErrors']>): string =>
+  errors.map(e => `${e.error ?? 'unknown'}${e.status === undefined ? '' : ` (HTTP ${e.status})`}`).join(', then ')
 
 /** The final answer text of a `claude -p --output-format json` run. */
 export const claudeAnswer = (stdout: string): string => {
@@ -160,19 +177,23 @@ export const deriveResult = (raw: RawRun): RunResult => {
   const claude = parseClaudeOutput(raw.claudeStdout)
   const plugin = pluginFacts(raw.records, raw.prices)
   const timedOut = raw.meta.timedOut
-  // A timeout is the model and task running out of a real budget: a
-  // genuine failure to count, not an environment problem to throw out.
-  const success = !timedOut && raw.check.testsPassed && raw.check.answerOk !== false
+  const budgetExhausted = claude?.budgetExhausted === true
+  // A timeout or a spent --max-budget-usd cap is the model and task running out
+  // of a real budget: a genuine failure to count, not an environment problem to
+  // throw out. Only the cap Claude Code names is; any other non-zero exit is not.
+  const success = !timedOut && !budgetExhausted && raw.check.testsPassed && raw.check.answerOk !== false
 
   const invalidReason = timedOut
     ? undefined
     : claude === undefined
       ? 'Claude Code printed no result'
-      : raw.meta.exitCode !== 0
-        ? `Claude Code exited with code ${raw.meta.exitCode}`
-        : raw.needsPlugin && !plugin.loaded
-          ? 'the plugin recorded nothing, so routing did not run'
-          : undefined
+      : claude.apiErrors !== undefined
+        ? `Claude Code stopped on an API error: ${describeApiErrors(claude.apiErrors)}`
+        : raw.meta.exitCode !== 0 && !budgetExhausted
+          ? `Claude Code exited with code ${raw.meta.exitCode}`
+          : raw.needsPlugin && !plugin.loaded
+            ? 'the plugin recorded nothing, so routing did not run'
+            : undefined
 
   return {
     taskId: raw.meta.taskId,

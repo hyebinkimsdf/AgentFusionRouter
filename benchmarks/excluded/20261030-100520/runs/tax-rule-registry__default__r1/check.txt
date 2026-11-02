@@ -1,0 +1,45 @@
+✔ adding the same SKU raises its quantity (1.3617ms)
+✔ adding never changes the original cart (0.2271ms)
+✔ totals without a coupon add Korean tax (1.1794ms)
+✔ the receipt lists each item and the subtotal (38.8125ms)
+✔ KR and US keep their results (3.1309ms)
+✖ JP rounds 10% down to a whole unit (0.5249ms)
+✖ a registered rule is used for its region (0.2677ms)
+✔ an unknown region is still an error (0.5765ms)
+✔ a coupon takes its percentage off (1.2936ms)
+✔ an unknown coupon takes nothing off (0.2883ms)
+✔ tax follows the region (0.2225ms)
+✔ an unknown region is an error (0.4232ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 10
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 224.7608
+
+✖ failing tests:
+
+test at test\hidden\tax-rules.test.js:11:1
+✖ JP rounds 10% down to a whole unit (0.5249ms)
+  Error: No tax rule for region JP
+      at Module.applyTax (file:///C:/Users/user/AppData/Local/Temp/afr-bench-LfyMlK/src/pricing.js:23:33)
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-LfyMlK/test/hidden/tax-rules.test.js:12:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at test\hidden\tax-rules.test.js:15:1
+✖ a registered rule is used for its region (0.2677ms)
+  TypeError: pricing.registerTaxRule is not a function
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-LfyMlK/test/hidden/tax-rules.test.js:16:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

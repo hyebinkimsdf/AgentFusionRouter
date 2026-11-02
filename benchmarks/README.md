@@ -41,6 +41,7 @@ npm run build
 node packages/cli/dist/cli.js bench validate
 node packages/cli/dist/cli.js bench run --simulate           # no model called: checks the pipeline
 node packages/cli/dist/cli.js bench run --task find-tax-rate --arm auto --budget 0.2   # one cheap live run
+node packages/cli/dist/cli.js bench run --reps 1 --max-total-usd 5   # a pilot: every task and arm once, with a total cap
 node packages/cli/dist/cli.js bench run --reps 3             # the full comparison
 ```
 
@@ -54,9 +55,17 @@ claude -p --output-format json --model <arm model> --plugin-dir plugins/claude/a
 
 The prompt goes on stdin. The settings file carries the arm's plugin options and allows only the test runner (`node --test`, `npm test`) among shell commands. Your own settings, plugins, and MCP servers are not loaded, so every arm runs in the same environment. Arms run in a rotated order per task, so no arm always goes first.
 
-**Live runs cost money or plan usage.** The full shop comparison is 6 tasks × 3 arms × repetitions. `--budget` caps each run (default $1), and `--timeout` limits its time (default 15 minutes).
+**Live runs cost money or plan usage.** The full shop comparison is 6 tasks × 3 arms × repetitions. `--budget` caps each `claude -p` invocation (default $1), not the benchmark: a plan-then-execute run makes two invocations. `--timeout` limits a run's time (default 15 minutes).
 
-If the plugin records nothing in a routing arm, the run is marked invalid: routing did not happen, so its numbers say nothing about routing. Invalid runs are listed in the report and left out of every figure.
+**A total cap.** `--max-total-usd` stops the benchmark before a run whose whole cap (`--budget`, twice for plan-then-execute) would take the total past it. The total is Claude Code's computed cost of every session so far, invalid ones included. A session that reports no cost counts at its whole cap. Every run still gets the full `--budget`, so no run is cut short by the total and judged on it. This cap is not exact: Claude Code checks `--max-budget-usd` between requests, so a run can go past its cap by its last request, and the total by as much. Leave headroom of one run's cap: with `--budget 1`, a total of $5 stops once more than $3 is spent before a plan-then-execute run.
+
+**Timeouts and spent budgets are failures.** A run killed by `--timeout`, or stopped by its `--max-budget-usd` cap (Claude Code prints `subtype: "error_max_budget_usd"`), is a valid run that failed: the task did not finish within a real budget. It counts against the success rate even if the hidden tests happen to pass.
+
+**Invalid runs.** If the plugin records nothing in a routing arm, the run is invalid: routing did not happen, so its numbers say nothing about routing. A session that ends on an API error (Claude Code's `terminal_reason: "api_error"`) is invalid, and so is any other non-zero exit except a spent budget: the hidden tests fail because nothing was changed, which says nothing about the model. Invalid runs are listed in the report and left out of every performance figure. The report's *What the run used* and the index's *All sessions, invalid included* add them back, as the total Claude Code computed, for budgeting the next run.
+
+**Usage limits stop the run.** When Claude Code reports a usage or rate limit (HTTP 429, such as `usage_limit_reached`), every later session on the account would end the same way, so `bench run` stops there. It writes the run folder for the runs made, records why it stopped in `run.json` (`stopped`), and the report and index mark the run *Stopped early*. Run again once the limit resets. The benchmark uses the same plan limits as your own Claude Code sessions. A plan-then-execute run whose plan ended in an error is not executed.
+
+**Excluded runs.** A run that should not count, but is worth keeping, moves to `benchmarks/excluded/` unchanged, with a note in [`excluded/README.md`](excluded/README.md). The index and comparisons list only `benchmarks/results/`.
 
 ## What a run leaves
 

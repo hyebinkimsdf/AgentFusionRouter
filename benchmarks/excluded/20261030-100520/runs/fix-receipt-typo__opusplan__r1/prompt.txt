@@ -1,0 +1,4 @@
+Fix the typo in the receipt's total label in src/format.js: it prints "Totla" instead of "Total".
+
+[after the plan]
+Your plan is approved. Implement it now.

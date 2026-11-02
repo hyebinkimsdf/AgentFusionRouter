@@ -24,6 +24,9 @@ First release, Claude Code only.
 - `bench index`: every run and comparison in `benchmarks/index.html`, with screenshots, verification, and links to Claude Code's own output.
 - Each run also writes `work.html` and its screenshot: every session's code change and final answer, task by task, the arms side by side, with the model that did the work. The report groups results by model too.
 - Arms can start in another permission mode, add permission rules, and `planThenExecute`. That runs a task as a person uses opusplan: plan mode first, then the same session resumed with the plan approved.
+- `bench run --max-total-usd <usd>`: stops before a run whose whole cap would not fit in the total, counted as Claude Code's computed cost of every session, invalid ones included. A session with no reported cost counts at its whole cap. Every run keeps the full `--budget`, so the total never cuts a run short. Claude Code checks its cap between requests, so the total can be passed by one run's last request.
+- Reports show *What the run used*, and the index *All sessions, invalid included*: Claude Code's computed cost of every session, apart from the performance figures, which leave invalid runs out.
+- `benchmarks/excluded/`: runs kept as evidence but left out of the index and comparisons, with notes outside their hashed folders.
 
 ### Changed
 
@@ -43,5 +46,11 @@ First release, Claude Code only.
 - Each benchmark run now saves its price table (`prices.json`). `verify` recomputes older runs with the table they were made with.
 - The usage log kept writing a day's records into the next day's file once the UTC date rolled over, so a record could be read back twice.
 - A benchmark run that timed out was left out of the success rate and cost entirely, instead of counting as a failure; a run that exited with a non-zero code but still printed parseable JSON (`{}`) was counted as a normal result. Both are now reflected: a timeout is a counted failure, a non-zero exit is an invalid run.
+- A session that hit the account's usage limit was scored as a failed task. In one run, 11 of 18 sessions ended on "You've hit your 5-hour limit" before any model answered, and the report counted them as failures (6/18 instead of 6/7). A session that ends on an API error is now invalid, with every API error Claude Code reported as the reason. A usage or rate limit (HTTP 429) in any of a session's invocations stops `bench run`: the runs made are written and verified, and the report and index mark the run *Stopped early*. That run is now in `benchmarks/excluded/`.
+- A plan-then-execute run whose plan ended in an error (an API error, a spent budget, a crash) still had its plan approved and executed, spending on a run that could not count. It now ends with the plan.
+- A run stopped by its `--max-budget-usd` cap fell under "any non-zero exit is invalid" and could be left out of the figures. It is now identified by Claude Code's `subtype: "error_max_budget_usd"` and counted as a failure, like a timeout. Other non-zero exits stay invalid.
+- A run moved out of `benchmarks/results/` lost two protections for its hashed evidence. Git ignored its `run.log`, and Git could convert its line endings. `benchmarks/excluded/` now keeps both, as `results/` does.
+- The index counted invalid runs in the success denominator. It now shows successes out of valid runs, and how many were invalid.
+- A run that did not reach every task wrote a `results.json` that `verify` then rejected, because it summarized tasks with no runs. It now summarizes the tasks that ran, as `verify` and the report do.
 - A failure follow-up ("still failing, now redesign the whole auth system") was capped at one tier above the *previous* task, so a harder new request inside the same failure reply could be routed below what it needed. It now routes at whichever is higher.
 - A verification command was recognized by substring match alone, so `echo npm test` counted as a test run, and the pass/fail came from the whole shell line's exit code, so `npm test || true` (always exits 0) and `npm test; cleanup` (exits with `cleanup`'s code) recorded the wrong result. A command now verifies only when the check is the last one in its chain, which is what the exit code actually reports.

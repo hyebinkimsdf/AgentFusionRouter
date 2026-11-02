@@ -1,0 +1,26 @@
+Run 20261030-100520
+Validating task checks...
+  ok   find-tax-rate (fails before: true, passes with solution: true)
+  ok   fix-receipt-typo (fails before: true, passes with solution: true)
+  ok   rename-calc-total (fails before: true, passes with solution: true)
+  ok   add-remove-item (fails before: true, passes with solution: true)
+  ok   fix-coupon-bug (fails before: true, passes with solution: true)
+  ok   tax-rule-registry (fails before: true, passes with solution: true)
+[1/18] find-tax-rate × opusplan (rep 1): pass · $0.1265 · 24s
+[2/18] find-tax-rate × auto (rep 1): pass · $0.0027 · 9s
+[3/18] find-tax-rate × default (rep 1): pass · $0.0712 · 10s
+[4/18] fix-receipt-typo × auto (rep 1): pass · $0.0032 · 10s
+[5/18] fix-receipt-typo × default (rep 1): pass · $0.1046 · 10s
+[6/18] fix-receipt-typo × opusplan (rep 1): FAIL · $0.1541 · 24s
+[7/18] rename-calc-total × default (rep 1): pass · $0.1030 · 14s
+[8/18] rename-calc-total × opusplan (rep 1): FAIL · $0.0760 · 8s
+[9/18] rename-calc-total × auto (rep 1): FAIL · $0.00 · 3s
+[10/18] add-remove-item × opusplan (rep 1): FAIL · $0.00 · 6s
+[11/18] add-remove-item × auto (rep 1): FAIL · $0.00 · 3s
+[12/18] add-remove-item × default (rep 1): FAIL · $0.00 · 3s
+[13/18] fix-coupon-bug × auto (rep 1): FAIL · $0.00 · 3s
+[14/18] fix-coupon-bug × default (rep 1): FAIL · $0.00 · 3s
+[15/18] fix-coupon-bug × opusplan (rep 1): FAIL · $0.00 · 7s
+[16/18] tax-rule-registry × default (rep 1): FAIL · $0.00 · 3s
+[17/18] tax-rule-registry × opusplan (rep 1): FAIL · $0.00 · 6s
+[18/18] tax-rule-registry × auto (rep 1): FAIL · $0.00 · 3s

@@ -68,6 +68,12 @@ export type BenchSummary = {
   classifier: { scored: number; correct: number; matrix: Record<Tier, Record<Tier, number>> }
   crossCheck: { rows: CrossCheckRow[]; meanAbsDiffPct?: number; maxAbsDiffPct?: number }
   invalid: { taskId: string; armId: string; rep: number; reason: string }[]
+  /**
+   * Claude Code's computed cost of every session, invalid ones included: what
+   * the run used, for budgeting the next one. Not a performance figure (those
+   * leave invalid runs out) and not a bill.
+   */
+  spend: { costUsd: number; invalidCostUsd: number; unknownCostRuns?: number }
 }
 
 /** Claude Code's computed session cost; undefined where it reported none. */
@@ -250,6 +256,7 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
     }
   })
   const diffs = rows.flatMap(r => (r.diffPct === undefined ? [] : [Math.abs(r.diffPct)]))
+  const spent = sumCosts(results)
 
   return {
     arms: armSummaries,
@@ -263,5 +270,10 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
     invalid: results
       .filter(r => !r.valid)
       .map(r => ({ taskId: r.taskId, armId: r.armId, rep: r.rep, reason: r.invalidReason ?? 'invalid' })),
+    spend: {
+      costUsd: spent.usd,
+      invalidCostUsd: sumCosts(results.filter(r => !r.valid)).usd,
+      ...(spent.unknown === 0 ? {} : { unknownCostRuns: spent.unknown }),
+    },
   }
 }

@@ -1,0 +1,59 @@
+{
+  "runId": "20261030-100520",
+  "simulated": false,
+  "startedAt": "2026-10-30T10:05:20.744Z",
+  "finishedAt": "2026-10-30T10:08:16.607Z",
+  "taskSet": {
+    "name": "shop",
+    "file": "examples/shop/tasks.json",
+    "sha256": "06fa193f165113d87e657fccd4605c9749b5992838ecfe0e4acd9c3e0cb7e3b2"
+  },
+  "reps": 1,
+  "budgetUsd": 1,
+  "environment": {
+    "Claude Code": "2.1.312 (Claude Code)",
+    "Node": "v24.16.0",
+    "OS": "win32 10.0.19045",
+    "Repository commit": "c9428e5b199cfcadb32b273db7a21970189c53b6",
+    "Uncommitted changes": "no",
+    "Plugin bundle SHA-256": "bf0300c247aa313b72486b2ee86365be99ddf1cd5465274f2ea94d600723a2e2"
+  },
+  "validation": [
+    {
+      "taskId": "find-tax-rate",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    },
+    {
+      "taskId": "rename-calc-total",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    },
+    {
+      "taskId": "add-remove-item",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "failsBefore": true,
+      "passesAfter": true,
+      "ok": true
+    }
+  ]
+}

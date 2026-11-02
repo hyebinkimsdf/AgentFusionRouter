@@ -1,0 +1,52 @@
+✔ adding the same SKU raises its quantity (1.3483ms)
+✔ adding never changes the original cart (0.2295ms)
+✔ totals without a coupon add Korean tax (1.239ms)
+✔ the receipt lists each item and the subtotal (30.9241ms)
+✖ removeItem removes the item with that SKU (1.3976ms)
+✖ removing an unknown SKU returns an equal cart (0.3233ms)
+✖ removeItem leaves the original cart unchanged (0.2636ms)
+✔ a coupon takes its percentage off (1.3228ms)
+✔ an unknown coupon takes nothing off (0.3525ms)
+✔ tax follows the region (0.3097ms)
+✔ an unknown region is an error (0.4789ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 8
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 228.602
+
+✖ failing tests:
+
+test at test\hidden\remove-item.test.js:10:1
+✖ removeItem removes the item with that SKU (1.3976ms)
+  TypeError: cartModule.removeItem is not a function
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-k8X4n9/test/hidden/remove-item.test.js:12:28)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at test\hidden\remove-item.test.js:17:1
+✖ removing an unknown SKU returns an equal cart (0.3233ms)
+  TypeError: cartModule.removeItem is not a function
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-k8X4n9/test/hidden/remove-item.test.js:20:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at test\hidden\remove-item.test.js:23:1
+✖ removeItem leaves the original cart unchanged (0.2636ms)
+  TypeError: cartModule.removeItem is not a function
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-k8X4n9/test/hidden/remove-item.test.js:25:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

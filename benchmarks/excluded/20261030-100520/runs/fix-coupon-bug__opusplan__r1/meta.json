@@ -1,0 +1,10 @@
+{
+  "taskId": "fix-coupon-bug",
+  "armId": "opusplan",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-10-30T10:07:53.528Z",
+  "wallMs": 6617,
+  "exitCode": 1,
+  "timedOut": false
+}

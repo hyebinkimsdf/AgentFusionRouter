@@ -28,7 +28,7 @@ const runCard = (c: ComparedRun): string => {
 
   return `<div class="card">
 <div><strong>${esc(c.label)}</strong></div>
-<div class="note">Run <code>${esc(c.run.runId)}</code>${c.run.simulated ? ' · SIMULATED' : ''} · started ${esc(c.run.startedAt)}</div>
+<div class="note">Run <code>${esc(c.run.runId)}</code>${c.run.simulated ? ' · SIMULATED' : ''}${c.run.stopped === undefined ? '' : ' · STOPPED EARLY'} · started ${esc(c.run.startedAt)}</div>
 ${table(
   ['', ''],
   [
@@ -103,7 +103,13 @@ export const renderComparison = (a: ComparedRun, b: ComparedRun, generatedAt: st
           String(t?.cacheRead ?? '—'),
           String(t?.cacheWrite ?? '—'),
           sameTokens(r),
-          !r.valid ? `<span class="fail">Invalid</span>` : r.timedOut ? `<span class="fail">✗ Timed out</span>` : passMark(r.success),
+          !r.valid
+            ? `<span class="fail">Invalid</span>`
+            : r.timedOut
+              ? `<span class="fail">✗ Timed out</span>`
+              : r.claude?.budgetExhausted
+                ? `<span class="fail">✗ Budget spent</span>`
+                : passMark(r.success),
           esc(r.plugin.models.join(', ') || '—'),
           esc(r.plugin.decidedTier ?? '—'),
           duration(r.wallMs),

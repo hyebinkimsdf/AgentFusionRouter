@@ -38,6 +38,8 @@ Benchmarks (run from the repository root)
     --task <id>           Only this task (repeatable)
     --arm <id>            Only this arm (repeatable)
     --budget <usd>        Spending cap per run, passed to claude --max-budget-usd (default 1)
+    --max-total-usd <usd> Stop before a run whose whole cap would not fit in this total
+                          (Claude Code's computed cost, invalid runs included)
     --timeout <minutes>   Time limit per run (default 15)
     --claude <path>       The claude executable (default: claude, or CLAUDE_BIN)
     --plugin-dir <path>   The plugin to load (default plugins/claude/agent-fusion-router)
@@ -158,6 +160,7 @@ const bench = async (args: string[]): Promise<void> => {
       task: { type: 'string', multiple: true, default: [] },
       arm: { type: 'string', multiple: true, default: [] },
       budget: { type: 'string', default: '1' },
+      'max-total-usd': { type: 'string' },
       timeout: { type: 'string', default: '15' },
       claude: { type: 'string' },
       'plugin-dir': { type: 'string', default: 'plugins/claude/agent-fusion-router' },
@@ -182,6 +185,8 @@ const bench = async (args: string[]): Promise<void> => {
       return
     }
     case 'run': {
+      const maxTotal = values['max-total-usd'] === undefined ? undefined : Number(values['max-total-usd'])
+      if (maxTotal !== undefined && !(maxTotal > 0)) throw new Error(`--max-total-usd takes a positive amount: got "${values['max-total-usd']}"`)
       const runDir = await runBench({
         tasksFile: values.tasks,
         armsFile: values.arms,
@@ -191,6 +196,7 @@ const bench = async (args: string[]): Promise<void> => {
         claudeBin: values.claude ?? process.env.CLAUDE_BIN ?? 'claude',
         pluginDir: resolve(values['plugin-dir']),
         budgetUsd: Number(values.budget) || 1,
+        ...(maxTotal === undefined ? {} : { maxTotalUsd: maxTotal }),
         timeoutMs: (Number(values.timeout) || 15) * 60_000,
         onlyTasks: values.task,
         onlyArms: values.arm,

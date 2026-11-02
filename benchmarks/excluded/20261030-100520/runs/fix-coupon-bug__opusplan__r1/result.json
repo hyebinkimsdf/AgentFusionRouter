@@ -1,0 +1,52 @@
+{
+  "taskId": "fix-coupon-bug",
+  "armId": "opusplan",
+  "rep": 1,
+  "valid": true,
+  "success": false,
+  "check": {
+    "testsPassed": false,
+    "testsExitCode": 1
+  },
+  "wallMs": 6617,
+  "claude": {
+    "isError": true,
+    "costUsd": 0,
+    "durationMs": 640,
+    "numTurns": 1,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0
+    },
+    "conversationTokens": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0
+    },
+    "byModel": {}
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 2,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "cacheRead": 0,
+      "cacheWrite": 0
+    },
+    "costUsd": 0,
+    "decidedTier": "standard",
+    "routedRequests": 0,
+    "escalations": 0,
+    "models": []
+  },
+  "diff": {
+    "files": 0,
+    "added": 0,
+    "removed": 0
+  }
+}

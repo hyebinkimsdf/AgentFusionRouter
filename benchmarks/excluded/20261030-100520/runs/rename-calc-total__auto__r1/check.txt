@@ -1,0 +1,55 @@
+✔ adding the same SKU raises its quantity (1.3731ms)
+✔ adding never changes the original cart (0.2879ms)
+✔ totals without a coupon add Korean tax (1.2811ms)
+✔ the receipt lists each item and the subtotal (34.1659ms)
+✖ calculateTotal is exported and calcTotal is gone (2.7433ms)
+✖ no source or test file mentions calcTotal (8.6732ms)
+✔ a coupon takes its percentage off (1.8832ms)
+✔ an unknown coupon takes nothing off (0.3407ms)
+✔ tax follows the region (0.3286ms)
+✔ an unknown region is an error (0.7005ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 232.6814
+
+✖ failing tests:
+
+test at test\hidden\renamed.test.js:17:1
+✖ calculateTotal is exported and calcTotal is gone (2.7433ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-cQ8J85/test/hidden/renamed.test.js:18:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\hidden\renamed.test.js:22:1
+✖ no source or test file mentions calcTotal (8.6732ms)
+  AssertionError [ERR_ASSERTION]: C:\Users\user\AppData\Local\Temp\afr-bench-cQ8J85\src\/cart.js
+      at TestContext.<anonymous> (file:///C:/Users/user/AppData/Local/Temp/afr-bench-cQ8J85/test/hidden/renamed.test.js:26:12)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: "import { applyCoupon, applyTax } from './pricing.js'\n\n/** An empty cart for a region. Carts are never mutated: every change returns a new one. */\nexport const createCart = (region = 'KR') => ({ region, items: [], coupon: undefined })\n\n/** Adds an item `{ sku, name, price, qty }`; the same SKU again raises its quantity. */\nexport const addItem = (cart, item) => {\n  const existing = cart.items.find(i => i.sku === item.sku)\n  const items = existing\n    ? cart.items.map(i => (i.sku === item.sku ? { ...i, qty: i.qty + item.qty } : i))\n    : [...cart.items, { ...item }]\n\n  return { ...cart, items }\n}\n\nexport const useCoupon = (cart, coupon) => ({ ...cart, coupon })\n\nexport const subtotalOf = cart => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)\n\n/** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */\nexport const calcTotal = cart => {\n  const subtotal = subtotalOf(cart)\n  const discount = subtotal - applyCoupon(subtotal, cart.coupon)\n  const taxable = applyCoupon(subtotal - discount, cart.coupon)\n  const tax = applyTax(taxable, cart.region)\n\n  return { subtotal, discount, tax, total: taxable + tax }\n}\n",
+    expected: /calcTotal/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
