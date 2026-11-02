@@ -1,0 +1,21 @@
+diff --git a/src/format.js b/src/format.js
+index ea302a0..f98add0 100644
+--- a/src/format.js
++++ b/src/format.js
+@@ -1,12 +1,15 @@
+ const money = amount => `KRW ${amount.toLocaleString('en-US')}`
+ 
++/** A discount rate such as 0.15 as text like "15% off", rounded to a whole percent. */
++export const formatRate = rate => `${Math.round(rate * 100)}% off`
++
+ /** A plain-text receipt for a cart and its totals from calcTotal. */
+ export const formatReceipt = (cart, totals) =>
+   [
+     ...cart.items.map(i => `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),
+     '',
+     `Subtotal: ${money(totals.subtotal)}`,
+-    `Discount: -${money(totals.discount)}`,
++    `Savings: -${money(totals.discount)}`,
+     `Tax: ${money(totals.tax)}`,
+     `Totla: ${money(totals.total)}`,
+   ].join('\n')

@@ -1,0 +1,10 @@
+{
+  "taskId": "savings-label-then-rate",
+  "armId": "auto-effort",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-11-02T06:53:58.496Z",
+  "wallMs": 26627,
+  "exitCode": 0,
+  "timedOut": false
+}

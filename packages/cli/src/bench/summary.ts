@@ -35,6 +35,20 @@ export type ArmSummary = {
   permissionDenials: number
   escalations: number
   linesChanged: number
+  /**
+   * Cache reads ÷ every prompt token (uncached, read, written), from `tokens`
+   * summed first. Low is a reason to look, not a failure: a first request or
+   * a short session reads little however well it caches.
+   */
+  cacheReadRatio?: number
+  /** Each run's first request, summed: a cold prefix written here depends on what ran before. */
+  firstRequestTokens?: Tokens
+  /** Requests right after a model or effort change, summed: the cache cost of switching. */
+  switches?: { requests: number; tokens: Tokens }
+  /** Requests cut at the output cap, the runs that had one, and how many of those runs still succeeded. */
+  maxTokens?: { requests: number; runs: number; recovered: number }
+  /** Efforts the main loop asked for before the router and sent after it, across the runs that logged them. */
+  efforts?: { requested: string[]; sent: string[] }
 }
 
 export type Cell = {
@@ -182,6 +196,12 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
     const plugin = runs.reduce((n, r) => n + r.plugin.costUsd, 0)
     const common = sumCosts(runs.filter(r => commonTasks.includes(r.taskId)))
     const isKnown = cost.unknown === 0
+    const tokens = sumTokens(runs.map(r => r.claude?.tokens ?? r.plugin.tokens))
+    const prompt = promptTokens(tokens)
+    const firsts = runs.flatMap(r => (r.plugin.firstRequest ? [r.plugin.firstRequest] : []))
+    const switched = runs.flatMap(r => (r.plugin.switches ? [r.plugin.switches] : []))
+    const capped = runs.filter(r => (r.plugin.stops?.max_tokens ?? 0) > 0)
+    const efforts = runs.flatMap(r => (r.plugin.efforts ? [r.plugin.efforts] : []))
 
     return {
       armId: arm.id,
@@ -197,11 +217,29 @@ export const summarizeBench = (tasks: readonly Task[], arms: readonly Arm[], uno
       ...(isKnown ? { differenceUsd: cost.usd - plugin } : {}),
       ...(common.unknown === 0 && commonTasks.length > 0 ? { commonTasksCostUsd: common.usd } : {}),
       meanWallMs: mean(runs.map(r => r.wallMs)),
-      tokens: sumTokens(runs.map(r => r.claude?.tokens ?? r.plugin.tokens)),
+      tokens,
       meanTurns: mean(runs.map(r => r.claude?.numTurns ?? 0)),
       permissionDenials: runs.reduce((n, r) => n + (r.claude?.permissionDenials ?? 0), 0),
       escalations: runs.reduce((n, r) => n + r.plugin.escalations, 0),
       linesChanged: runs.reduce((n, r) => n + r.diff.added + r.diff.removed, 0),
+      ...(prompt === 0 ? {} : { cacheReadRatio: tokens.cacheRead / prompt }),
+      ...(firsts.length === 0 ? {} : { firstRequestTokens: sumTokens(firsts) }),
+      ...(switched.length === 0
+        ? {}
+        : { switches: { requests: switched.reduce((n, s) => n + s.requests, 0), tokens: sumTokens(switched.map(s => s.tokens)) } }),
+      maxTokens: {
+        requests: runs.reduce((n, r) => n + (r.plugin.stops?.max_tokens ?? 0), 0),
+        runs: capped.length,
+        recovered: capped.filter(r => r.success).length,
+      },
+      ...(efforts.length === 0
+        ? {}
+        : {
+            efforts: {
+              requested: [...new Set(efforts.flatMap(e => e.requested))].sort(),
+              sent: [...new Set(efforts.flatMap(e => e.sent))].sort(),
+            },
+          }),
     }
   })
 

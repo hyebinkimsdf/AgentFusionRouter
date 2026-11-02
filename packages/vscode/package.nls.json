@@ -1,0 +1,11 @@
+{
+  "displayName": "Agent Fusion Router: savings",
+  "description": "Shows Agent Fusion Router's savings estimates for Claude Code and Codex in the status bar, at API list prices.",
+  "command.showDetails": "Show savings details",
+  "command.refresh": "Refresh savings",
+  "config.period": "The period the status bar covers: today (since local midnight), the last 7 days, or the last 30 days.",
+  "config.refreshMinutes": "How often to re-read the records, in minutes. Only files that changed are read again.",
+  "config.claudeLogDir": "The Claude Code plugin's log folder. Empty: ~/.agent-fusion-router/logs. A WSL folder can be named as \\\\wsl$\\<distro>\\home\\<user>\\.agent-fusion-router\\logs.",
+  "config.codexHome": "Codex's data folder. Empty: CODEX_HOME, else ~/.codex. A WSL folder can be named as \\\\wsl$\\<distro>\\home\\<user>\\.codex.",
+  "config.codexStandardModel": "Simulate ordinary Codex work on this model (for example sol). Empty keeps each turn's own model, the router's default."
+}

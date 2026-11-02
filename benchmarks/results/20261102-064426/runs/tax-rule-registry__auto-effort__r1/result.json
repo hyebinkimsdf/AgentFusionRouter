@@ -1,0 +1,102 @@
+{
+  "taskId": "tax-rule-registry",
+  "armId": "auto-effort",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "timedOut": false,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0
+  },
+  "wallMs": 51507,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.21373470000000003,
+    "durationMs": 49378,
+    "numTurns": 11,
+    "permissionDenials": 1,
+    "tokens": {
+      "input": 1321,
+      "output": 3684,
+      "cacheRead": 209199,
+      "cacheWrite": 12313
+    },
+    "conversationTokens": {
+      "input": 12,
+      "output": 3660,
+      "cacheRead": 209199,
+      "cacheWrite": 12313
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1309,
+          "output": 24,
+          "cacheRead": 0,
+          "cacheWrite": 0
+        },
+        "costUsd": 0.0001429
+      },
+      "claude-opus-5-5": {
+        "tokens": {
+          "input": 12,
+          "output": 3660,
+          "cacheRead": 209199,
+          "cacheWrite": 12313
+        },
+        "costUsd": 0.21359180000000003
+      }
+    },
+    "budgetExhausted": false
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 6,
+    "tokens": {
+      "input": 12,
+      "output": 3660,
+      "cacheRead": 209199,
+      "cacheWrite": 12313
+    },
+    "costUsd": 0.21359180000000003,
+    "decidedTier": "heavy",
+    "routedRequests": 6,
+    "escalations": 0,
+    "models": [
+      "claude-opus-5-5"
+    ],
+    "stops": {
+      "tool_use": 5,
+      "end_turn": 1
+    },
+    "firstRequest": {
+      "input": 2,
+      "output": 180,
+      "cacheRead": 27152,
+      "cacheWrite": 7049
+    },
+    "switches": {
+      "requests": 0,
+      "tokens": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      }
+    },
+    "efforts": {
+      "requested": [
+        "medium"
+      ],
+      "sent": [
+        "high"
+      ]
+    }
+  },
+  "diff": {
+    "files": 2,
+    "added": 39,
+    "removed": 8
+  }
+}

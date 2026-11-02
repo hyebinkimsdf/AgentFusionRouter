@@ -20,7 +20,7 @@ packages/cli             reads logs; report, explain, doctor
 | Component | Where | Notes |
 |---|---|---|
 | Model catalog | `core/catalog.ts` | Aliases (`haiku`, `opus`) in tier targets, so a new release needs no code change. Prices are used only for estimates. |
-| Task analyzer | `core/analyzer.ts` | Weighted rules in English and Korean. Length is never a signal. Every rule has cases in `core/test/analyzer.test.ts`; add a case before changing a rule. |
+| Task analyzer | `core/analyzer.ts` | Weighted rules in English and Korean. Length is never a signal. A message that pastes material and asks for a check or an opinion is read by its own words around the paste, as a review. Every rule has cases in `core/test/analyzer.test.ts`; add a case before changing a rule. |
 | Router | `core/router.ts` | Rules only for now. An ambiguous result falls back to standard, which keeps the session's model. |
 | Context manager | `core/context.ts` | A brief has five parts: goal, inputs, writable scope, dependencies, done checks. `writeConflicts` finds tasks that could edit the same path at once. Not wired into the adapter yet. |
 | Verification and escalation | `core/escalation.ts` | Counts consecutive failed test, build, and lint commands. Escalation is capped per turn. |

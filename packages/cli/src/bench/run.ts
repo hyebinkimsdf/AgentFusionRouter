@@ -17,7 +17,7 @@ import { claudeAnswer, deriveResult, hitLimit, parseClaudeOutput } from './deriv
 import { EVIDENCE_FILE, REPORT_HASH_FILE, checkHashes, dataHash, sha256, writeEvidence, writeReportHashes } from './evidence.ts'
 import { simulateAgent } from './simulate.ts'
 import { summarizeBench } from './summary.ts'
-import type { Arm, CheckOutcome, RunMeta, RunResult, TaskSet } from './types.ts'
+import type { Arm, CheckOutcome, RunMeta, RunResult, Task, TaskSet } from './types.ts'
 import { validateTasks } from './validate.ts'
 import { prepareWorkspace, removeWorkspace, runCheck, workspaceDiff } from './workspace.ts'
 
@@ -128,30 +128,54 @@ const sessionOf = (stdout: string): string | undefined => {
   }
 }
 
+export type Invocation = { prompt: string; mode: string; label?: string }
+
 /**
- * Runs the agent for one task. A plan-then-execute arm runs twice in one
- * session: plan mode first, then a resume in acceptEdits mode with the
- * approval. Its output holds both result lines, the second cumulative.
+ * The `claude -p` invocations of one task in one arm, all in one session: the
+ * prompt (in plan mode first for a plan-then-execute arm, then the approval),
+ * then each follow-up turn.
  */
-const runClaude = (opts: RunOptions, arm: Arm, prompt: string, workspace: string, settingsFile: string): AgentRun => {
-  if (!arm.planThenExecute) {
-    return invokeClaude(opts, arm, prompt, workspace, settingsFile, { mode: arm.permissionMode ?? 'acceptEdits', persist: false })
+export const invocations = (arm: Arm, task: Task): Invocation[] => {
+  const work = arm.planThenExecute ? 'acceptEdits' : (arm.permissionMode ?? 'acceptEdits')
+
+  return [
+    ...(arm.planThenExecute
+      ? [
+          { prompt: task.prompt, mode: 'plan' },
+          { prompt: APPROVE_PLAN, mode: 'acceptEdits', label: '[after the plan]' },
+        ]
+      : [{ prompt: task.prompt, mode: work }]),
+    ...(task.followUps ?? []).map((f, i) => ({ prompt: f.prompt, mode: work, label: `[turn ${i + 2}]` })),
+  ]
+}
+
+/**
+ * Runs the agent for one task: each invocation resumes the first one's
+ * session. The output holds one result line per invocation, the last one
+ * cumulative. An invocation that ended in an error (an API error, its budget,
+ * a crash) ends the run there: a plan that failed was never made, and a turn
+ * that failed leaves nothing for the next to build on.
+ */
+const runClaude = (opts: RunOptions, arm: Arm, task: Task, workspace: string, settingsFile: string): AgentRun => {
+  const steps = invocations(arm, task)
+  const persist = steps.length > 1
+  const runs: AgentRun[] = []
+  let session: string | undefined
+
+  for (const [i, step] of steps.entries()) {
+    const run = invokeClaude(opts, arm, step.prompt, workspace, settingsFile, { mode: step.mode, persist, ...(i === 0 ? {} : { resume: session }) })
+    runs.push(run)
+    if (i === 0) session = sessionOf(run.stdout)
+    if (session === undefined || run.timedOut || run.exitCode !== 0 || parseClaudeOutput(run.stdout)?.isError !== false) break
   }
 
-  const plan = invokeClaude(opts, arm, prompt, workspace, settingsFile, { mode: 'plan', persist: true })
-  const session = sessionOf(plan.stdout)
-  // A plan that ended in an error (an API error, its budget, a crash) was never
-  // made: approving it would only spend on a run that is judged by the plan.
-  if (session === undefined || plan.timedOut || plan.exitCode !== 0 || parseClaudeOutput(plan.stdout)?.isError !== false) return plan
-
-  const execute = invokeClaude(opts, arm, APPROVE_PLAN, workspace, settingsFile, { mode: 'acceptEdits', persist: true, resume: session })
-
+  const last = runs.at(-1) as AgentRun
   return {
-    stdout: `${plan.stdout.trim()}\n${execute.stdout}`,
-    stderr: `${plan.stderr}${execute.stderr}`,
-    exitCode: execute.exitCode,
-    timedOut: execute.timedOut,
-    wallMs: plan.wallMs + execute.wallMs,
+    stdout: runs.map((r, i) => (i < runs.length - 1 ? r.stdout.trim() : r.stdout)).join('\n'),
+    stderr: runs.map(r => r.stderr).join(''),
+    exitCode: last.exitCode,
+    timedOut: last.timedOut,
+    wallMs: runs.reduce((n, r) => n + r.wallMs, 0),
   }
 }
 
@@ -213,7 +237,8 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
       for (const arm of order) {
         // Each invocation gets the whole --budget, so every run has the same
         // cap: a run starts only if all of it fits in what the total leaves.
-        const capUsd = opts.budgetUsd * (arm.planThenExecute ? 2 : 1)
+        const steps = invocations(arm, task)
+        const capUsd = opts.budgetUsd * steps.length
         if (opts.maxTotalUsd !== undefined && spentUsd + capUsd > opts.maxTotalUsd) {
           stopped = `The next run could spend up to ${usd(capUsd)}, and ${usd(spentUsd)} of the ${usd(opts.maxTotalUsd)} total budget is spent, after ${n} of ${total} runs`
           await log(`Stopped: ${stopped}. Not started: ${total - n} of ${total} runs.`)
@@ -236,7 +261,10 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
         const settingsFile = join(settingsDir, 'settings.json')
         await writeFile(settingsFile, JSON.stringify(settings, null, 2))
         await writeFile(join(dir, 'settings.json'), `${JSON.stringify(settings, null, 2)}\n`)
-        await writeFile(join(dir, 'prompt.txt'), arm.planThenExecute ? `${task.prompt}\n\n[after the plan]\n${APPROVE_PLAN}\n` : task.prompt)
+        await writeFile(
+          join(dir, 'prompt.txt'),
+          steps.length === 1 ? task.prompt : `${steps.map(s => (s.label === undefined ? s.prompt : `${s.label}\n${s.prompt}`)).join('\n\n')}\n`,
+        )
 
         const startedAt = new Date().toISOString()
         const agent = opts.simulate
@@ -246,7 +274,7 @@ export const runBench = async (opts: RunOptions): Promise<string> => {
               exitCode: 0,
               timedOut: false,
             }
-          : runClaude(opts, arm, task.prompt, workspace, settingsFile)
+          : runClaude(opts, arm, task, workspace, settingsFile)
         await rm(settingsDir, { recursive: true, force: true })
 
         const { numstat, patch } = workspaceDiff(workspace)

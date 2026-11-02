@@ -1,0 +1,8 @@
+{
+  "//": "Only extension.ts imports 'vscode'; the other modules run under plain Node, so their tests need no editor.",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vscode"]
+  },
+  "include": ["src", "test"]
+}

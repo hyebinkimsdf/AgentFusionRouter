@@ -1,5 +1,7 @@
 node_modules/
 packages/cli/dist/
+packages/vscode/dist/
+*.vsix
 packages/claude-adapter/.types/
 # Written by Claude Code when it loads the plugin from this folder.
 .claude-plugin/types/

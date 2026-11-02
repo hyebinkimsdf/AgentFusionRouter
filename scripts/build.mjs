@@ -47,5 +47,16 @@ if (isCheck) {
     banner: { js: '#!/usr/bin/env node' },
     outfile: 'packages/cli/dist/cli.js',
   })
-  console.log(`Built ${PLUGIN_OUT} and packages/cli/dist/cli.js`)
+  // The VS Code extension: CommonJS (.cjs, as its package is ESM), as the editor loads it, with `vscode` left to the editor.
+  await build({
+    entryPoints: ['packages/vscode/src/extension.ts'],
+    bundle: true,
+    format: 'cjs',
+    platform: 'node',
+    target: 'node20',
+    external: ['vscode'],
+    charset: 'utf8',
+    outfile: 'packages/vscode/dist/extension.cjs',
+  })
+  console.log(`Built ${PLUGIN_OUT}, packages/cli/dist/cli.js and packages/vscode/dist/extension.cjs`)
 }

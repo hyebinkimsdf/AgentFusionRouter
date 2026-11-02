@@ -3,7 +3,7 @@ import { describe, test } from 'node:test'
 
 import type { UsageRecord } from '@agent-fusion-router/core'
 
-import { createLog, type FileWrite, parseRecords } from '../src/log.ts'
+import { createLog, type FileWrite, loggedLedgerUsd, parseRecords } from '../src/log.ts'
 
 const step = (ts: number): UsageRecord =>
   ({
@@ -51,5 +51,17 @@ describe('createLog', () => {
 
     assert.equal(written.length, 1)
     assert.equal(parseRecords(written.map(f => f.text)).length, 2)
+  })
+})
+
+describe('loggedLedgerUsd', () => {
+  const cost = (usd: number): UsageRecord => ({ v: 1, kind: 'cost', ts: 0, product: 'claude-code', session: 's1', usd, addedUsd: 0 })
+
+  test('is the highest total logged, whatever order the files were read in', () => {
+    assert.equal(loggedLedgerUsd([cost(0.4), step(0), cost(0.9), cost(0.6)]), 0.9)
+  })
+
+  test('is zero when no cost record was logged', () => {
+    assert.equal(loggedLedgerUsd([step(0)]), 0)
   })
 })

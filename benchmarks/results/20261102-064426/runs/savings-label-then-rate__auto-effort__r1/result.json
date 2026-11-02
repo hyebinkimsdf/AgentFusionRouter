@@ -1,0 +1,103 @@
+{
+  "taskId": "savings-label-then-rate",
+  "armId": "auto-effort",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "timedOut": false,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0
+  },
+  "wallMs": 26627,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.123784,
+    "durationMs": 6870,
+    "numTurns": 2,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 1203,
+      "output": 915,
+      "cacheRead": 199877,
+      "cacheWrite": 8214
+    },
+    "conversationTokens": {
+      "input": 12,
+      "output": 896,
+      "cacheRead": 199877,
+      "cacheWrite": 8214
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1191,
+          "output": 19,
+          "cacheRead": 0,
+          "cacheWrite": 0
+        },
+        "costUsd": 0.0001286
+      },
+      "claude-opus-5-5": {
+        "tokens": {
+          "input": 12,
+          "output": 896,
+          "cacheRead": 199877,
+          "cacheWrite": 8214
+        },
+        "costUsd": 0.1236554
+      }
+    },
+    "budgetExhausted": false
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 6,
+    "tokens": {
+      "input": 12,
+      "output": 896,
+      "cacheRead": 199877,
+      "cacheWrite": 8214
+    },
+    "costUsd": 0.1236554,
+    "decidedTier": "light",
+    "routedRequests": 4,
+    "escalations": 0,
+    "models": [
+      "claude-opus-5-5"
+    ],
+    "stops": {
+      "tool_use": 4,
+      "end_turn": 2
+    },
+    "firstRequest": {
+      "input": 2,
+      "output": 75,
+      "cacheRead": 27152,
+      "cacheWrite": 6932
+    },
+    "switches": {
+      "requests": 1,
+      "tokens": {
+        "input": 2,
+        "output": 243,
+        "cacheRead": 34811,
+        "cacheWrite": 227
+      }
+    },
+    "efforts": {
+      "requested": [
+        "medium"
+      ],
+      "sent": [
+        "low",
+        "medium"
+      ]
+    }
+  },
+  "diff": {
+    "files": 1,
+    "added": 4,
+    "removed": 1
+  }
+}

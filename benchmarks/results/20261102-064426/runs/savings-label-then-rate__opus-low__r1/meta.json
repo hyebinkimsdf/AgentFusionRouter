@@ -1,0 +1,10 @@
+{
+  "taskId": "savings-label-then-rate",
+  "armId": "opus-low",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-11-02T06:53:34.792Z",
+  "wallMs": 22705,
+  "exitCode": 0,
+  "timedOut": false
+}

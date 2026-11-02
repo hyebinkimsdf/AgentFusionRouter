@@ -40,24 +40,22 @@ export type CodexLedger = {
   analyses: Map<string, Map<string, Analysis>>
 }
 
-/**
- * Reads every session record under Codex's home into one ledger. Files are
- * only read. Entries name their file relative to the home, so no absolute
- * path (and no user name) is kept.
- */
-export const readCodexLedger = async (home: string = codexHome()): Promise<CodexLedger> => {
-  const files: FileLedger[] = []
+/** One session record, read: its ledger and its turns' analyses. */
+export type ParsedSession = { ledger: FileLedger; analyses: Map<string, Analysis> }
+
+/** Parses one session record's text. `file` names it, relative to Codex's home. */
+export const parseSession = (text: string, file: string): ParsedSession => ({ ledger: parseSessionLedger(text, file), analyses: analyzeTurns(text) })
+
+/** A session file's name relative to Codex's home, with forward slashes: no absolute path, no user name. */
+export const sessionName = (home: string, path: string): string => relative(home, path).split(sep).join('/')
+
+/** Joins parsed sessions, oldest first, into one ledger: a request id already seen in an earlier file is dropped. */
+export const combineSessions = (home: string, sessions: readonly ParsedSession[]): CodexLedger => {
   const entries: LedgerEntry[] = []
   const seen = new Set<string>()
-  const analyses = new Map<string, Map<string, Analysis>>()
   let crossFileDuplicates = 0
 
-  for (const path of await findSessionFiles(home)) {
-    const text = await readFile(path, 'utf8')
-    const ledger = parseSessionLedger(text, relative(home, path).split(sep).join('/'))
-    files.push(ledger)
-    analyses.set(ledger.file, analyzeTurns(text))
-
+  for (const { ledger } of sessions) {
     for (const entry of ledger.entries) {
       if (entry.requestId !== undefined) {
         if (seen.has(entry.requestId)) {
@@ -70,5 +68,19 @@ export const readCodexLedger = async (home: string = codexHome()): Promise<Codex
     }
   }
 
-  return { home, files, entries, crossFileDuplicates, analyses }
+  return {
+    home,
+    files: sessions.map(s => s.ledger),
+    entries,
+    crossFileDuplicates,
+    analyses: new Map(sessions.map(s => [s.ledger.file, s.analyses])),
+  }
+}
+
+/** Reads every session record under Codex's home into one ledger. Files are only read. */
+export const readCodexLedger = async (home: string = codexHome()): Promise<CodexLedger> => {
+  const sessions: ParsedSession[] = []
+  for (const path of await findSessionFiles(home)) sessions.push(parseSession(await readFile(path, 'utf8'), sessionName(home, path)))
+
+  return combineSessions(home, sessions)
 }

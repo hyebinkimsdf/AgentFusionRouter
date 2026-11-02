@@ -1,0 +1,16 @@
+diff --git a/src/format.js b/src/format.js
+index ea302a0..ff778fe 100644
+--- a/src/format.js
++++ b/src/format.js
+@@ -6,7 +6,10 @@ export const formatReceipt = (cart, totals) =>
+     ...cart.items.map(i => `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),
+     '',
+     `Subtotal: ${money(totals.subtotal)}`,
+-    `Discount: -${money(totals.discount)}`,
++    `Savings: -${money(totals.discount)}`,
+     `Tax: ${money(totals.tax)}`,
+     `Totla: ${money(totals.total)}`,
+   ].join('\n')
++
++/** A discount rate as text, e.g. 0.15 -> "15% off". */
++export const formatRate = rate => `${Math.round(rate * 100)}% off`

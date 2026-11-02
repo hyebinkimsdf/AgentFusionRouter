@@ -18,6 +18,7 @@ import { DEFAULT_POLICY, PRICES_AS_OF, analyzeTask, formatReport, route, summari
 import type { ComparisonInfo } from './bench/records.ts'
 import { writeIndex } from './bench/records.ts'
 import { loadForComparison, loadTasks, reportBench, runBench, verifyBench } from './bench/run.ts'
+import { CODEX_USAGE, codexRun } from './codex.ts'
 import { renderComparison } from './html/compare.ts'
 import { sha256 } from './bench/evidence.ts'
 import { validateTasks } from './bench/validate.ts'
@@ -47,6 +48,8 @@ Codex usage (read-only, from Codex's own session records)
     --json                Print the summary, every ledger entry and every turn as JSON
     --standard-model <m>  Simulate ordinary work on this model (sol, terra, an id) instead
                           of the turn's own, as the benchmark's auto arm routes it
+
+${CODEX_USAGE}
 
 Benchmarks (run from the repository root)
   bench validate        Check every task's hidden check: fails before, passes with the solution
@@ -326,6 +329,8 @@ const main = async (): Promise<void> => {
       return doctor(rest)
     case 'codex-usage':
       return codexUsage(rest)
+    case 'codex':
+      return codexRun(rest)
     case 'bench':
       return bench(rest)
     case undefined:

@@ -1,0 +1,904 @@
+{
+  "arms": [
+    {
+      "armId": "opus-session",
+      "label": "Opus, session effort",
+      "runs": 8,
+      "validRuns": 8,
+      "successes": 8,
+      "successRate": 1,
+      "costUsd": 1.0230169,
+      "costPerSuccessUsd": 0.1278771125,
+      "pluginEstimateUsd": 1.0219622,
+      "differenceUsd": 0.001054700000000075,
+      "commonTasksCostUsd": 1.0230169,
+      "meanWallMs": 21214.25,
+      "tokens": {
+        "input": 9796,
+        "output": 9717,
+        "cacheRead": 1229371,
+        "cacheWrite": 73094
+      },
+      "meanTurns": 5.25,
+      "permissionDenials": 2,
+      "escalations": 0,
+      "linesChanged": 105,
+      "cacheReadRatio": 0.9368342120965265,
+      "firstRequestTokens": {
+        "input": 16,
+        "output": 784,
+        "cacheRead": 217216,
+        "cacheWrite": 55664
+      },
+      "switches": {
+        "requests": 0,
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0
+        }
+      },
+      "maxTokens": {
+        "requests": 0,
+        "runs": 0,
+        "recovered": 0
+      },
+      "efforts": {
+        "requested": [
+          "medium"
+        ],
+        "sent": [
+          "medium"
+        ]
+      }
+    },
+    {
+      "armId": "opus-low",
+      "label": "Opus, low effort",
+      "runs": 8,
+      "validRuns": 8,
+      "successes": 8,
+      "successRate": 1,
+      "costUsd": 0.8192421,
+      "costPerSuccessUsd": 0.1024052625,
+      "pluginEstimateUsd": 0.8181884,
+      "differenceUsd": 0.0010536999999999352,
+      "commonTasksCostUsd": 0.8192421,
+      "meanWallMs": 14113.25,
+      "tokens": {
+        "input": 9782,
+        "output": 5370,
+        "cacheRead": 978162,
+        "cacheWrite": 64772
+      },
+      "meanTurns": 3.125,
+      "permissionDenials": 2,
+      "escalations": 0,
+      "linesChanged": 51,
+      "cacheReadRatio": 0.929179379813739,
+      "firstRequestTokens": {
+        "input": 16,
+        "output": 732,
+        "cacheRead": 217216,
+        "cacheWrite": 55674
+      },
+      "switches": {
+        "requests": 0,
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0
+        }
+      },
+      "maxTokens": {
+        "requests": 0,
+        "runs": 0,
+        "recovered": 0
+      },
+      "efforts": {
+        "requested": [
+          "medium"
+        ],
+        "sent": [
+          "low"
+        ]
+      }
+    },
+    {
+      "armId": "auto-effort",
+      "label": "Auto effort (Opus)",
+      "runs": 8,
+      "validRuns": 8,
+      "successes": 8,
+      "successRate": 1,
+      "costUsd": 0.9995851000000001,
+      "costPerSuccessUsd": 0.12494813750000001,
+      "pluginEstimateUsd": 0.9985304,
+      "differenceUsd": 0.001054700000000075,
+      "commonTasksCostUsd": 0.9995851000000001,
+      "meanWallMs": 20901.375,
+      "tokens": {
+        "input": 9792,
+        "output": 9590,
+        "cacheRead": 1161232,
+        "cacheWrite": 72188
+      },
+      "meanTurns": 5.25,
+      "permissionDenials": 1,
+      "escalations": 0,
+      "linesChanged": 105,
+      "cacheReadRatio": 0.9340579080639505,
+      "firstRequestTokens": {
+        "input": 16,
+        "output": 807,
+        "cacheRead": 217216,
+        "cacheWrite": 55659
+      },
+      "switches": {
+        "requests": 2,
+        "tokens": {
+          "input": 4,
+          "output": 251,
+          "cacheRead": 70016,
+          "cacheWrite": 499
+        }
+      },
+      "maxTokens": {
+        "requests": 0,
+        "runs": 0,
+        "recovered": 0
+      },
+      "efforts": {
+        "requested": [
+          "medium"
+        ],
+        "sent": [
+          "high",
+          "low",
+          "medium"
+        ]
+      }
+    },
+    {
+      "armId": "auto",
+      "label": "Auto routing",
+      "runs": 8,
+      "validRuns": 8,
+      "successes": 8,
+      "successRate": 1,
+      "costUsd": 0.42324741,
+      "costPerSuccessUsd": 0.05290592625,
+      "pluginEstimateUsd": 0.42219271,
+      "differenceUsd": 0.001054699999999964,
+      "commonTasksCostUsd": 0.42324741,
+      "meanWallMs": 15936.875,
+      "tokens": {
+        "input": 9784,
+        "output": 6807,
+        "cacheRead": 996971,
+        "cacheWrite": 82512
+      },
+      "meanTurns": 3.875,
+      "permissionDenials": 0,
+      "escalations": 0,
+      "linesChanged": 73,
+      "cacheReadRatio": 0.9152677901744934,
+      "firstRequestTokens": {
+        "input": 16,
+        "output": 1055,
+        "cacheRead": 217216,
+        "cacheWrite": 55671
+      },
+      "switches": {
+        "requests": 2,
+        "tokens": {
+          "input": 4,
+          "output": 92,
+          "cacheRead": 54304,
+          "cacheWrite": 15576
+        }
+      },
+      "maxTokens": {
+        "requests": 0,
+        "runs": 0,
+        "recovered": 0
+      },
+      "efforts": {
+        "requested": [
+          "medium"
+        ],
+        "sent": [
+          "high",
+          "low",
+          "medium"
+        ]
+      }
+    }
+  ],
+  "cells": [
+    {
+      "taskId": "find-tax-rate",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0716465,
+      "meanWallMs": 16840,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "find-tax-rate",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0716547,
+      "meanWallMs": 7982,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "find-tax-rate",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0716137,
+      "meanWallMs": 6064,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "find-tax-rate",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.00284497,
+      "meanWallMs": 9116,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0958355,
+      "meanWallMs": 17845,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0841051,
+      "meanWallMs": 11178,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.09445850000000001,
+      "meanWallMs": 11812,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "fix-receipt-typo",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0032121600000000004,
+      "meanWallMs": 9124,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1188819,
+      "meanWallMs": 22023,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0880933,
+      "meanWallMs": 11511,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.10438950000000001,
+      "meanWallMs": 17160,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "rename-calc-total",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0435332,
+      "meanWallMs": 17698,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.14026290000000002,
+      "meanWallMs": 23843,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0950266,
+      "meanWallMs": 9579,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.14107170000000002,
+      "meanWallMs": 23003,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "add-remove-item",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.045930900000000004,
+      "meanWallMs": 9778,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1851103,
+      "meanWallMs": 28521,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.11150879999999999,
+      "meanWallMs": 11993,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1444229,
+      "meanWallMs": 17838,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "fix-coupon-bug",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.0569875,
+      "meanWallMs": 14381,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1675827,
+      "meanWallMs": 28810,
+      "decidedTiers": [
+        "heavy"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1397773,
+      "meanWallMs": 24280,
+      "decidedTiers": [
+        "heavy"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.21373470000000003,
+      "meanWallMs": 51507,
+      "decidedTiers": [
+        "heavy"
+      ]
+    },
+    {
+      "taskId": "tax-rule-registry",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1741555,
+      "meanWallMs": 34973,
+      "decidedTiers": [
+        "heavy"
+      ]
+    },
+    {
+      "taskId": "count-items-then-locate",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.12087720000000002,
+      "meanWallMs": 16130,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "count-items-then-locate",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1076365,
+      "meanWallMs": 13678,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "count-items-then-locate",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1061101,
+      "meanWallMs": 13200,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "count-items-then-locate",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.04692341999999999,
+      "meanWallMs": 14190,
+      "decidedTiers": [
+        "standard"
+      ]
+    },
+    {
+      "taskId": "savings-label-then-rate",
+      "armId": "opus-session",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.12281990000000001,
+      "meanWallMs": 15702,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "savings-label-then-rate",
+      "armId": "opus-low",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.1214398,
+      "meanWallMs": 22705,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "savings-label-then-rate",
+      "armId": "auto-effort",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.123784,
+      "meanWallMs": 26627,
+      "decidedTiers": [
+        "light"
+      ]
+    },
+    {
+      "taskId": "savings-label-then-rate",
+      "armId": "auto",
+      "runs": 1,
+      "successes": 1,
+      "costUsd": 0.04965976,
+      "meanWallMs": 18235,
+      "decidedTiers": [
+        "light"
+      ]
+    }
+  ],
+  "commonTasks": [
+    "find-tax-rate",
+    "fix-receipt-typo",
+    "rename-calc-total",
+    "add-remove-item",
+    "fix-coupon-bug",
+    "tax-rule-registry",
+    "count-items-then-locate",
+    "savings-label-then-rate"
+  ],
+  "classifier": {
+    "scored": 32,
+    "correct": 32,
+    "matrix": {
+      "light": {
+        "light": 12,
+        "standard": 0,
+        "heavy": 0
+      },
+      "standard": {
+        "light": 0,
+        "standard": 16,
+        "heavy": 0
+      },
+      "heavy": {
+        "light": 0,
+        "standard": 0,
+        "heavy": 4
+      }
+    }
+  },
+  "crossCheck": {
+    "rows": [
+      {
+        "taskId": "find-tax-rate",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.0716465,
+        "pluginCostUsd": 0.07151660000000001,
+        "diffPct": -0.18130683285294935,
+        "differenceUsd": 0.00012989999999998836
+      },
+      {
+        "taskId": "find-tax-rate",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.0716547,
+        "pluginCostUsd": 0.0715248,
+        "diffPct": -0.18128608451364983,
+        "differenceUsd": 0.00012990000000000224
+      },
+      {
+        "taskId": "find-tax-rate",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.0716137,
+        "pluginCostUsd": 0.0714838,
+        "diffPct": -0.18138987372528192,
+        "differenceUsd": 0.00012990000000000224
+      },
+      {
+        "taskId": "find-tax-rate",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.00284497,
+        "pluginCostUsd": 0.00271507,
+        "diffPct": -4.5659532437951915,
+        "differenceUsd": 0.00012990000000000007
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.0958355,
+        "pluginCostUsd": 0.095705,
+        "diffPct": -0.1361708343985325,
+        "differenceUsd": 0.0001305000000000056
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.0841051,
+        "pluginCostUsd": 0.0839756,
+        "diffPct": -0.15397401584446674,
+        "differenceUsd": 0.0001295000000000046
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.09445850000000001,
+        "pluginCostUsd": 0.094328,
+        "diffPct": -0.13815590973815958,
+        "differenceUsd": 0.0001305000000000195
+      },
+      {
+        "taskId": "fix-receipt-typo",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0032121600000000004,
+        "pluginCostUsd": 0.0030826600000000005,
+        "diffPct": -4.0315550906555035,
+        "differenceUsd": 0.00012949999999999984
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.1188819,
+        "pluginCostUsd": 0.118751,
+        "diffPct": -0.11010927651728583,
+        "differenceUsd": 0.00013090000000000324
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.0880933,
+        "pluginCostUsd": 0.0879624,
+        "diffPct": -0.14859245822327377,
+        "differenceUsd": 0.00013090000000000324
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.10438950000000001,
+        "pluginCostUsd": 0.1042586,
+        "diffPct": -0.12539575340432058,
+        "differenceUsd": 0.00013090000000000324
+      },
+      {
+        "taskId": "rename-calc-total",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0435332,
+        "pluginCostUsd": 0.043402300000000005,
+        "diffPct": -0.30069004805526883,
+        "differenceUsd": 0.0001308999999999963
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.14026290000000002,
+        "pluginCostUsd": 0.1401296,
+        "diffPct": -0.09503582201710545,
+        "differenceUsd": 0.00013330000000003062
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.0950266,
+        "pluginCostUsd": 0.0948938,
+        "diffPct": -0.13975034358800836,
+        "differenceUsd": 0.00013280000000000236
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.14107170000000002,
+        "pluginCostUsd": 0.1409384,
+        "diffPct": -0.09449095743514156,
+        "differenceUsd": 0.00013330000000003062
+      },
+      {
+        "taskId": "add-remove-item",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.045930900000000004,
+        "pluginCostUsd": 0.0457976,
+        "diffPct": -0.29021856745677277,
+        "differenceUsd": 0.00013330000000000286
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.1851103,
+        "pluginCostUsd": 0.184982,
+        "diffPct": -0.06931002758895526,
+        "differenceUsd": 0.00012829999999999786
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.11150879999999999,
+        "pluginCostUsd": 0.11138100000000001,
+        "diffPct": -0.11460978864446887,
+        "differenceUsd": 0.00012779999999998348
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.1444229,
+        "pluginCostUsd": 0.1442946,
+        "diffPct": -0.08883632720295595,
+        "differenceUsd": 0.00012829999999999786
+      },
+      {
+        "taskId": "fix-coupon-bug",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.0569875,
+        "pluginCostUsd": 0.056858200000000005,
+        "diffPct": -0.22689186225049152,
+        "differenceUsd": 0.00012929999999999886
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.1675827,
+        "pluginCostUsd": 0.1674398,
+        "diffPct": -0.08527133170667459,
+        "differenceUsd": 0.00014290000000000136
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.1397773,
+        "pluginCostUsd": 0.1396344,
+        "diffPct": -0.10223405374120216,
+        "differenceUsd": 0.00014290000000000136
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.21373470000000003,
+        "pluginCostUsd": 0.21359180000000003,
+        "diffPct": -0.0668585868368596,
+        "differenceUsd": 0.00014290000000000136
+      },
+      {
+        "taskId": "tax-rule-registry",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.1741555,
+        "pluginCostUsd": 0.1740126,
+        "diffPct": -0.0820531077112129,
+        "differenceUsd": 0.00014290000000000136
+      },
+      {
+        "taskId": "count-items-then-locate",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.12087720000000002,
+        "pluginCostUsd": 0.12074739999999999,
+        "diffPct": -0.10738170639295673,
+        "differenceUsd": 0.00012980000000002712
+      },
+      {
+        "taskId": "count-items-then-locate",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.1076365,
+        "pluginCostUsd": 0.1075062,
+        "diffPct": -0.12105558987889782,
+        "differenceUsd": 0.00013029999999999986
+      },
+      {
+        "taskId": "count-items-then-locate",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.1061101,
+        "pluginCostUsd": 0.1059798,
+        "diffPct": -0.12279698162568865,
+        "differenceUsd": 0.00013029999999999986
+      },
+      {
+        "taskId": "count-items-then-locate",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.04692341999999999,
+        "pluginCostUsd": 0.04679312000000001,
+        "diffPct": -0.27768649429215947,
+        "differenceUsd": 0.00013029999999998598
+      },
+      {
+        "taskId": "savings-label-then-rate",
+        "armId": "opus-session",
+        "rep": 1,
+        "claudeCostUsd": 0.12281990000000001,
+        "pluginCostUsd": 0.1226908,
+        "diffPct": -0.10511325933338733,
+        "differenceUsd": 0.000129100000000007
+      },
+      {
+        "taskId": "savings-label-then-rate",
+        "armId": "opus-low",
+        "rep": 1,
+        "claudeCostUsd": 0.1214398,
+        "pluginCostUsd": 0.12131019999999999,
+        "diffPct": -0.10671954334576267,
+        "differenceUsd": 0.0001296000000000075
+      },
+      {
+        "taskId": "savings-label-then-rate",
+        "armId": "auto-effort",
+        "rep": 1,
+        "claudeCostUsd": 0.123784,
+        "pluginCostUsd": 0.1236554,
+        "diffPct": -0.1038906482259472,
+        "differenceUsd": 0.0001286000000000065
+      },
+      {
+        "taskId": "savings-label-then-rate",
+        "armId": "auto",
+        "rep": 1,
+        "claudeCostUsd": 0.04965976,
+        "pluginCostUsd": 0.04953116,
+        "diffPct": -0.2589621858824923,
+        "differenceUsd": 0.00012859999999999955
+      }
+    ],
+    "meanAbsDiffPct": 0.4035545814650321,
+    "maxAbsDiffPct": 4.5659532437951915
+  },
+  "invalid": [],
+  "spend": {
+    "costUsd": 3.2650915100000004,
+    "invalidCostUsd": 0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "taskId": "fix-receipt-typo",
+  "armId": "opus-low",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-11-02T06:46:03.422Z",
+  "wallMs": 11178,
+  "exitCode": 0,
+  "timedOut": false
+}

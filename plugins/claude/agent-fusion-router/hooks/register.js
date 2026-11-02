@@ -93,14 +93,24 @@ var RULES = [
     kind: "lookup",
     tier: "light",
     weight: 1,
-    pattern: /\b(explain|summari[sz]e|what is|what does|how does)\b|설명해|요약해/i
+    pattern: /\b(explain|summari[sz]e|what is|what does|how does)\b|설명(해|한다면)|요약(해|하면|한다면)|간략(하게|히)/i
+  },
+  {
+    // A short question about the work so far, or about a choice: "좋을까?", "아니잖아".
+    // Weaker than every heavy signal, so a question about a hard thing stays heavy.
+    name: "question",
+    kind: "question",
+    tier: "light",
+    weight: 2,
+    pattern: /\b(what do you think|your (thoughts|opinion|take)|does (this|that|it) make sense|is (this|that|it) (right|correct))\b|의견|어떻게 생각|어때|어떄|괜찮을까|좋을까|나을까|않나\?|않을까|아니(야|지|잖아)|아냐|거잖아|말이지|되려나|맞(아|지|나|는거)/i
   },
   {
     name: "implement",
     kind: "implement",
     tier: "standard",
     weight: 2,
-    pattern: /\b(implement|add(?! (a )?comments?\b) \w+|create (a|an|the)|build (a|an)|write (a|an|the)|hook up|wire up|endpoint|component|feature|support for)\b|구현|추가해|만들어|작성해|기능/i
+    pattern: /\b(implement|add(?! (a )?comments?\b) \w+|create (a|an|the)|build (a|an)|write (a|an|the)|hook up|wire up|endpoint|component|feature|support for)\b|구현|추가해|만들어|작성해|기능/i,
+    work: true
   },
   {
     // A bare verb: "fix the typo" is still a typo.
@@ -108,7 +118,8 @@ var RULES = [
     kind: "debug",
     tier: "standard",
     weight: 1,
-    pattern: /\b(fix|change|update|modify)\b|고쳐|수정해|바꿔/i
+    pattern: /\b(fix|change|update|modify)\b|고쳐|수정해|바꿔/i,
+    work: true
   },
   {
     name: "debug",
@@ -122,23 +133,43 @@ var RULES = [
     kind: "design",
     tier: "heavy",
     weight: 3,
-    pattern: /\b(architect(ure)?|design (a|the|an)|redesign|re-?architect|trade-?offs?|strategy|approach (for|to)|migrat(e|ion)|refactor (the|our|all)|overhaul|rewrite)\b|설계|아키텍처|구조(를)?\s?(바꿔|개선|잡)|전략|마이그레이션|리팩(터|토)링|재작성|전면/i
+    pattern: /\b(architect(ure)?|design (a|the|an)|redesign|re-?architect|trade-?offs?|strategy|approach (for|to)|migrat(e|ion)|refactor (the|our|all)|overhaul|rewrite)\b|설계|아키텍처|구조(를)?\s?(어떻게\s?)?(바꿔|개선|잡)|전략|마이그레이션|리팩(터|토)링|재작성|전면/i
   },
   {
+    // "왜" only next to a failure: "왜 문제인지 설명해줘" asks for an explanation, not a hunt.
     name: "investigate",
     kind: "debug",
     tier: "heavy",
     weight: 2,
-    pattern: /\b(why (does|is|do|did|are)|root cause|investigate|intermittent|flaky|race condition|deadlock|memory leak|non-?deterministic)\b|왜\s|원인|간헐적|경쟁\s?조건|교착|메모리\s?누수/i
+    pattern: /\b(why (does|is|do|did|are)|root cause|investigate|intermittent|flaky|race condition|deadlock|memory leak|non-?deterministic)\b|왜.{0,15}(안\s?(돼|되|나와|떠)|에러|오류|실패|느려|죽|터져|깨져)|원인|간헐적|경쟁\s?조건|교착|메모리\s?누수/i
   },
   {
+    // A choice between approaches. A bare "좋을까?" is a question, above.
     name: "uncertain",
     kind: "design",
     tier: "heavy",
     weight: 2,
-    pattern: /\b(should (i|we)|which (is|would be) better|best way|not sure|unclear|pros and cons)\b|좋을까|나을까|어떻게 하면 좋|장단점|모르겠/i
+    pattern: /\b(should (i|we)|which (is|would be) better|best way|not sure|unclear|pros and cons)\b|(어떤|어느|뭐)\s?(게|것이|쪽이)\s?(더\s?)?(나을|좋을)|어떻게 하면 좋|장단점|모르겠/i
   }
 ];
+var ANSWER_ONLY = /\b((do not|don'?t) (change|edit|modify|implement|touch)|without (changing|editing|modifying)|no code changes|just (answer|tell me))\b|(수정|작업|구현|변경)(은|는)?\s?하지\s?말고|대답만|답만|의견만|설명만/i;
+var PASTE_MIN_CHARS = 400;
+var REFERS = /[해헤]당\s?(내용|글|부분|아티클|문서|답변)|(아래|위|이)\s?(내용|처럼|글|계획|답변|보고)|\b(the (above|below|following)|this (plan|report|proposal|draft|summary|review|answer))\b/i;
+var OPINION = /의견|어떻게 생각|어때|어떄|괜찮(을까|아\?)|\b(what do you think|your (thoughts|opinion|take)|does (this|it) (look right|make sense))\b/i;
+var CHECK = /확인해|검토해|봐\s?줘|문제(가)?\s?없|답해|대답해|\b(review|check)\b/i;
+var WORK = /(구현|추가|작성|수정|적용|반영|변경|진행)해\s?(줘|주세요|줄래|봐)|(만들어|고쳐|바꿔)\s?(줘|주세요|줄래|봐)|\b(please )?(implement|fix|add|create|build|write|change|update|apply) (it|this|that|them|these|those)\b/i;
+var askAround = (input) => {
+  if (input.length < PASTE_MIN_CHARS) return void 0;
+  const short = (ask) => ask.length <= Math.min(600, input.length / 2) && !WORK.test(ask) ? ask : void 0;
+  const head = input.split(/\n\s*\n/, 1)[0] ?? "";
+  if (REFERS.test(head) && (OPINION.test(head) || CHECK.test(head))) return short(head);
+  if (WORK.test(head)) return void 0;
+  const sentences = (input.trimEnd().split(/\n\s*\n/).at(-1) ?? "").split(/(?<=[.?!])\s+|\n+/).filter((s) => s.trim() !== "");
+  for (let i = sentences.length - 1; i >= Math.max(0, sentences.length - 3); i--) {
+    if (REFERS.test(sentences[i] ?? "") || OPINION.test(sentences[i] ?? "")) return short(sentences.slice(i).join(" "));
+  }
+  return void 0;
+};
 var RISK = /\b(prod(uction)?|deploy(ment)?|schema change|auth(entication|orization)?|payments?|billing|security|secrets?|credentials?|encryption|data loss)\b|운영\s?(서버|환경|DB)|배포|결제|인증|권한|보안|암호화|개인정보|데이터\s?삭제/i;
 var BREADTH = /\b(all files|every (file|module|component|package)|entire (codebase|repo|project|app)|across (the )?(codebase|repo|project|modules|packages)|whole (codebase|project|repo)|everywhere|project-?wide)\b|전체\s?(코드|파일|프로젝트)|모든\s?(파일|모듈|컴포넌트|패키지)|프로젝트\s?전반/i;
 var VERIFY = /\b(tests?|specs?|typecheck|lint|ci)\b|테스트/i;
@@ -147,7 +178,8 @@ var CONTINUE = /^\s*(continue|go on|go ahead|proceed|keep going|yes|yep|yeah|ok(
 var FAILURE = /\b(still (fails?|failing|broken|not working|doesn'?t work|getting|seeing|the same)|didn'?t (work|fix)|same (error|problem|issue)|wrong again|that broke)\b|여전히|아직도\s?(안|에러|오류)|똑같은\s?(에러|오류|문제)|또\s?(에러|오류|안)|해결이\s?안|안\s?고쳐/i;
 var MAX_CHARS = 4e3;
 var analyzeTask = (input) => {
-  const text2 = input.slice(0, MAX_CHARS);
+  const ask = askAround(input);
+  const text2 = ask ?? input.slice(0, MAX_CHARS);
   const signals = [];
   if (CONTINUE.test(text2)) {
     return { kind: "unknown", tier: "standard", confidence: 0, followUp: "continue", signals: ["follow-up:continue"] };
@@ -156,11 +188,17 @@ var analyzeTask = (input) => {
   if (followUp) signals.push("follow-up:failure");
   const scores = { light: 0, standard: 0, heavy: 0 };
   const kinds = /* @__PURE__ */ new Map();
+  const add = (name, kind2, tier2, weight) => {
+    scores[tier2] += weight;
+    kinds.set(kind2, (kinds.get(kind2) ?? 0) + weight);
+    signals.push(name);
+  };
+  if (ask !== void 0) add("review", "review", "standard", 2);
+  const answerOnly = ask === void 0 && ANSWER_ONLY.test(text2);
+  if (answerOnly) add("answer-only", "question", "light", 2);
   for (const rule of RULES) {
-    if (!rule.pattern.test(text2)) continue;
-    scores[rule.tier] += rule.weight;
-    kinds.set(rule.kind, (kinds.get(rule.kind) ?? 0) + rule.weight);
-    signals.push(rule.name);
+    if (answerOnly && rule.work || ask !== void 0 && rule.tier === "light") continue;
+    if (rule.pattern.test(text2)) add(rule.name, rule.kind, rule.tier, rule.weight);
   }
   const files = new Set(text2.match(FILE_REF) ?? []).size;
   if (files >= 4) {
@@ -326,6 +364,8 @@ var summarize = (records) => {
   const sessions = /* @__PURE__ */ new Set();
   const models = /* @__PURE__ */ new Map();
   const unpriced = /* @__PURE__ */ new Set();
+  const ledgerBySession = /* @__PURE__ */ new Map();
+  const estimateBySession = /* @__PURE__ */ new Map();
   const s = {
     sessions: 0,
     requests: 0,
@@ -359,6 +399,10 @@ var summarize = (records) => {
       if (r.applied) s.routedSpawns += 1;
       continue;
     }
+    if (r.kind === "cost") {
+      ledgerBySession.set(r.session, (ledgerBySession.get(r.session) ?? 0) + r.addedUsd);
+      continue;
+    }
     s.requests += 1;
     if (r.applied) s.routedRequests += 1;
     const wouldRoute = !r.applied && (r.decidedModel !== void 0 || r.decidedEffort !== void 0);
@@ -380,10 +424,20 @@ var summarize = (records) => {
     s.costUsd += actual;
     s.unroutedCostUsd += r.applied ? estimateCostUsd(r.tokens, r.requestedModel) ?? actual : actual;
     s.potentialCostUsd += wouldRoute && r.decidedModel ? estimateCostUsd(r.tokens, r.decidedModel) ?? actual : actual;
+    estimateBySession.set(r.session, (estimateBySession.get(r.session) ?? 0) + actual);
   }
   s.sessions = sessions.size;
   s.byModel = [...models.values()].sort((a, b) => (b.costUsd ?? 0) - (a.costUsd ?? 0));
   s.unpricedModels = [...unpriced];
+  if (ledgerBySession.size > 0) {
+    let usd2 = 0;
+    let estimatedUsd = 0;
+    for (const [session, spent] of ledgerBySession) {
+      usd2 += spent;
+      estimatedUsd += estimateBySession.get(session) ?? 0;
+    }
+    s.ledger = { usd: usd2, sessions: ledgerBySession.size, estimatedUsd };
+  }
   return s;
 };
 var compact = (n) => n >= 1e9 ? `${(n / 1e9).toFixed(1)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : `${n}`;
@@ -420,6 +474,13 @@ var formatReport = (s) => {
     lines.push(`Observe mode: the router would have changed ${s.wouldRouteRequests} requests`);
   }
   lines.push("", `Estimated cost: ${usd(s.costUsd)}`);
+  if (s.ledger !== void 0) {
+    const scope = s.ledger.sessions === s.sessions ? "" : ` (${s.ledger.sessions} of ${s.sessions} sessions logged it)`;
+    lines.push(
+      `Claude Code's computed cost: ${usd(s.ledger.usd)}${scope}`,
+      `Not in the per-request estimates: ${usd(s.ledger.usd - s.ledger.estimatedUsd)} (background requests, compaction, web search, cache write rates)`
+    );
+  }
   if (s.routedRequests > 0) {
     lines.push(
       `Same tokens at the models asked for before routing: ${usd(s.unroutedCostUsd)}`,
@@ -449,18 +510,20 @@ var text = (value, fallback) => typeof value === "string" && value.trim() !== ""
 var count = (value, fallback) => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : fallback;
 var flag = (value, fallback) => typeof value === "boolean" ? value : fallback;
 var oneOf = (value, allowed, fallback) => allowed.includes(value) ? value : fallback;
-var target = (model, base) => {
+var EFFORTS = ["low", "medium", "high", "xhigh", "max"];
+var target = (model, effort, base) => {
   const name = text(model, "");
-  return name === "" ? { effort: base.effort } : { ...base, model: name };
+  const level = EFFORTS.includes(effort) ? effort : base.effort;
+  return { ...name === "" ? {} : { model: name }, ...level === void 0 ? {} : { effort: level } };
 };
 var readConfig = (options) => ({
   policy: {
     mode: oneOf(options.mode, ["observe", "route"], DEFAULT_POLICY.mode),
     strategy: oneOf(options.strategy, ["model", "effort"], DEFAULT_POLICY.strategy),
     tiers: {
-      light: target(options.lightModel ?? CLAUDE_TIER_DEFAULTS.light.model, CLAUDE_TIER_DEFAULTS.light),
-      standard: target(options.standardModel, CLAUDE_TIER_DEFAULTS.standard),
-      heavy: target(options.heavyModel ?? CLAUDE_TIER_DEFAULTS.heavy.model, CLAUDE_TIER_DEFAULTS.heavy)
+      light: target(options.lightModel ?? CLAUDE_TIER_DEFAULTS.light.model, options.lightEffort, CLAUDE_TIER_DEFAULTS.light),
+      standard: target(options.standardModel, options.standardEffort, CLAUDE_TIER_DEFAULTS.standard),
+      heavy: target(options.heavyModel ?? CLAUDE_TIER_DEFAULTS.heavy.model, options.heavyEffort, CLAUDE_TIER_DEFAULTS.heavy)
     },
     minLightConfidence: count(options.minLightConfidence, DEFAULT_POLICY.minLightConfidence),
     cacheGuardTokens: count(options.cacheGuardTokens, DEFAULT_POLICY.cacheGuardTokens)
@@ -535,6 +598,7 @@ var first = (files) => {
   const entry = files.entries().next().value;
   return entry === void 0 ? void 0 : { path: entry[0], text: entry[1] };
 };
+var loggedLedgerUsd = (records) => records.reduce((max, r) => r.kind === "cost" && r.usd > max ? r.usd : max, 0);
 var parseRecords = (texts) => texts.flatMap(
   (text2) => text2.split("\n").flatMap((line) => {
     try {
@@ -557,6 +621,7 @@ function register(on, options) {
   const config = readConfig(options);
   const turns = /* @__PURE__ */ new Map();
   const loops = /* @__PURE__ */ new Map();
+  const ledgers = /* @__PURE__ */ new Map();
   const log = createLog();
   const loopOf = (agentId) => {
     const key = agentId ?? MAIN;
@@ -664,6 +729,8 @@ function register(on, options) {
       decidedModel: decision?.model,
       decidedEffort: decision?.effort,
       applied: decision?.applied ?? false,
+      requestedEffort: e.effort,
+      effort: sent.effort,
       model: result.usage?.model,
       tokens,
       stop: result.stopReason,
@@ -740,6 +807,31 @@ ${e.prompt}`),
       model: result.model,
       reasons: decision.reasons
     });
+    await log.flush((file) => $.fs.write(file.path, file.text));
+    return result;
+  }).catch((_, e, next) => next(e));
+  on("session.measure", async ($, e, next) => {
+    const result = await next(e);
+    const usd2 = e.cost?.usd;
+    const dir = log.dir;
+    if (usd2 === void 0 || dir === void 0) return result;
+    const session = await $.session.id();
+    let known = ledgers.get(session);
+    if (known === void 0) {
+      known = (async () => {
+        const entries = await $.fs.list(dir).catch(() => []);
+        const files = entries.filter((f) => f.kind === "file" && f.name.includes(`_${session}_`));
+        const texts = await Promise.all(files.map((f) => $.fs.read(`${dir}/${f.name}`).catch(() => "")));
+        const logged = loggedLedgerUsd(parseRecords(texts));
+        return { usd: usd2 < logged ? 0 : logged };
+      })();
+      ledgers.set(session, known);
+    }
+    const last = await known;
+    if (usd2 <= last.usd) return result;
+    const addedUsd = usd2 - last.usd;
+    last.usd = usd2;
+    log.add({ v: 1, kind: "cost", ts: Date.now(), product: "claude-code", session, usd: usd2, addedUsd });
     await log.flush((file) => $.fs.write(file.path, file.text));
     return result;
   }).catch((_, e, next) => next(e));

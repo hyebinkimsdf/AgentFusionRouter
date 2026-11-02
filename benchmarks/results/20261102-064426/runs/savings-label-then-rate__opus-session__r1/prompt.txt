@@ -1,0 +1,4 @@
+In src/format.js, rename the receipt line "Discount:" to "Savings:".
+
+[turn 2]
+Now add a formatRate(rate) function to src/format.js that turns a discount rate such as 0.15 into the text "15% off", rounded to a whole percent.

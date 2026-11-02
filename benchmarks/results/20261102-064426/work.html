@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work produced in 20261102-064426</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
+  --good-text: #006300; --critical: #d03b3b; --warning: #fab219; --warning-wash: #fff6dd;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+    --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
+  --good-text: #0ca30c; --critical: #e66767; --warning-wash: #2e2610;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 32px 16px 40px; }
+h1 { font-size: 24px; line-height: 1.25; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 36px 0 12px; }
+h3 { font-size: 14px; margin: 20px 0 8px; }
+p { margin: 0 0 10px; }
+.sub, .note { color: var(--ink-2); }
+.note { font-size: 12px; margin-top: 2px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.tiles { display: grid; gap: 10px 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 10px; }
+.tile .label { color: var(--ink-2); font-size: 12px; }
+.tile .value { font-size: 22px; font-weight: 600; }
+.charts { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.chart { margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+figcaption { font-weight: 600; margin-bottom: 8px; }
+/* Charts keep their drawn size, so their text matches the page's; they shrink on narrow screens. */
+.chart svg { display: block; max-width: 100%; height: auto; }
+svg .lbl { fill: var(--ink-2); font-size: 12px; }
+svg .val { fill: var(--ink); font-size: 12px; font-variant-numeric: tabular-nums; }
+svg .small { font-size: 11px; }
+svg .axis { stroke: var(--axis); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; color: var(--ink-2); font-size: 12px; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+th { color: var(--ink-2); font-weight: 600; font-size: 12px; }
+.num { text-align: right; }
+.pass { color: var(--good-text); font-weight: 600; }
+.fail { color: var(--critical); font-weight: 600; }
+.banner { border: 2px solid var(--warning); background: var(--warning-wash); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
+.banner strong { display: block; font-size: 15px; }
+/* A hash wraps rather than overflow: a screenshot must show every character. */
+/* Named fonts first: a Korean system monospace draws the backslash as ₩, and a
+   screenshot must show the characters the files hold. */
+code, pre, .hash { font-family: Consolas, "Cascadia Mono", Menlo, "SF Mono", ui-monospace, monospace; }
+.hash { font-size: 12px; word-break: break-all; white-space: normal; }
+code { font-size: 12px; }
+pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; }
+footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid var(--grid); color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body><main>
+<style>
+.works { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); align-items: start; }
+.work h4 { margin: 12px 0 6px; font-size: 12px; color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; }
+.work .head { margin-bottom: 2px; }
+.prompt { background: var(--surface); border-left: 3px solid var(--axis); padding: 8px 12px; color: var(--ink-2); }
+pre.diff, pre.answer { margin: 0; padding: 10px 12px; font-size: 11.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-all; }
+pre.diff .add { color: var(--good-text); background: rgba(12,163,12,.08); display: inline-block; width: 100%; }
+pre.diff .del { color: var(--critical); background: rgba(208,59,59,.08); display: inline-block; width: 100%; }
+pre.diff .hunk { color: var(--s1); }
+pre.diff .meta { color: var(--muted); }
+</style>
+<h1>Work produced</h1>
+<p class="sub">Run <code>20261102-064426</code> · what each session changed in the project and answered, task by task, with the model that did it. Pass or fail comes from the hidden tests, run after the session ended.</p>
+
+<h2><code>find-tax-rate</code> <span class="sub">lookup · expected light</span></h2>
+<p class="prompt">Which file defines the tax rate for Korea (KR)? Answer with the relative file path only.</p>
+
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0716 · 17s · 2 turns · +0 / −0 lines</div>
+<h4>Change</h4>
+<p class="note">No change to the project.</p>
+<h4>Final answer</h4>
+<pre class="answer">src/pricing.js</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0717 · 8s · 2 turns · +0 / −0 lines</div>
+<h4>Change</h4>
+<p class="note">No change to the project.</p>
+<h4>Final answer</h4>
+<pre class="answer">src/pricing.js</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0716 · 6s · 2 turns · +0 / −0 lines</div>
+<h4>Change</h4>
+<p class="note">No change to the project.</p>
+<h4>Final answer</h4>
+<pre class="answer">src/pricing.js</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>haiku-5-5</strong> · $0.0028 · 9s · 4 turns · +0 / −0 lines</div>
+<h4>Change</h4>
+<p class="note">No change to the project.</p>
+<h4>Final answer</h4>
+<pre class="answer">src\pricing.js</pre>
+</div></div>
+<h2><code>fix-receipt-typo</code> <span class="sub">mechanical · expected light</span></h2>
+<p class="prompt">Fix the typo in the receipt&#39;s total label in src/format.js: it prints &quot;Totla&quot; instead of &quot;Total&quot;.</p>
+
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0958 · 18s · 4 turns · +1 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..84c473a 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -8,5 +8,5 @@ export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="">     `Discount: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="del">-    `Totla: ${money(totals.total)}`,</span>
+<span class="add">+    `Total: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I fixed the typo: the receipt&#39;s total line in `src/format.js:11` now prints `Total:` instead of `Totla:`. That was the only place in the repo with the misspelling, so no tests or other files needed changing. I didn&#39;t run anything to check the output.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0841 · 11s · 3 turns · +1 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..84c473a 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -8,5 +8,5 @@ export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="">     `Discount: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="del">-    `Totla: ${money(totals.total)}`,</span>
+<span class="add">+    `Total: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I fixed the typo: the receipt&#39;s total label now prints &quot;Total&quot; instead of &quot;Totla&quot; (`src/format.js:11`). I didn&#39;t run anything to check the printed output.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0945 · 12s · 4 turns · +1 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..84c473a 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -8,5 +8,5 @@ export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="">     `Discount: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="del">-    `Totla: ${money(totals.total)}`,</span>
+<span class="add">+    `Total: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I fixed the typo on `src/format.js:11`: the receipt now prints `Total:` instead of `Totla:`. I didn&#39;t run anything after the edit.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>haiku-5-5</strong> · $0.0032 · 9s · 4 turns · +1 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..84c473a 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -8,5 +8,5 @@ export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="">     `Discount: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="del">-    `Totla: ${money(totals.total)}`,</span>
+<span class="add">+    `Total: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">Fixed the typo in `src\format.js` line 11: the label now reads `Total:` instead of `Totla:`. I didn&#39;t run any tests or commit the change.</pre>
+</div></div>
+<h2><code>rename-calc-total</code> <span class="sub">mechanical · expected standard</span></h2>
+<p class="prompt">Rename the function calcTotal to calculateTotal everywhere in the project, including the tests.</p>
+
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1189 · 22s · 6 turns · +6 / −6 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..7bd8308 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -18,7 +18,7 @@ export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class="del">-export const calcTotal = cart =&gt; {</span>
+<span class="add">+export const calculateTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="">   const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..22bf77b 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,6 +1,6 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="del">-/** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class="add">+/** A plain-text receipt for a cart and its totals from calculateTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..4f54b23 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -22,5 +22,5 @@ test(&#39;adding never changes the original cart&#39;, () =&gt; {</span>
+<span class=""> test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 })</span>
+<span class=""> </span>
+<span class="del">-  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class="add">+  assert.deepEqual(calculateTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class=""> })</span>
+<span class="meta">diff --git a/test/format.test.js b/test/format.test.js</span>
+<span class="meta">index 84b2ee5..c78b5d4 100644</span>
+<span class="meta">--- a/test/format.test.js</span>
+<span class="meta">+++ b/test/format.test.js</span>
+<span class="hunk">@@ -1,12 +1,12 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> import { formatReceipt } from &#39;../src/format.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;the receipt lists each item and the subtotal&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(), { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 2 })</span>
+<span class="del">-  const receipt = formatReceipt(cart, calcTotal(cart))</span>
+<span class="add">+  const receipt = formatReceipt(cart, calculateTotal(cart))</span>
+<span class=""> </span>
+<span class="">   assert.match(receipt, /Pen x2 {2}KRW 3,000/)</span>
+<span class="">   assert.match(receipt, /Subtotal: KRW 3,000/)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I renamed `calcTotal` to `calculateTotal` everywhere it appeared, and all 8 tests pass.
+
+It came up in four files:
+- `src/cart.js:21`: the exported function itself
+- `src/format.js:3`: a doc comment that mentions it
+- `test/cart.test.js` and `test/format.test.js`: the imports and the calls
+
+A search afterwards found no `calcTotal` left in the project. I haven&#39;t committed the changes.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0881 · 12s · 3 turns · +6 / −6 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..7bd8308 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -18,7 +18,7 @@ export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class="del">-export const calcTotal = cart =&gt; {</span>
+<span class="add">+export const calculateTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="">   const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..22bf77b 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,6 +1,6 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="del">-/** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class="add">+/** A plain-text receipt for a cart and its totals from calculateTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..4f54b23 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -22,5 +22,5 @@ test(&#39;adding never changes the original cart&#39;, () =&gt; {</span>
+<span class=""> test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 })</span>
+<span class=""> </span>
+<span class="del">-  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class="add">+  assert.deepEqual(calculateTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class=""> })</span>
+<span class="meta">diff --git a/test/format.test.js b/test/format.test.js</span>
+<span class="meta">index 84b2ee5..c78b5d4 100644</span>
+<span class="meta">--- a/test/format.test.js</span>
+<span class="meta">+++ b/test/format.test.js</span>
+<span class="hunk">@@ -1,12 +1,12 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> import { formatReceipt } from &#39;../src/format.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;the receipt lists each item and the subtotal&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(), { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 2 })</span>
+<span class="del">-  const receipt = formatReceipt(cart, calcTotal(cart))</span>
+<span class="add">+  const receipt = formatReceipt(cart, calculateTotal(cart))</span>
+<span class=""> </span>
+<span class="">   assert.match(receipt, /Pen x2 {2}KRW 3,000/)</span>
+<span class="">   assert.match(receipt, /Subtotal: KRW 3,000/)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I renamed `calcTotal` to `calculateTotal` everywhere it appeared:
+- **`src/cart.js`**: the export itself
+- **`src/format.js`**: a doc comment that mentions it
+- **`test/cart.test.js`** and **`test/format.test.js`**: the imports and calls
+
+A search afterwards finds no `calcTotal` left in the project, and all 8 tests pass.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1044 · 17s · 4 turns · +6 / −6 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..7bd8308 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -18,7 +18,7 @@ export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class="del">-export const calcTotal = cart =&gt; {</span>
+<span class="add">+export const calculateTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="">   const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..22bf77b 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,6 +1,6 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="del">-/** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class="add">+/** A plain-text receipt for a cart and its totals from calculateTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..4f54b23 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -22,5 +22,5 @@ test(&#39;adding never changes the original cart&#39;, () =&gt; {</span>
+<span class=""> test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 })</span>
+<span class=""> </span>
+<span class="del">-  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class="add">+  assert.deepEqual(calculateTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class=""> })</span>
+<span class="meta">diff --git a/test/format.test.js b/test/format.test.js</span>
+<span class="meta">index 84b2ee5..c78b5d4 100644</span>
+<span class="meta">--- a/test/format.test.js</span>
+<span class="meta">+++ b/test/format.test.js</span>
+<span class="hunk">@@ -1,12 +1,12 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> import { formatReceipt } from &#39;../src/format.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;the receipt lists each item and the subtotal&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(), { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 2 })</span>
+<span class="del">-  const receipt = formatReceipt(cart, calcTotal(cart))</span>
+<span class="add">+  const receipt = formatReceipt(cart, calculateTotal(cart))</span>
+<span class=""> </span>
+<span class="">   assert.match(receipt, /Pen x2 {2}KRW 3,000/)</span>
+<span class="">   assert.match(receipt, /Subtotal: KRW 3,000/)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I renamed `calcTotal` to `calculateTotal` in all 6 places it appeared, and all 8 tests pass.
+
+- `src/cart.js:21`: the function&#39;s definition and export.
+- `src/format.js:3`: a doc comment that mentions it.
+- `test/cart.test.js`: the import and one call.
+- `test/format.test.js`: the import and one call.
+
+A search afterward finds no remaining uses of `calcTotal`. I haven&#39;t committed the change.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>sonnet-5-5</strong> · $0.0435 · 18s · 3 turns · +6 / −6 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..7bd8308 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -18,7 +18,7 @@ export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class="del">-export const calcTotal = cart =&gt; {</span>
+<span class="add">+export const calculateTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="">   const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..22bf77b 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,6 +1,6 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="del">-/** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class="add">+/** A plain-text receipt for a cart and its totals from calculateTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..4f54b23 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -22,5 +22,5 @@ test(&#39;adding never changes the original cart&#39;, () =&gt; {</span>
+<span class=""> test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 })</span>
+<span class=""> </span>
+<span class="del">-  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class="add">+  assert.deepEqual(calculateTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class=""> })</span>
+<span class="meta">diff --git a/test/format.test.js b/test/format.test.js</span>
+<span class="meta">index 84b2ee5..c78b5d4 100644</span>
+<span class="meta">--- a/test/format.test.js</span>
+<span class="meta">+++ b/test/format.test.js</span>
+<span class="hunk">@@ -1,12 +1,12 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calculateTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class=""> import { formatReceipt } from &#39;../src/format.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;the receipt lists each item and the subtotal&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(), { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 2 })</span>
+<span class="del">-  const receipt = formatReceipt(cart, calcTotal(cart))</span>
+<span class="add">+  const receipt = formatReceipt(cart, calculateTotal(cart))</span>
+<span class=""> </span>
+<span class="">   assert.match(receipt, /Pen x2 {2}KRW 3,000/)</span>
+<span class="">   assert.match(receipt, /Subtotal: KRW 3,000/)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I renamed `calcTotal` to `calculateTotal` in all six places it appeared:
+
+- `src/cart.js`: the definition
+- `src/format.js`: a doc comment
+- `test/cart.test.js` and `test/format.test.js`: the imports and the calls
+
+A follow-up search found no `calcTotal` left in the project. I didn&#39;t run the tests.</pre>
+</div></div>
+<h2><code>add-remove-item</code> <span class="sub">implement · expected standard</span></h2>
+<p class="prompt">Add a removeItem(cart, sku) function to src/cart.js that returns a new cart without the item with that SKU. Removing a SKU that is not in the cart returns an equal cart, and the original cart must not change.</p>
+
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1403 · 24s · 8 turns · +24 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..842f71e 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -13,6 +13,9 @@ export const addItem = (cart, item) =&gt; {</span>
+<span class="">   return { ...cart, items }</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="add">+/** Removes the item with this SKU; an unknown SKU leaves the cart&#39;s contents as they were. */</span>
+<span class="add">+export const removeItem = (cart, sku) =&gt; ({ ...cart, items: cart.items.filter(i =&gt; i.sku !== sku) })</span>
+<span class="add">+</span>
+<span class=""> export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..10bec19 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,9 +1,29 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calcTotal, createCart, removeItem } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class="add">+const ink = { sku: &#39;INK&#39;, name: &#39;Ink&#39;, price: 3000, qty: 1 }</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;removing a SKU drops only that item&#39;, () =&gt; {</span>
+<span class="add">+  const cart = removeItem(addItem(addItem(createCart(), pen), ink), &#39;PEN&#39;)</span>
+<span class="add">+</span>
+<span class="add">+  assert.deepEqual(cart.items.map(i =&gt; i.sku), [&#39;INK&#39;])</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;removing an unknown SKU returns an equal cart&#39;, () =&gt; {</span>
+<span class="add">+  const cart = addItem(createCart(), pen)</span>
+<span class="add">+</span>
+<span class="add">+  assert.deepEqual(removeItem(cart, &#39;NOPE&#39;), cart)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;removing never changes the original cart&#39;, () =&gt; {</span>
+<span class="add">+  const cart = addItem(createCart(), pen)</span>
+<span class="add">+  removeItem(cart, &#39;PEN&#39;)</span>
+<span class="add">+</span>
+<span class="add">+  assert.equal(cart.items.length, 1)</span>
+<span class="add">+})</span>
+<span class=""> </span>
+<span class=""> test(&#39;adding the same SKU raises its quantity&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(addItem(createCart(), pen), { ...pen, qty: 2 })</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `removeItem(cart, sku)` to `src/cart.js`, along with three tests in `test/cart.test.js`. All 11 tests pass.
+
+```js
+export const removeItem = (cart, sku) =&gt; ({ ...cart, items: cart.items.filter(i =&gt; i.sku !== sku) })
+```
+
+- **Removes only that SKU:** every other item stays in the cart.
+- **SKU not in the cart:** you get back a cart equal to the original. It&#39;s a new object, not the same one, so it compares equal by value but not by identity.
+- **Original cart doesn&#39;t change:** `filter` builds a new list, so the input cart is never modified.
+
+**Possible bug in `calcTotal` (I didn&#39;t change it):** it looks like the coupon is applied twice. `discount` is worked out from `applyCoupon(subtotal, …)`, and then `taxable` runs `applyCoupon` again on `subtotal - discount`. So with a coupon, tax and total would come out too low. The existing tests only check a cart with no coupon, so they don&#39;t catch this. I can fix it and add a coupon test if you&#39;d like.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.0950 · 10s · 3 turns · +3 / −0 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..5b76167 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -13,6 +13,9 @@ export const addItem = (cart, item) =&gt; {</span>
+<span class="">   return { ...cart, items }</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="add">+/** Removes the item with `sku`; an unknown SKU leaves the items as they were. */</span>
+<span class="add">+export const removeItem = (cart, sku) =&gt; ({ ...cart, items: cart.items.filter(i =&gt; i.sku !== sku) })</span>
+<span class="add">+</span>
+<span class=""> export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `removeItem(cart, sku)` to `src/cart.js`, just below `addItem`. It returns a new cart whose `items` list leaves out that SKU. If the SKU isn&#39;t in the cart, the new cart has the same contents. `filter` builds a new array, so the original cart is never changed. I haven&#39;t run any tests on it.
+
+There&#39;s a separate bug in `calcTotal` (lines 23–24) that I left alone. It applies the coupon twice: `discount` is already the coupon&#39;s reduction, and then `taxable` runs `applyCoupon` again on `subtotal - discount`. As a result, `total` comes out too low whenever a coupon is set. I can fix it if you&#39;d like.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1411 · 23s · 9 turns · +24 / −2 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..c7bd654 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -13,7 +13,10 @@ export const addItem = (cart, item) =&gt; {</span>
+<span class="">   return { ...cart, items }</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="del">-export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class="add">+/** Removes the item with this SKU; an unknown SKU leaves the items as they were. */</span>
+<span class="add">+export const removeItem = (cart, sku) =&gt; ({ ...cart, items: cart.items.filter(i =&gt; i.sku !== sku) })</span>
+<span class="add">+</span>
+<span class="add">+export const useCoupon =(cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..deb01c3 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calcTotal, createCart, removeItem } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -19,6 +19,25 @@ test(&#39;adding never changes the original cart&#39;, () =&gt; {</span>
+<span class="">   assert.equal(cart.items.length, 0)</span>
+<span class=""> })</span>
+<span class=""> </span>
+<span class="add">+test(&#39;removing a SKU drops only that item&#39;, () =&gt; {</span>
+<span class="add">+  const cart = addItem(addItem(createCart(), pen), { sku: &#39;INK&#39;, name: &#39;Ink&#39;, price: 3000, qty: 1 })</span>
+<span class="add">+</span>
+<span class="add">+  assert.deepEqual(removeItem(cart, &#39;PEN&#39;).items.map(i =&gt; i.sku), [&#39;INK&#39;])</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;removing an unknown SKU returns an equal cart&#39;, () =&gt; {</span>
+<span class="add">+  const cart = addItem(createCart(), pen)</span>
+<span class="add">+</span>
+<span class="add">+  assert.deepEqual(removeItem(cart, &#39;NOPE&#39;), cart)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;removing never changes the original cart&#39;, () =&gt; {</span>
+<span class="add">+  const cart = addItem(createCart(), pen)</span>
+<span class="add">+  removeItem(cart, &#39;PEN&#39;)</span>
+<span class="add">+</span>
+<span class="add">+  assert.equal(cart.items.length, 1)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class=""> test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class="">   const cart = addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 })</span>
+<span class=""> </span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `removeItem(cart, sku)` to `src/cart.js`. It builds a new cart with a filtered copy of `items`, so the original cart is never changed. If the SKU isn&#39;t in the cart, you get back a new cart that is deep-equal to the original.
+
+```js
+export const removeItem = (cart, sku) =&gt; ({ ...cart, items: cart.items.filter(i =&gt; i.sku !== sku) })
+```
+
+I also added three tests to `test/cart.test.js`: removing a SKU drops only that item, an unknown SKU returns an equal cart, and the original cart doesn&#39;t change. The full suite passes (11 of 11).
+
+I also noticed what looks like a bug in `calcTotal` (`src/cart.js:24`), and I didn&#39;t change it. `taxable` is `applyCoupon(subtotal - discount, cart.coupon)`, so the coupon is applied twice: once in `discount` and again here. That means carts with a coupon get taxed and totaled on an amount that&#39;s too low. The existing total test uses no coupon, so it doesn&#39;t catch this. The fix is probably `const taxable = subtotal - discount`. Want me to make that change and add a test with a coupon?</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>sonnet-5-5</strong> · $0.0459 · 10s · 3 turns · +4 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..b2fdaa4 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -13,7 +13,10 @@ export const addItem = (cart, item) =&gt; {</span>
+<span class="">   return { ...cart, items }</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="del">-export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class="add">+/** Removes the item with that SKU; an unknown SKU leaves an equal cart. */</span>
+<span class="add">+export const removeItem = (cart, sku) =&gt; ({ ...cart, items: cart.items.filter(i =&gt; i.sku !== sku) })</span>
+<span class="add">+</span>
+<span class="add">+export const useCoupon =(cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `removeItem(cart, sku)` to `src/cart.js`, just above `useCoupon`. I haven&#39;t run it or any tests.
+
+It filters out the item with that SKU and returns a new cart. `filter` always builds a new `items` array, so the original cart is never changed, and an unknown SKU gives back an equal cart. The region and coupon carry over unchanged.</pre>
+</div></div>
+<h2><code>fix-coupon-bug</code> <span class="sub">debug · expected standard</span></h2>
+<p class="prompt">Customers report that the order total is too low when they use a coupon. Find the bug and fix it.</p>
+
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1851 · 29s · 11 turns · +8 / −2 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..b5be918 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -21,7 +21,7 @@ export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price *</span>
+<span class=""> export const calcTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="del">-  const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="add">+  const taxable = subtotal - discount</span>
+<span class="">   const tax = applyTax(taxable, cart.region)</span>
+<span class=""> </span>
+<span class="">   return { subtotal, discount, tax, total: taxable + tax }</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..d8911c0 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calcTotal, createCart, useCoupon } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -24,3 +24,9 @@ test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class=""> </span>
+<span class="">   assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class=""> })</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a coupon is taken off once, before tax&#39;, () =&gt; {</span>
+<span class="add">+  const cart = useCoupon(addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 }), &#39;WELCOME10&#39;)</span>
+<span class="add">+</span>
+<span class="add">+  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 300, tax: 270, total: 2970 })</span>
+<span class="add">+})</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">Coupon orders were discounted twice. I fixed it, and all 9 tests now pass.
+
+**The bug** (`src/cart.js:24`, in `calcTotal`): line 23 worked out the discount correctly. Line 24 then applied the coupon again to an amount that was already discounted:
+
+```js
+const taxable = applyCoupon(subtotal - discount, cart.coupon)
+```
+
+So with `WELCOME10`, a 3000 order became 2700 and then 2430, which is about 19% off instead of 10%. Tax was also charged on the lower amount. The receipt still showed the correct `discount` of 300, so the total didn&#39;t match the line items.
+
+**The fix:**
+
+```js
+const taxable = subtotal - discount
+```
+
+**Test:** none of the existing tests checked an order total with a coupon, which is how this got through. I added one to `test/cart.test.js`: a 3000 cart with `WELCOME10` should give discount 300, tax 270 and total 2970. Working it through by hand, the old code gives 2673 for that cart, so the new test would have caught the bug. I didn&#39;t run it against the unfixed code to confirm.
+
+Nothing is committed yet.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1115 · 12s · 5 turns · +1 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..b5be918 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -21,7 +21,7 @@ export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price *</span>
+<span class=""> export const calcTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="del">-  const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="add">+  const taxable = subtotal - discount</span>
+<span class="">   const tax = applyTax(taxable, cart.region)</span>
+<span class=""> </span>
+<span class="">   return { subtotal, discount, tax, total: taxable + tax }</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I fixed it. The coupon was being applied twice, in `calcTotal` (`src/cart.js:24`). The code already worked out the discounted amount as `subtotal - discount`, then ran `applyCoupon` on that result again before adding tax.
+
+For example, with `VIP20` on a ₩10,000 cart, the taxable amount came out as ₩6,400 (20% off, then 20% off again) instead of ₩8,000. Tax was then charged on that wrong amount, so the total was too low.
+
+I changed the line to `const taxable = subtotal - discount`. All 8 tests pass, but none of them checks a cart total with a coupon applied, which is why this got through. I can add a regression test for that if you want.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1444 · 18s · 9 turns · +8 / −2 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..b5be918 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -21,7 +21,7 @@ export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price *</span>
+<span class=""> export const calcTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="del">-  const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="add">+  const taxable = subtotal - discount</span>
+<span class="">   const tax = applyTax(taxable, cart.region)</span>
+<span class=""> </span>
+<span class="">   return { subtotal, discount, tax, total: taxable + tax }</span>
+<span class="meta">diff --git a/test/cart.test.js b/test/cart.test.js</span>
+<span class="meta">index 4c945b7..46ea020 100644</span>
+<span class="meta">--- a/test/cart.test.js</span>
+<span class="meta">+++ b/test/cart.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { addItem, calcTotal, createCart } from &#39;../src/cart.js&#39;</span>
+<span class="add">+import { addItem, calcTotal, createCart, useCoupon } from &#39;../src/cart.js&#39;</span>
+<span class=""> </span>
+<span class=""> const pen = { sku: &#39;PEN&#39;, name: &#39;Pen&#39;, price: 1500, qty: 1 }</span>
+<span class=""> </span>
+<span class="hunk">@@ -24,3 +24,9 @@ test(&#39;totals without a coupon add Korean tax&#39;, () =&gt; {</span>
+<span class=""> </span>
+<span class="">   assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 0, tax: 300, total: 3300 })</span>
+<span class=""> })</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a coupon discounts the subtotal once, and tax is on the discounted amount&#39;, () =&gt; {</span>
+<span class="add">+  const cart = useCoupon(addItem(createCart(&#39;KR&#39;), { ...pen, qty: 2 }), &#39;WELCOME10&#39;)</span>
+<span class="add">+</span>
+<span class="add">+  assert.deepEqual(calcTotal(cart), { subtotal: 3000, discount: 300, tax: 270, total: 2970 })</span>
+<span class="add">+})</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">The bug was in `calcTotal` in `src/cart.js`: it applied the coupon twice. Line 23 worked out the discount correctly, but line 24 then ran `applyCoupon` again on the already-discounted amount. With `WELCOME10` on a 3000 cart, customers paid tax on 2430 instead of 2700, so the total came out to 2673 instead of 2970.
+
+**Fix:** line 24 now uses the discounted amount directly: `const taxable = subtotal - discount`.
+
+I also added a coupon test to `test/cart.test.js`, because the existing cart tests only checked totals without a coupon, which is how this got through. It checks that a cart of 3000 with `WELCOME10` gives a discount of 300, tax of 270 and a total of 2970. All 9 tests pass.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>sonnet-5-5</strong> · $0.0570 · 14s · 5 turns · +1 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..b5be918 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -21,7 +21,7 @@ export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price *</span>
+<span class=""> export const calcTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span>
+<span class="">   const discount = subtotal - applyCoupon(subtotal, cart.coupon)</span>
+<span class="del">-  const taxable = applyCoupon(subtotal - discount, cart.coupon)</span>
+<span class="add">+  const taxable = subtotal - discount</span>
+<span class="">   const tax = applyTax(taxable, cart.region)</span>
+<span class=""> </span>
+<span class="">   return { subtotal, discount, tax, total: taxable + tax }</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I found and fixed the bug in `calcTotal` in `src/cart.js`. All 8 existing tests pass, but none of them covers a coupon combined with tax, so I didn&#39;t test the fixed case directly.
+
+**Cause:** the coupon was applied twice. `discount` was already computed from the coupon, and the taxable amount then applied the coupon again to `subtotal - discount`. With `WELCOME10` on 10,000, the taxable amount came out as 8,100 instead of 9,000, so the tax and total were both too low.
+
+**Fix:** the taxable amount is now `subtotal - discount`, so the coupon is applied once.
+
+I didn&#39;t add a test for a coupon combined with tax. I can add one if you want.</pre>
+</div></div>
+<h2><code>tax-rule-registry</code> <span class="sub">design · expected heavy</span></h2>
+<p class="prompt">Tax rules are hard-coded as a rate table in src/pricing.js, and Japan needs a different rounding rule. Redesign tax handling so each region&#39;s rule is pluggable: export registerTaxRule(region, rule), where rule is a function (amount) =&gt; tax. applyTax(amount, region) must keep the same results for KR and US and keep throwing for unknown regions. Register JP as 10% consumption tax rounded down to a whole unit.</p>
+
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1676 · 29s · 8 turns · +39 / −10 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/pricing.js b/src/pricing.js</span>
+<span class="meta">index 2b458ae..62ff852 100644</span>
+<span class="meta">--- a/src/pricing.js</span>
+<span class="meta">+++ b/src/pricing.js</span>
+<span class="hunk">@@ -1,10 +1,5 @@</span>
+<span class=""> // Amounts are whole currency units (won, cents) so totals never carry float error.</span>
+<span class=""> </span>
+<span class="del">-export const TAX_RATES = {</span>
+<span class="del">-  KR: 0.1,</span>
+<span class="del">-  US: 0.08,</span>
+<span class="del">-}</span>
+<span class="del">-</span>
+<span class=""> export const COUPONS = {</span>
+<span class="">   WELCOME10: 0.1,</span>
+<span class="">   VIP20: 0.2,</span>
+<span class="hunk">@@ -17,10 +12,25 @@ export const applyCoupon = (amount, coupon) =&gt; {</span>
+<span class="">   return Math.round(amount * (1 - rate))</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="del">-/** The tax owed on an amount in a region, rounded to a whole unit. */</span>
+<span class="add">+// A Map, not an object, so a region like &quot;toString&quot; can&#39;t hit a prototype method.</span>
+<span class="add">+const taxRules = new Map()</span>
+<span class="add">+</span>
+<span class="add">+/** Sets how a region&#39;s tax is computed: rule takes an amount and returns the tax in whole units. */</span>
+<span class="add">+export const registerTaxRule = (region, rule) =&gt; {</span>
+<span class="add">+  if (typeof rule !== &#39;function&#39;) throw new TypeError(`Tax rule for region ${region} must be a function`)</span>
+<span class="add">+</span>
+<span class="add">+  taxRules.set(region, rule)</span>
+<span class="add">+}</span>
+<span class="add">+</span>
+<span class="add">+/** The tax owed on an amount in a region, as computed by that region&#39;s registered rule. */</span>
+<span class=""> export const applyTax = (amount, region) =&gt; {</span>
+<span class="del">-  const rate = TAX_RATES[region]</span>
+<span class="del">-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class="add">+  const rule = taxRules.get(region)</span>
+<span class="add">+  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class=""> </span>
+<span class="del">-  return Math.round(amount * rate)</span>
+<span class="add">+  return rule(amount)</span>
+<span class=""> }</span>
+<span class="add">+</span>
+<span class="add">+registerTaxRule(&#39;KR&#39;, (amount) =&gt; Math.round(amount * 0.1))</span>
+<span class="add">+registerTaxRule(&#39;US&#39;, (amount) =&gt; Math.round(amount * 0.08))</span>
+<span class="add">+// Japan&#39;s consumption tax drops any fraction of a yen rather than rounding it.</span>
+<span class="add">+registerTaxRule(&#39;JP&#39;, (amount) =&gt; Math.floor(amount * 0.1))</span>
+<span class="meta">diff --git a/test/pricing.test.js b/test/pricing.test.js</span>
+<span class="meta">index 57885e7..6c4a6eb 100644</span>
+<span class="meta">--- a/test/pricing.test.js</span>
+<span class="meta">+++ b/test/pricing.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { applyCoupon, applyTax } from &#39;../src/pricing.js&#39;</span>
+<span class="add">+import { applyCoupon, applyTax, registerTaxRule } from &#39;../src/pricing.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;a coupon takes its percentage off&#39;, () =&gt; {</span>
+<span class="">   assert.equal(applyCoupon(10000, &#39;WELCOME10&#39;), 9000)</span>
+<span class="hunk">@@ -20,4 +20,23 @@ test(&#39;tax follows the region&#39;, () =&gt; {</span>
+<span class=""> </span>
+<span class=""> test(&#39;an unknown region is an error&#39;, () =&gt; {</span>
+<span class="">   assert.throws(() =&gt; applyTax(1000, &#39;ZZ&#39;))</span>
+<span class="add">+  assert.throws(() =&gt; applyTax(1000, &#39;toString&#39;))</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;Japan rounds consumption tax down to a whole yen&#39;, () =&gt; {</span>
+<span class="add">+  assert.equal(applyTax(1000, &#39;JP&#39;), 100)</span>
+<span class="add">+  assert.equal(applyTax(1005, &#39;JP&#39;), 100)</span>
+<span class="add">+  assert.equal(applyTax(1009, &#39;JP&#39;), 100)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;KR and US still round to the nearest unit&#39;, () =&gt; {</span>
+<span class="add">+  assert.equal(applyTax(1005, &#39;KR&#39;), 101)</span>
+<span class="add">+  assert.equal(applyTax(1006, &#39;US&#39;), 80)</span>
+<span class="add">+  assert.equal(applyTax(1007, &#39;US&#39;), 81)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a registered rule decides the tax for its region&#39;, () =&gt; {</span>
+<span class="add">+  registerTaxRule(&#39;XX&#39;, (amount) =&gt; amount * 2)</span>
+<span class="add">+  assert.equal(applyTax(50, &#39;XX&#39;), 100)</span>
+<span class="add">+  assert.throws(() =&gt; registerTaxRule(&#39;XX&#39;, 0.1), TypeError)</span>
+<span class=""> })</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">Each region&#39;s tax rule is now pluggable, and JP is registered. All 11 tests pass.
+
+**What changed in `src/pricing.js`:**
+- **New `registerTaxRule(region, rule)`:** stores the rule in a `Map`. It throws a `TypeError` if `rule` isn&#39;t a function, so passing an old-style rate like `0.1` by mistake fails right away.
+- **`applyTax(amount, region)`:** looks up the region&#39;s rule and calls it. It still throws `No tax rule for region …` for unknown regions.
+- **Built-in rules:** KR (`Math.round(amount * 0.1)`) and US (`Math.round(amount * 0.08)`) work out exactly as before, and JP is `Math.floor(amount * 0.1)`. So JP charges ¥100 tax on ¥1,009, where the old rounding would give ¥101.
+- **Fix:** a region like `&quot;toString&quot;` now throws as it should. Before, it reached a method every JavaScript object has, so `applyTax` returned `NaN` instead of an error.
+
+**Tests added** in `test/pricing.test.js`: JP rounding down, KR and US still rounding to the nearest unit at the edge cases, registering a custom rule, rejecting a rule that isn&#39;t a function, and the `&quot;toString&quot;` case.
+
+**Decision for you:** I removed the exported `TAX_RATES` table. Nothing in this repo used it, but code outside the repo that i …</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1398 · 24s · 6 turns · +20 / −4 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/pricing.js b/src/pricing.js</span>
+<span class="meta">index 2b458ae..ad35601 100644</span>
+<span class="meta">--- a/src/pricing.js</span>
+<span class="meta">+++ b/src/pricing.js</span>
+<span class="hunk">@@ -17,10 +17,26 @@ export const applyCoupon = (amount, coupon) =&gt; {</span>
+<span class="">   return Math.round(amount * (1 - rate))</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="del">-/** The tax owed on an amount in a region, rounded to a whole unit. */</span>
+<span class="add">+const TAX_RULES = new Map()</span>
+<span class="add">+</span>
+<span class="add">+/** Registers how a region computes tax: rule is (amount) =&gt; tax in whole units. Replaces any existing rule. */</span>
+<span class="add">+export const registerTaxRule = (region, rule) =&gt; {</span>
+<span class="add">+  if (typeof rule !== &#39;function&#39;) throw new TypeError(`Tax rule for region ${region} must be a function`)</span>
+<span class="add">+</span>
+<span class="add">+  TAX_RULES.set(region, rule)</span>
+<span class="add">+}</span>
+<span class="add">+</span>
+<span class="add">+for (const [region, rate] of Object.entries(TAX_RATES)) {</span>
+<span class="add">+  registerTaxRule(region, (amount) =&gt; Math.round(amount * rate))</span>
+<span class="add">+}</span>
+<span class="add">+</span>
+<span class="add">+// Japanese consumption tax drops fractional units rather than rounding them.</span>
+<span class="add">+registerTaxRule(&#39;JP&#39;, (amount) =&gt; Math.floor(amount * 0.1))</span>
+<span class="add">+</span>
+<span class="add">+/** The tax owed on an amount in a region, as computed by that region&#39;s registered rule. */</span>
+<span class=""> export const applyTax = (amount, region) =&gt; {</span>
+<span class="del">-  const rate = TAX_RATES[region]</span>
+<span class="del">-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class="add">+  const rule = TAX_RULES.get(region)</span>
+<span class="add">+  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class=""> </span>
+<span class="del">-  return Math.round(amount * rate)</span>
+<span class="add">+  return rule(amount)</span>
+<span class=""> }</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I changed tax handling in `src/pricing.js` so each region&#39;s rule is pluggable. I couldn&#39;t run anything to check it: both attempts at a quick Node test were blocked by the permission prompt.
+
+**What changed:**
+- **`registerTaxRule(region, rule)`** saves a function `(amount) =&gt; tax` for a region and replaces any rule that region already had. If `rule` isn&#39;t a function, it throws a `TypeError`.
+- **KR and US** are now registered from the existing `TAX_RATES` table, using the same `Math.round(amount * rate)` as before. So their results should be the same as before, and the table is still exported.
+- **JP** is registered as `Math.floor(amount * 0.1)`, so any fraction of a unit is dropped (1009 → 100).
+- **`applyTax(amount, region)`** now looks up the region&#39;s rule and calls it. Unknown regions still throw the same `No tax rule for region ${region}` error.
+
+To check it yourself:
+```
+node --input-type=module -e &quot;import { applyTax } from &#39;./src/pricing.js&#39;; console.log(applyTax(1005,&#39;KR&#39;), applyTax(1005,&#39;US&#39;), applyTax(1009,&#39;JP&#39;))&quot;
+```
+This should print `101 80 100`.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.2137 · 52s · 11 turns · +39 / −8 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/pricing.js b/src/pricing.js</span>
+<span class="meta">index 2b458ae..86ea86d 100644</span>
+<span class="meta">--- a/src/pricing.js</span>
+<span class="meta">+++ b/src/pricing.js</span>
+<span class="hunk">@@ -1,10 +1,24 @@</span>
+<span class=""> // Amounts are whole currency units (won, cents) so totals never carry float error.</span>
+<span class=""> </span>
+<span class="del">-export const TAX_RATES = {</span>
+<span class="del">-  KR: 0.1,</span>
+<span class="del">-  US: 0.08,</span>
+<span class="add">+// Each region&#39;s tax rule is a function (amount) =&gt; tax, so regions can round differently.</span>
+<span class="add">+const TAX_RULES = new Map()</span>
+<span class="add">+</span>
+<span class="add">+/** Make `rule` the tax rule for `region`, replacing any rule it already had. */</span>
+<span class="add">+export const registerTaxRule = (region, rule) =&gt; {</span>
+<span class="add">+  if (typeof rule !== &#39;function&#39;) throw new TypeError(`Tax rule for region ${region} must be a function`)</span>
+<span class="add">+</span>
+<span class="add">+  TAX_RULES.set(region, rule)</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="add">+/** A rule that charges a flat rate, rounded to the nearest whole unit. */</span>
+<span class="add">+const flatRate = (rate) =&gt; (amount) =&gt; Math.round(amount * rate)</span>
+<span class="add">+</span>
+<span class="add">+registerTaxRule(&#39;KR&#39;, flatRate(0.1))</span>
+<span class="add">+registerTaxRule(&#39;US&#39;, flatRate(0.08))</span>
+<span class="add">+// Japan&#39;s 10% consumption tax drops any fraction of a yen. Dividing by 100 keeps exact</span>
+<span class="add">+// multiples exact, where `amount * 0.1` could land a hair below and floor a yen too low.</span>
+<span class="add">+registerTaxRule(&#39;JP&#39;, (amount) =&gt; Math.floor((amount * 10) / 100))</span>
+<span class="add">+</span>
+<span class=""> export const COUPONS = {</span>
+<span class="">   WELCOME10: 0.1,</span>
+<span class="">   VIP20: 0.2,</span>
+<span class="hunk">@@ -17,10 +31,10 @@ export const applyCoupon = (amount, coupon) =&gt; {</span>
+<span class="">   return Math.round(amount * (1 - rate))</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="del">-/** The tax owed on an amount in a region, rounded to a whole unit. */</span>
+<span class="add">+/** The tax owed on an amount in a region, as computed by that region&#39;s registered rule. */</span>
+<span class=""> export const applyTax = (amount, region) =&gt; {</span>
+<span class="del">-  const rate = TAX_RATES[region]</span>
+<span class="del">-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class="add">+  const rule = TAX_RULES.get(region)</span>
+<span class="add">+  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class=""> </span>
+<span class="del">-  return Math.round(amount * rate)</span>
+<span class="add">+  return rule(amount)</span>
+<span class=""> }</span>
+<span class="meta">diff --git a/test/pricing.test.js b/test/pricing.test.js</span>
+<span class="meta">index 57885e7..075c60f 100644</span>
+<span class="meta">--- a/test/pricing.test.js</span>
+<span class="meta">+++ b/test/pricing.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { applyCoupon, applyTax } from &#39;../src/pricing.js&#39;</span>
+<span class="add">+import { applyCoupon, applyTax, registerTaxRule } from &#39;../src/pricing.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;a coupon takes its percentage off&#39;, () =&gt; {</span>
+<span class="">   assert.equal(applyCoupon(10000, &#39;WELCOME10&#39;), 9000)</span>
+<span class="hunk">@@ -21,3 +21,20 @@ test(&#39;tax follows the region&#39;, () =&gt; {</span>
+<span class=""> test(&#39;an unknown region is an error&#39;, () =&gt; {</span>
+<span class="">   assert.throws(() =&gt; applyTax(1000, &#39;ZZ&#39;))</span>
+<span class=""> })</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;Japan rounds consumption tax down&#39;, () =&gt; {</span>
+<span class="add">+  assert.equal(applyTax(1000, &#39;JP&#39;), 100)</span>
+<span class="add">+  assert.equal(applyTax(1009, &#39;JP&#39;), 100)</span>
+<span class="add">+  // KR rounds the same fraction to nearest.</span>
+<span class="add">+  assert.equal(applyTax(1009, &#39;KR&#39;), 101)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a registered rule decides the tax for its region&#39;, () =&gt; {</span>
+<span class="add">+  registerTaxRule(&#39;XX&#39;, (amount) =&gt; amount * 2)</span>
+<span class="add">+  assert.equal(applyTax(50, &#39;XX&#39;), 100)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a tax rule must be a function&#39;, () =&gt; {</span>
+<span class="add">+  assert.throws(() =&gt; registerTaxRule(&#39;XY&#39;, 0.1), TypeError)</span>
+<span class="add">+  assert.throws(() =&gt; applyTax(1000, &#39;XY&#39;))</span>
+<span class="add">+})</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">Tax handling in `src/pricing.js` is now pluggable, with each region&#39;s rule registered separately, and JP is registered. All 11 tests pass.
+
+- **`registerTaxRule(region, rule)`** stores `rule`, a function `(amount) =&gt; tax`, for that region. Registering a region again replaces its rule, and passing anything other than a function throws a `TypeError`.
+- **`applyTax(amount, region)`** looks up the region&#39;s rule and calls it. An unknown region still throws `No tax rule for region …`.
+- **KR and US** go through a small `flatRate` helper with the same rates and rounding to the nearest unit as before, so their results haven&#39;t changed.
+- **JP** is 10%, rounded down to a whole yen. It&#39;s written as `Math.floor(amount * 10 / 100)` rather than `Math.floor(amount * 0.1)`. Multiplying by `0.1` can land just below a whole number and round down one yen too far; dividing by 100 can&#39;t, for whole-unit amounts.
+
+I added tests to `test/pricing.test.js` for:
+- JP rounding down (1009 gives 100, where KR gives 101)
+- a custom registered rule being used
+- a rule that isn&#39;t a function being rejected
+
+**Decision for you:** I removed the exported `TAX_RATES` table. Nothing in the repo used it, and keeping it w …</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1742 · 35s · 8 turns · +34 / −8 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/pricing.js b/src/pricing.js</span>
+<span class="meta">index 2b458ae..6f4bbf3 100644</span>
+<span class="meta">--- a/src/pricing.js</span>
+<span class="meta">+++ b/src/pricing.js</span>
+<span class="hunk">@@ -1,10 +1,20 @@</span>
+<span class=""> // Amounts are whole currency units (won, cents) so totals never carry float error.</span>
+<span class=""> </span>
+<span class="del">-export const TAX_RATES = {</span>
+<span class="del">-  KR: 0.1,</span>
+<span class="del">-  US: 0.08,</span>
+<span class="add">+/** Region code → rule `(amount) =&gt; tax`. A Map, so codes like &quot;constructor&quot; are never mistaken for rules. */</span>
+<span class="add">+const TAX_RULES = new Map()</span>
+<span class="add">+</span>
+<span class="add">+/** Sets the tax rule for a region, replacing any earlier one. The rule must return a whole unit. */</span>
+<span class="add">+export const registerTaxRule = (region, rule) =&gt; {</span>
+<span class="add">+  if (typeof rule !== &#39;function&#39;) throw new TypeError(`Tax rule for region ${region} must be a function`)</span>
+<span class="add">+</span>
+<span class="add">+  TAX_RULES.set(region, rule)</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="add">+registerTaxRule(&#39;KR&#39;, amount =&gt; Math.round(amount * 0.1))</span>
+<span class="add">+registerTaxRule(&#39;US&#39;, amount =&gt; Math.round(amount * 0.08))</span>
+<span class="add">+// Japanese consumption tax drops fractions of a yen rather than rounding them.</span>
+<span class="add">+registerTaxRule(&#39;JP&#39;, amount =&gt; Math.floor(amount * 0.1))</span>
+<span class="add">+</span>
+<span class=""> export const COUPONS = {</span>
+<span class="">   WELCOME10: 0.1,</span>
+<span class="">   VIP20: 0.2,</span>
+<span class="hunk">@@ -17,10 +27,10 @@ export const applyCoupon = (amount, coupon) =&gt; {</span>
+<span class="">   return Math.round(amount * (1 - rate))</span>
+<span class=""> }</span>
+<span class=""> </span>
+<span class="del">-/** The tax owed on an amount in a region, rounded to a whole unit. */</span>
+<span class="add">+/** The tax owed on an amount in a region, as computed by that region&#39;s registered rule. */</span>
+<span class=""> export const applyTax = (amount, region) =&gt; {</span>
+<span class="del">-  const rate = TAX_RATES[region]</span>
+<span class="del">-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class="add">+  const rule = TAX_RULES.get(region)</span>
+<span class="add">+  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)</span>
+<span class=""> </span>
+<span class="del">-  return Math.round(amount * rate)</span>
+<span class="add">+  return rule(amount)</span>
+<span class=""> }</span>
+<span class="meta">diff --git a/test/pricing.test.js b/test/pricing.test.js</span>
+<span class="meta">index 57885e7..e434b09 100644</span>
+<span class="meta">--- a/test/pricing.test.js</span>
+<span class="meta">+++ b/test/pricing.test.js</span>
+<span class="hunk">@@ -1,7 +1,7 @@</span>
+<span class=""> import assert from &#39;node:assert/strict&#39;</span>
+<span class=""> import { test } from &#39;node:test&#39;</span>
+<span class=""> </span>
+<span class="del">-import { applyCoupon, applyTax } from &#39;../src/pricing.js&#39;</span>
+<span class="add">+import { applyCoupon, applyTax, registerTaxRule } from &#39;../src/pricing.js&#39;</span>
+<span class=""> </span>
+<span class=""> test(&#39;a coupon takes its percentage off&#39;, () =&gt; {</span>
+<span class="">   assert.equal(applyCoupon(10000, &#39;WELCOME10&#39;), 9000)</span>
+<span class="hunk">@@ -20,4 +20,20 @@ test(&#39;tax follows the region&#39;, () =&gt; {</span>
+<span class=""> </span>
+<span class=""> test(&#39;an unknown region is an error&#39;, () =&gt; {</span>
+<span class="">   assert.throws(() =&gt; applyTax(1000, &#39;ZZ&#39;))</span>
+<span class="add">+  assert.throws(() =&gt; applyTax(1000, &#39;constructor&#39;))</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;Japanese tax is 10% rounded down&#39;, () =&gt; {</span>
+<span class="add">+  assert.equal(applyTax(1000, &#39;JP&#39;), 100)</span>
+<span class="add">+  assert.equal(applyTax(1009, &#39;JP&#39;), 100)</span>
+<span class="add">+  assert.equal(applyTax(1005, &#39;KR&#39;), 101)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a registered rule decides the tax for its region&#39;, () =&gt; {</span>
+<span class="add">+  registerTaxRule(&#39;XX&#39;, amount =&gt; amount * 2)</span>
+<span class="add">+  assert.equal(applyTax(7, &#39;XX&#39;), 14)</span>
+<span class="add">+})</span>
+<span class="add">+</span>
+<span class="add">+test(&#39;a tax rule must be a function&#39;, () =&gt; {</span>
+<span class="add">+  assert.throws(() =&gt; registerTaxRule(&#39;XX&#39;, 0.1), TypeError)</span>
+<span class=""> })</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">Each region&#39;s tax rule in `src/pricing.js` is now a pluggable function, and JP is registered. All 11 tests pass, including the new ones.
+
+**What changed in `src/pricing.js`**
+- `registerTaxRule(region, rule)` is exported. It stores the rule in a private `Map` and replaces any rule the region already had. Passing something that isn&#39;t a function throws a `TypeError`, so a mistake like `registerTaxRule(&#39;XX&#39;, 0.1)` shows up right away.
+- KR (`Math.round(amount * 0.1)`) and US (`Math.round(amount * 0.08)`) are now registered rules that do exactly what the old rate table did, so they give the same results.
+- JP is registered as `Math.floor(amount * 0.1)`: 10% rounded down to a whole yen. For example, ¥1009 gives ¥100 of tax.
+- `applyTax` looks up the region&#39;s rule and calls it. It still throws `No tax rule for region …` for regions with no rule.
+- Because rules live in a `Map`, odd region codes like `&#39;constructor&#39;` now throw. Before, the lookup found a built-in object property instead and returned `NaN` without an error.
+
+**Things to know**
+- **Breaking change:** the exported `TAX_RATES` table is gone. Nothing in the repo imported it, but any outside code that reads it will break. Rules  …</pre>
+</div></div>
+<h2><code>count-items-then-locate</code> <span class="sub">implement, then lookup · expected standard → light</span></h2>
+<p class="prompt">Add a countItems(cart) function to src/cart.js that returns the total quantity of all items in the cart, 0 for an empty cart.</p>
+<p class="prompt"><span class="sub">Turn 2:</span> Where is countItems defined now? Answer with the relative file path only.</p>
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1209 · 16s · 1 turns · +2 / −0 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..9366da3 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -15,6 +15,8 @@ export const addItem = (cart, item) =&gt; {</span>
+<span class=""> </span>
+<span class=""> export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class="add">+export const countItems = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.qty, 0)</span>
+<span class="add">+</span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">src/cart.js</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1076 · 14s · 1 turns · +3 / −0 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..535b408 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -17,6 +17,9 @@ export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class="add">+/** Total quantity across all items; 0 for an empty cart. */</span>
+<span class="add">+export const countItems = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.qty, 0)</span>
+<span class="add">+</span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class=""> export const calcTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">src/cart.js</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1061 · 13s · 1 turns · +3 / −0 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..535b408 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -17,6 +17,9 @@ export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class=""> export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class="add">+/** Total quantity across all items; 0 for an empty cart. */</span>
+<span class="add">+export const countItems = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.qty, 0)</span>
+<span class="add">+</span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class=""> export const calcTotal = cart =&gt; {</span>
+<span class="">   const subtotal = subtotalOf(cart)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">src/cart.js</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>haiku-5-5 → sonnet-5-5</strong> · $0.0469 · 14s · 1 turns · +4 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/cart.js b/src/cart.js</span>
+<span class="meta">index cff26a3..80b8371 100644</span>
+<span class="meta">--- a/src/cart.js</span>
+<span class="meta">+++ b/src/cart.js</span>
+<span class="hunk">@@ -15,7 +15,10 @@ export const addItem = (cart, item) =&gt; {</span>
+<span class=""> </span>
+<span class=""> export const useCoupon = (cart, coupon) =&gt; ({ ...cart, coupon })</span>
+<span class=""> </span>
+<span class="del">-export const subtotalOf = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class="add">+/** Total quantity of all items in the cart; 0 when empty. */</span>
+<span class="add">+export const countItems = cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.qty, 0)</span>
+<span class="add">+</span>
+<span class="add">+export const subtotalOf =cart =&gt; cart.items.reduce((sum, i) =&gt; sum + i.price * i.qty, 0)</span>
+<span class=""> </span>
+<span class=""> /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */</span>
+<span class=""> export const calcTotal = cart =&gt; {</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">src/cart.js</pre>
+</div></div>
+<h2><code>savings-label-then-rate</code> <span class="sub">mechanical, then implement · expected light → standard</span></h2>
+<p class="prompt">In src/format.js, rename the receipt line &quot;Discount:&quot; to &quot;Savings:&quot;.</p>
+<p class="prompt"><span class="sub">Turn 2:</span> Now add a formatRate(rate) function to src/format.js that turns a discount rate such as 0.15 into the text &quot;15% off&quot;, rounded to a whole percent.</p>
+<div class="works"><div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s1)" aria-hidden="true"></span>Opus, session effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1228 · 16s · 2 turns · +4 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..e592282 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,12 +1,15 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="add">+/** A discount rate as text, e.g. 0.15 -&gt; &quot;15% off&quot;. */</span>
+<span class="add">+export const formatRate = rate =&gt; `${Math.round(rate * 100)}% off`</span>
+<span class="add">+</span>
+<span class=""> /** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="">     &#39;&#39;,</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="del">-    `Discount: -${money(totals.discount)}`,</span>
+<span class="add">+    `Savings: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="">     `Totla: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `formatRate` to `src/format.js`, above `formatReceipt`:
+
+```js
+export const formatRate = rate =&gt; `${Math.round(rate * 100)}% off`
+```
+
+`formatRate(0.15)` returns `&quot;15% off&quot;`, and the percent is rounded to the nearest whole number, so `0.125` becomes `&quot;13% off&quot;`. I haven&#39;t run it or added tests.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s2)" aria-hidden="true"></span>Opus, low effort</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1214 · 23s · 2 turns · +4 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..ff778fe 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -6,7 +6,10 @@ export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="">     &#39;&#39;,</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="del">-    `Discount: -${money(totals.discount)}`,</span>
+<span class="add">+    `Savings: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="">     `Totla: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span>
+<span class="add">+</span>
+<span class="add">+/** A discount rate as text, e.g. 0.15 -&gt; &quot;15% off&quot;. */</span>
+<span class="add">+export const formatRate = rate =&gt; `${Math.round(rate * 100)}% off`</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `formatRate` and exported it from `src/format.js`. It multiplies the rate by 100 and rounds to the nearest whole number, so `formatRate(0.15)` gives `&quot;15% off&quot;` and `formatRate(0.125)` gives `&quot;13% off&quot;`. I haven&#39;t run it or added tests.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s3)" aria-hidden="true"></span>Auto effort (Opus)</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>opus-5-5</strong> · $0.1238 · 27s · 2 turns · +4 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..e592282 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,12 +1,15 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="add">+/** A discount rate as text, e.g. 0.15 -&gt; &quot;15% off&quot;. */</span>
+<span class="add">+export const formatRate = rate =&gt; `${Math.round(rate * 100)}% off`</span>
+<span class="add">+</span>
+<span class=""> /** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="">     &#39;&#39;,</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="del">-    `Discount: -${money(totals.discount)}`,</span>
+<span class="add">+    `Savings: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="">     `Totla: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `formatRate` to `src/format.js`, exported next to `formatReceipt`. It turns a rate into whole-percent text, so `formatRate(0.15)` gives `&quot;15% off&quot;`. I haven&#39;t run or tested it.
+
+One quirk: a rate that falls exactly on a half percent can round down, because computers can&#39;t store some decimals exactly. For example, `0.145` gives `&quot;14% off&quot;`, not 15%.</pre>
+</div>
+<div class="card work">
+<div class="head"><strong><span class="swatch" style="background:var(--s4)" aria-hidden="true"></span>Auto routing</strong> · <span class="pass">✓ Pass</span></div>
+<div class="note">Model: <strong>haiku-5-5 → sonnet-5-5</strong> · $0.0497 · 18s · 3 turns · +4 / −1 lines</div>
+<h4>Change</h4>
+<pre class="diff"><span class="meta">diff --git a/src/format.js b/src/format.js</span>
+<span class="meta">index ea302a0..f98add0 100644</span>
+<span class="meta">--- a/src/format.js</span>
+<span class="meta">+++ b/src/format.js</span>
+<span class="hunk">@@ -1,12 +1,15 @@</span>
+<span class=""> const money = amount =&gt; `KRW ${amount.toLocaleString(&#39;en-US&#39;)}`</span>
+<span class=""> </span>
+<span class="add">+/** A discount rate such as 0.15 as text like &quot;15% off&quot;, rounded to a whole percent. */</span>
+<span class="add">+export const formatRate = rate =&gt; `${Math.round(rate * 100)}% off`</span>
+<span class="add">+</span>
+<span class=""> /** A plain-text receipt for a cart and its totals from calcTotal. */</span>
+<span class=""> export const formatReceipt = (cart, totals) =&gt;</span>
+<span class="">   [</span>
+<span class="">     ...cart.items.map(i =&gt; `${i.name} x${i.qty}  ${money(i.price * i.qty)}`),</span>
+<span class="">     &#39;&#39;,</span>
+<span class="">     `Subtotal: ${money(totals.subtotal)}`,</span>
+<span class="del">-    `Discount: -${money(totals.discount)}`,</span>
+<span class="add">+    `Savings: -${money(totals.discount)}`,</span>
+<span class="">     `Tax: ${money(totals.tax)}`,</span>
+<span class="">     `Totla: ${money(totals.total)}`,</span>
+<span class="">   ].join(&#39;\n&#39;)</span></pre>
+<h4>Final answer</h4>
+<pre class="answer">I added `formatRate(rate)` to `src/format.js`, above `formatReceipt`. It returns the rate as a whole-percent string, so `formatRate(0.15)` gives `&quot;15% off&quot;`. I haven&#39;t run it or added tests.
+
+I also noticed that the receipt&#39;s total line on line 11 says `Totla:` instead of `Total:`. I left it alone since you didn&#39;t ask about it. Do you want me to fix it?</pre>
+</div></div>
+<footer>Agent Fusion Router · work produced in run 20261102-064426 · data SHA-256 d859e0c1939b5fcfd3203d68263a458279db57bd52f1feeff7692d39dfb487fa</footer>
+</main></body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "taskId": "tax-rule-registry",
+  "armId": "opus-low",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-11-02T06:51:52.143Z",
+  "wallMs": 24280,
+  "exitCode": 0,
+  "timedOut": false
+}

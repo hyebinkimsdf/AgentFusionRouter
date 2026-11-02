@@ -1,0 +1,14 @@
+diff --git a/src/cart.js b/src/cart.js
+index cff26a3..5b76167 100644
+--- a/src/cart.js
++++ b/src/cart.js
+@@ -13,6 +13,9 @@ export const addItem = (cart, item) => {
+   return { ...cart, items }
+ }
+ 
++/** Removes the item with `sku`; an unknown SKU leaves the items as they were. */
++export const removeItem = (cart, sku) => ({ ...cart, items: cart.items.filter(i => i.sku !== sku) })
++
+ export const useCoupon = (cart, coupon) => ({ ...cart, coupon })
+ 
+ export const subtotalOf = cart => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)

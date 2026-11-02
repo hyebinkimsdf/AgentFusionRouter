@@ -56,6 +56,15 @@ describe('the prompt the router reads', () => {
     assert.equal(analyses.get('t-1')?.signals.some(s => s.includes('cwd')), false)
   })
 
+  test("a project's AGENTS.md, injected as a user message, is not the prompt", () => {
+    const item = (text: string) => line('response_item', { type: 'message', role: 'user', content: [{ type: 'input_text', text }] })
+    const agents = '# AGENTS.md instructions for D:\\app\n\n<INSTRUCTIONS>\nRedesign the architecture before writing any code.\n</INSTRUCTIONS>'
+    const analyses = analyzeTurns(rollout(turn('t-1'), item(agents), item('fix the typo in README.md')))
+
+    assert.equal(analyses.get('t-1')?.tier, 'light')
+    assert.equal(analyses.get('t-1')?.signals.includes('design'), false)
+  })
+
   test('the user_message event wins over the message item when a turn has both', () => {
     const analyses = analyzeTurns(
       rollout(turn('t-1'), line('response_item', { type: 'message', role: 'user', content: [{ type: 'input_text', text: 'redesign the whole system architecture' }] }), prompt('fix the typo in README.md')),

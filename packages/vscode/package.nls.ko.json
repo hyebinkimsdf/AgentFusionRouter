@@ -1,0 +1,11 @@
+{
+  "displayName": "Agent Fusion Router: 절감 추정",
+  "description": "Claude Code와 Codex에서 Agent Fusion Router의 절감 추정액을 API 요금 환산으로 상태바에 표시합니다.",
+  "command.showDetails": "절감 상세 보기",
+  "command.refresh": "절감 추정 새로 고침",
+  "config.period": "상태바에 표시할 기간: 오늘(자정부터), 최근 7일, 최근 30일.",
+  "config.refreshMinutes": "기록을 다시 읽는 주기(분). 바뀐 파일만 다시 읽습니다.",
+  "config.claudeLogDir": "Claude Code 플러그인의 로그 폴더. 비워 두면 ~/.agent-fusion-router/logs. WSL 폴더는 \\\\wsl$\\<배포판>\\home\\<사용자>\\.agent-fusion-router\\logs 처럼 지정합니다.",
+  "config.codexHome": "Codex 데이터 폴더. 비워 두면 CODEX_HOME, 없으면 ~/.codex. WSL 폴더는 \\\\wsl$\\<배포판>\\home\\<사용자>\\.codex 처럼 지정합니다.",
+  "config.codexStandardModel": "일반 Codex 작업을 이 모델로 처리했다고 가정해 시뮬레이션합니다(예: sol). 비워 두면 라우터 기본값대로 각 턴의 모델을 유지합니다."
+}

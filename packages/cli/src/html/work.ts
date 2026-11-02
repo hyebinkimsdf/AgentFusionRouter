@@ -73,8 +73,11 @@ ${renderAnswer(work?.answer ?? '')}
       })
       .join('\n')
 
-    return `<h2><code>${esc(task.id)}</code> <span class="sub">${esc(task.kind)} · expected ${esc(task.expectedTier)}</span></h2>
+    const followUps = (task.followUps ?? []).map((f, i) => `<p class="prompt"><span class="sub">Turn ${i + 2}:</span> ${esc(f.prompt)}</p>`).join('\n')
+
+    return `<h2><code>${esc(task.id)}</code> <span class="sub">${esc(task.kind)} · expected ${esc([task.expectedTier, ...(task.followUps ?? []).map(f => f.expectedTier)].join(' → '))}</span></h2>
 <p class="prompt">${esc(task.prompt)}</p>
+${followUps}
 <div class="works">${cards}</div>`
   })
 

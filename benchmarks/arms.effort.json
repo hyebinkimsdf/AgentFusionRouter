@@ -1,0 +1,26 @@
+[
+  {
+    "id": "opus-session",
+    "label": "Opus, session effort",
+    "model": "opus",
+    "plugin": { "mode": "observe" }
+  },
+  {
+    "id": "opus-low",
+    "label": "Opus, low effort",
+    "model": "opus",
+    "plugin": { "mode": "route", "strategy": "effort", "lightEffort": "low", "standardEffort": "low", "heavyEffort": "low" }
+  },
+  {
+    "id": "auto-effort",
+    "label": "Auto effort (Opus)",
+    "model": "opus",
+    "plugin": { "mode": "route", "strategy": "effort" }
+  },
+  {
+    "id": "auto",
+    "label": "Auto routing",
+    "model": "opus",
+    "plugin": { "mode": "route", "standardModel": "sonnet" }
+  }
+]

@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --test:*)",
+      "Bash(npm test:*)",
+      "PowerShell(node --test:*)",
+      "PowerShell(npm test:*)"
+    ]
+  },
+  "pluginConfigs": {
+    "agent-fusion-router": {
+      "options": {
+        "mode": "route",
+        "strategy": "effort",
+        "lightEffort": "low",
+        "standardEffort": "low",
+        "heavyEffort": "low",
+        "logDir": "C:\\Users\\user\\Desktop\\새 폴더\\agentfusionrouter\\benchmarks\\results\\20261102-064426\\runs\\fix-receipt-typo__opus-low__r1\\plugin-logs"
+      }
+    },
+    "agent-fusion-router@inline": {
+      "options": {
+        "mode": "route",
+        "strategy": "effort",
+        "lightEffort": "low",
+        "standardEffort": "low",
+        "heavyEffort": "low",
+        "logDir": "C:\\Users\\user\\Desktop\\새 폴더\\agentfusionrouter\\benchmarks\\results\\20261102-064426\\runs\\fix-receipt-typo__opus-low__r1\\plugin-logs"
+      }
+    }
+  }
+}

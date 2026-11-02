@@ -1,0 +1,11 @@
+diff --git a/src/format.js b/src/format.js
+index ea302a0..84c473a 100644
+--- a/src/format.js
++++ b/src/format.js
+@@ -8,5 +8,5 @@ export const formatReceipt = (cart, totals) =>
+     `Subtotal: ${money(totals.subtotal)}`,
+     `Discount: -${money(totals.discount)}`,
+     `Tax: ${money(totals.tax)}`,
+-    `Totla: ${money(totals.total)}`,
++    `Total: ${money(totals.total)}`,
+   ].join('\n')

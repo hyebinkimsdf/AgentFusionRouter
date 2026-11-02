@@ -4,7 +4,8 @@ import { describe, test } from 'node:test'
 import type { UsageRecord } from '@agent-fusion-router/core'
 import { CLAUDE_MODELS } from '@agent-fusion-router/core'
 
-import { deriveResult, diffStats, hitLimit, parseClaudeOutput } from '../src/bench/derive.ts'
+import { deriveResult, diffStats, hitLimit, parseClaudeOutput, pluginFacts } from '../src/bench/derive.ts'
+import { APPROVE_PLAN, invocations } from '../src/bench/run.ts'
 import { answerMatches } from '../src/bench/workspace.ts'
 import { outsideConversationTokens, priceCheck, summarizeBench } from '../src/bench/summary.ts'
 import type { Arm, RunResult, Task } from '../src/bench/types.ts'
@@ -304,6 +305,76 @@ describe('deriveResult', () => {
   })
 })
 
+describe('pluginFacts: cache, stops and switches', () => {
+  const t = (cacheRead: number, cacheWrite: number) => ({ input: 10, output: 5, cacheRead, cacheWrite })
+
+  test('a request after a model or effort change is a switch; a subagent is its own loop', () => {
+    const facts = pluginFacts([
+      step({ step: 0, model: 'claude-sonnet-5-5', effort: 'medium', tokens: t(27_000, 7_000) } as Partial<UsageRecord>),
+      step({ step: 1, model: 'claude-sonnet-5-5', effort: 'medium', tokens: t(34_000, 500) } as Partial<UsageRecord>),
+      step({ agent: 'sub-1', model: 'claude-haiku-5-5', tokens: t(0, 9_000) } as Partial<UsageRecord>),
+      step({ turn: 't2', step: 0, model: 'claude-haiku-5-5', effort: 'low', tokens: t(0, 36_000) } as Partial<UsageRecord>),
+      step({ turn: 't2', step: 1, model: 'claude-haiku-5-5', effort: 'low', tokens: t(36_000, 300) } as Partial<UsageRecord>),
+      step({ turn: 't3', step: 0, model: 'claude-haiku-5-5', effort: 'high', tokens: t(36_000, 800) } as Partial<UsageRecord>),
+    ])
+
+    assert.equal(facts.switches?.requests, 2, 'the model change into t2 and the effort change into t3')
+    assert.deepEqual(facts.switches?.tokens, { input: 20, output: 10, cacheRead: 36_000, cacheWrite: 36_800 })
+    assert.deepEqual(facts.firstRequest, t(27_000, 7_000))
+  })
+
+  test('records are taken in time order, whichever file each invocation logged to first', () => {
+    // A follow-up turn's file sorts before the first turn's.
+    const facts = pluginFacts([
+      step({ ts: 2000, turn: 't2', tier: 'light', model: 'claude-haiku-5-5', tokens: t(27_000, 8_000) } as Partial<UsageRecord>),
+      step({ ts: 1000, turn: 't1', tier: 'standard', model: 'claude-sonnet-5-5', tokens: t(27_000, 7_000) } as Partial<UsageRecord>),
+    ])
+
+    assert.equal(facts.decidedTier, 'standard')
+    assert.deepEqual(facts.firstRequest, t(27_000, 7_000))
+    assert.deepEqual(facts.switches?.tokens, t(27_000, 8_000))
+  })
+
+  test('older logs with no effort compare models only', () => {
+    const facts = pluginFacts([step({ step: 0 }), step({ step: 1 })])
+
+    assert.equal(facts.switches?.requests, 0)
+    assert.equal(facts.efforts, undefined)
+  })
+
+  test('stop reasons are counted, and efforts before and after the router are kept', () => {
+    const facts = pluginFacts([
+      step({ step: 0, stop: 'max_tokens', requestedEffort: 'xhigh', effort: 'low' } as Partial<UsageRecord>),
+      step({ step: 1, stop: 'end_turn', requestedEffort: 'xhigh', effort: 'low' } as Partial<UsageRecord>),
+    ])
+
+    assert.deepEqual(facts.stops, { max_tokens: 1, end_turn: 1 })
+    assert.deepEqual(facts.efforts, { requested: ['xhigh'], sent: ['low'] })
+  })
+})
+
+describe('invocations', () => {
+  const task: Task = { id: 'x', kind: 'implement', expectedTier: 'standard', prompt: 'do it' }
+  const followUp = { ...task, followUps: [{ prompt: 'where is it?', expectedTier: 'light' as const }] }
+  const arm: Arm = { id: 'a', label: 'A', plugin: { mode: 'route' } }
+
+  test('a task runs once, a plan-then-execute arm twice, and each follow-up adds a turn', () => {
+    assert.deepEqual(invocations(arm, task), [{ prompt: 'do it', mode: 'acceptEdits' }])
+    assert.deepEqual(
+      invocations({ ...arm, planThenExecute: true }, followUp).map(i => [i.mode, i.prompt, i.label]),
+      [
+        ['plan', 'do it', undefined],
+        ['acceptEdits', APPROVE_PLAN, '[after the plan]'],
+        ['acceptEdits', 'where is it?', '[turn 2]'],
+      ],
+    )
+  })
+
+  test("follow-ups run in the arm's own permission mode", () => {
+    assert.deepEqual(invocations({ ...arm, permissionMode: 'default' }, followUp).map(i => i.mode), ['default', 'default'])
+  })
+})
+
 test('diffStats counts files and lines', () => {
   assert.deepEqual(diffStats('3\t1\tsrc/a.js\n0\t2\tsrc/b.js\n-\t-\timg.png\n'), { files: 3, added: 3, removed: 3 })
 })
@@ -339,6 +410,27 @@ describe('summarizeBench', () => {
 
     assert.equal(auto?.successes, 1)
     assert.equal(auto?.costPerSuccessUsd?.toFixed(2), '0.35')
+  })
+
+  test('the cache read ratio is taken over summed tokens, not averaged per run', () => {
+    // Claude Code's per-model tokens: haiku 100 + 1000 + 200, opus 10 + 0 + 0, in each run.
+    const two = [result('a', 'fixed', true, 0.1), result('b', 'fixed', true, 0.1)].map(r => ({ ...r, claude: parseClaudeOutput(CLAUDE_OUTPUT) }))
+    const fixed = summarizeBench(tasks, arms, two).arms.find(a => a.armId === 'fixed')
+
+    assert.equal(fixed?.cacheReadRatio, 2000 / (2 * (110 + 1000 + 200)))
+  })
+
+  test('a run cut at the output cap that still passed counts as recovered', () => {
+    const capped = deriveResult({
+      meta: { ...META, taskId: 'a', armId: 'fixed' },
+      claudeStdout: JSON.stringify({ total_cost_usd: 0.1 }),
+      records: [step({ stop: 'max_tokens' } as Partial<UsageRecord>), step({ step: 1, stop: 'end_turn' } as Partial<UsageRecord>)],
+      check: PASSED,
+      numstat: '',
+      needsPlugin: false,
+    })
+
+    assert.deepEqual(summarizeBench(tasks, arms, [capped]).arms.find(a => a.armId === 'fixed')?.maxTokens, { requests: 1, runs: 1, recovered: 1 })
   })
 
   test('the summary does not depend on the order runs come in', () => {

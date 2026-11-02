@@ -1,0 +1,35 @@
+diff --git a/src/pricing.js b/src/pricing.js
+index 2b458ae..ad35601 100644
+--- a/src/pricing.js
++++ b/src/pricing.js
+@@ -17,10 +17,26 @@ export const applyCoupon = (amount, coupon) => {
+   return Math.round(amount * (1 - rate))
+ }
+ 
+-/** The tax owed on an amount in a region, rounded to a whole unit. */
++const TAX_RULES = new Map()
++
++/** Registers how a region computes tax: rule is (amount) => tax in whole units. Replaces any existing rule. */
++export const registerTaxRule = (region, rule) => {
++  if (typeof rule !== 'function') throw new TypeError(`Tax rule for region ${region} must be a function`)
++
++  TAX_RULES.set(region, rule)
++}
++
++for (const [region, rate] of Object.entries(TAX_RATES)) {
++  registerTaxRule(region, (amount) => Math.round(amount * rate))
++}
++
++// Japanese consumption tax drops fractional units rather than rounding them.
++registerTaxRule('JP', (amount) => Math.floor(amount * 0.1))
++
++/** The tax owed on an amount in a region, as computed by that region's registered rule. */
+ export const applyTax = (amount, region) => {
+-  const rate = TAX_RATES[region]
+-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)
++  const rule = TAX_RULES.get(region)
++  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)
+ 
+-  return Math.round(amount * rate)
++  return rule(amount)
+ }

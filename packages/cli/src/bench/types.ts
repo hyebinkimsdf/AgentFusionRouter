@@ -7,6 +7,13 @@ export type Task = {
   /** The tier a person would pick: the router's decision is scored against it. */
   expectedTier: Tier
   prompt: string
+  /**
+   * Turns sent after the first, each resuming the same session, with the tier
+   * a person would pick for it. Work that changes difficulty mid-session is
+   * the only way a routed run switches model or effort inside a conversation.
+   * The check judges the state after the last turn.
+   */
+  followUps?: { prompt: string; expectedTier: Tier }[]
   /** Strings the agent's final answer must contain, for questions with no code change. */
   answerIncludes?: string[]
 }
@@ -86,6 +93,14 @@ export type PluginFacts = {
   routedRequests: number
   escalations: number
   models: string[]
+  /** Requests by Claude Code's stop reason (`end_turn`, `tool_use`, `max_tokens`). A request cut at the output cap is not a failed task. */
+  stops?: Record<string, number>
+  /** The session's first main-loop request. What it wrote to the cache is a cold prefix, which depends on what ran before, not on routing. */
+  firstRequest?: Tokens
+  /** Requests whose model or effort differs from the request before them in the same loop, and their tokens: what a switch did to the cache. */
+  switches?: { requests: number; tokens: Tokens }
+  /** The main loop's efforts before the router and as sent; absent in logs made before efforts were recorded. */
+  efforts?: { requested: string[]; sent: string[] }
 }
 
 export type RunResult = {

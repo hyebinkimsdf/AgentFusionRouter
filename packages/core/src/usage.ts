@@ -26,6 +26,14 @@ export type StepRecord = RecordBase & {
   decidedModel?: string
   decidedEffort?: Effort
   applied: boolean
+  /**
+   * The effort the engine was about to send before the router: the session's
+   * setting or the model's default; absent for a model without effort. A
+   * string, since Codex has levels Claude Code does not (`ultra`, `none`).
+   */
+  requestedEffort?: string | number
+  /** The effort the request was sent with, after the router. */
+  effort?: string | number
   /** The model that answered, as the API names it. */
   model?: string
   tokens?: Tokens
@@ -60,7 +68,20 @@ export type SpawnRecord = RecordBase & {
   reasons: string[]
 }
 
-export type UsageRecord = StepRecord | TurnRecord | SpawnRecord
+/**
+ * Claude Code's own cost ledger grew. It counts what no step reports:
+ * background requests, compaction, web search, and each cache write at its
+ * own TTL's rate.
+ */
+export type CostRecord = RecordBase & {
+  kind: 'cost'
+  /** What the session has cost so far, in US dollars, as Claude Code sums it. */
+  usd: number
+  /** How much of `usd` is new since the session's previous cost record. */
+  addedUsd: number
+}
+
+export type UsageRecord = StepRecord | TurnRecord | SpawnRecord | CostRecord
 
 export const emptyTokens = (): Tokens => ({ input: 0, output: 0, cacheRead: 0, cacheWrite: 0 })
 
@@ -114,6 +135,12 @@ export type Summary = {
   /** Observe mode: the same tokens priced at the router's choice. */
   potentialCostUsd: number
   unpricedModels: string[]
+  /**
+   * Claude Code's computed cost for the sessions that logged it, beside the
+   * per-request estimate for the same sessions: the difference is what the
+   * estimate misses. Absent when no session in the period logged one.
+   */
+  ledger?: { usd: number; sessions: number; estimatedUsd: number }
 }
 
 /** Folds records into the report's figures. Token totals come from steps only. */
@@ -121,6 +148,8 @@ export const summarize = (records: readonly UsageRecord[]): Summary => {
   const sessions = new Set<string>()
   const models = new Map<string, ModelRow>()
   const unpriced = new Set<string>()
+  const ledgerBySession = new Map<string, number>()
+  const estimateBySession = new Map<string, number>()
   const s: Summary = {
     sessions: 0,
     requests: 0,
@@ -158,6 +187,12 @@ export const summarize = (records: readonly UsageRecord[]): Summary => {
       continue
     }
 
+    // Growth, not the running total, so a period adds up only its own spend.
+    if (r.kind === 'cost') {
+      ledgerBySession.set(r.session, (ledgerBySession.get(r.session) ?? 0) + r.addedUsd)
+      continue
+    }
+
     s.requests += 1
     if (r.applied) s.routedRequests += 1
     const wouldRoute = !r.applied && (r.decidedModel !== undefined || r.decidedEffort !== undefined)
@@ -184,11 +219,22 @@ export const summarize = (records: readonly UsageRecord[]): Summary => {
     s.unroutedCostUsd += r.applied ? (estimateCostUsd(r.tokens, r.requestedModel) ?? actual) : actual
     s.potentialCostUsd +=
       wouldRoute && r.decidedModel ? (estimateCostUsd(r.tokens, r.decidedModel) ?? actual) : actual
+    estimateBySession.set(r.session, (estimateBySession.get(r.session) ?? 0) + actual)
   }
 
   s.sessions = sessions.size
   s.byModel = [...models.values()].sort((a, b) => (b.costUsd ?? 0) - (a.costUsd ?? 0))
   s.unpricedModels = [...unpriced]
+
+  if (ledgerBySession.size > 0) {
+    let usd = 0
+    let estimatedUsd = 0
+    for (const [session, spent] of ledgerBySession) {
+      usd += spent
+      estimatedUsd += estimateBySession.get(session) ?? 0
+    }
+    s.ledger = { usd, sessions: ledgerBySession.size, estimatedUsd }
+  }
 
   return s
 }
@@ -242,6 +288,14 @@ export const formatReport = (s: Summary): string => {
   }
 
   lines.push('', `Estimated cost: ${usd(s.costUsd)}`)
+
+  if (s.ledger !== undefined) {
+    const scope = s.ledger.sessions === s.sessions ? '' : ` (${s.ledger.sessions} of ${s.sessions} sessions logged it)`
+    lines.push(
+      `Claude Code's computed cost: ${usd(s.ledger.usd)}${scope}`,
+      `Not in the per-request estimates: ${usd(s.ledger.usd - s.ledger.estimatedUsd)} (background requests, compaction, web search, cache write rates)`,
+    )
+  }
 
   if (s.routedRequests > 0) {
     lines.push(

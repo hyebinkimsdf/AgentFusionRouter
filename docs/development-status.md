@@ -6,7 +6,7 @@
 
 ## 구현 요약
 
-Claude Code를 대상으로 작업 분석부터 모델 선택, 실패 시 승격, 로컬 사용량 집계까지 연결되어 있습니다. 사용량 CLI와 벤치마크 실행기, HTML 보고서, 선택적 PNG 캡처, 증거 파일 검증도 구현되어 있습니다. 기본 실행 모드는 관측이며, 자동 작업 분해와 Codex 실행기는 아직 연결되지 않았습니다. Codex는 세션 기록을 읽는 사용량 원장(`codex-usage`)까지 구현되어 있습니다.
+Claude Code를 대상으로 작업 분석부터 모델 선택, 실패 시 승격, 로컬 사용량 집계까지 연결되어 있습니다. 사용량 CLI와 벤치마크 실행기, HTML 보고서, 선택적 PNG 캡처, 증거 파일 검증도 구현되어 있습니다. 기본 실행 모드는 관측이며, 자동 작업 분해는 아직 연결되지 않았습니다. Codex는 세션 기록을 읽는 사용량 원장(`codex-usage`)과, `codex app-server`로 턴마다 effort나 모델을 고르는 실행기(`codex`, 기본 관측)가 구현되어 있습니다. 실행기로 시작한 턴만 라우팅되고, Codex 앱에서 직접 입력한 턴은 라우팅되지 않습니다.
 
 | 구성 요소 | 완료된 내용 | 주요 구현 위치 |
 | --- | --- | --- |
@@ -18,8 +18,10 @@ Claude Code를 대상으로 작업 분석부터 모델 선택, 실패 시 승격
 | 사용량 집계 | 요청·턴·서브에이전트 기록 타입, 토큰 집계, 비용 추정, 텍스트 보고서 | [usage.ts](../packages/core/src/usage.ts) |
 | Claude Code 연결 | 세션·턴·도구·서브에이전트 훅, 상태 표시, `/router`, `/router explain` | [register.ts](../packages/claude-adapter/src/register.ts) |
 | 설정 및 로그 | 사용자 설정 해석, 세션별 JSON Lines 저장과 파일 분할 | [config.ts](../packages/claude-adapter/src/config.ts), [log.ts](../packages/claude-adapter/src/log.ts) |
-| CLI | `report`, `explain`, `doctor`, `codex-usage`, `bench validate/run/report/verify` | [cli.ts](../packages/cli/src/cli.ts) |
+| CLI | `report`, `explain`, `doctor`, `codex-usage`, `codex`, `bench validate/run/report/verify` | [cli.ts](../packages/cli/src/cli.ts) |
+| Codex 실행기 | `codex app-server` 연결, 기본 설정과 현재 설정 분리(Codex는 지정한 모델·effort를 다음 턴에 물려줌), `model/list` 기준 지원 조합만 전송, 모델·effort 모두 캐시 보호, 요청별 사용량 알림의 중복 제거, 터미널 승인·중단, 로그인 방식과 플랜 한도 표시 | [runner.ts](../packages/codex-adapter/src/runner.ts), [session.ts](../packages/codex-adapter/src/session.ts), [appserver.ts](../packages/codex-adapter/src/appserver.ts), [codex.ts](../packages/cli/src/codex.ts) |
 | Codex 사용량 원장 | 세션 기록의 요청별 사용량, 요청 ID 중복 제거, 구간별 누적값 대조, 자동 압축 분리 | [ledger.ts](../packages/codex-adapter/src/ledger.ts), [sessions.ts](../packages/codex-adapter/src/sessions.ts) |
+| VS Code 상태바 | Claude 절감 추정·Codex 잠재 절감을 상태바 한 항목에 표시, 상세 보고서 웹뷰, 바뀐 파일만 다시 읽기, 기간 이전 파일 건너뛰기, 한국어·영어 | [packages/vscode](../packages/vscode/src/extension.ts) |
 | Codex 비용·시뮬레이션 | OpenAI API 요금 환산 비용, 같은 라우터(신뢰도·캐시 보호 포함)로 턴마다 판단했을 때의 비용, `report` 통합 | [savings.ts](../packages/codex-adapter/src/savings.ts), [turns.ts](../packages/codex-adapter/src/turns.ts), [catalog.ts](../packages/core/src/catalog.ts) |
 | 보고서 | 사용량·벤치마크 HTML 보고서, 브라우저를 통한 전체 페이지 PNG 캡처 | [html/](../packages/cli/src/html), [capture.ts](../packages/cli/src/capture.ts) |
 | 배포 기반 | npm 워크스페이스, 플러그인 번들 빌드, 마켓플레이스 매니페스트, CI 설정 | [package.json](../package.json), [build.mjs](../scripts/build.mjs), [ci.yml](../.github/workflows/ci.yml) |
@@ -67,14 +69,16 @@ Claude Code를 대상으로 작업 분석부터 모델 선택, 실패 시 승격
 | `bench verify` (저장소에 커밋된 실행 기록) | **로컬 폴더 4개, 21회분 검증 통과** | 증거 파일·보고서 해시와 원시 기록 기반 결과·집계 일치. 라우팅·사용량·벤치마크 버그 수정 이후 재검증 — 수정 전후로 집계가 달라지지 않음 |
 | Claude Code 엔진 검사 | 이번 문서 작업에서는 재실행하지 않음 | 현재 셸의 PATH에서 `claude`를 찾을 수 없음. 기존 문서에는 2.1.312에서의 통합 테스트 통과 기록이 있음 |
 
-검증한 실행 기록의 식별 정보입니다. **네 폴더 모두 `simulated: false`인 실제 모델 실행이며, `.gitignore`의 시뮬레이션 제외 규칙(`benchmarks/results/*-simulated/`)에 걸리지 않아 git에 커밋되어 있습니다.** README에서 이 기록을 "시뮬레이션 18회분", "실제 모델 비교 결과는 아직 없음"으로 적었던 부분은 바로잡았습니다.
+검증한 실행 기록의 식별 정보입니다. **다섯 폴더 모두 `simulated: false`인 실제 모델 실행이며, `.gitignore`의 시뮬레이션 제외 규칙(`benchmarks/results/*-simulated/`)에 걸리지 않아 git에 커밋되어 있습니다.** README에서 이 기록을 "시뮬레이션 18회분", "실제 모델 비교 결과는 아직 없음"으로 적었던 부분은 바로잡았습니다.
 
 ```text
-Run IDs: 20261030-085716, 20261030-090215, 20261030-090443, 20261030-092454
-Runs: 1 + 1 + 1 + 18 = 21 (Claude Code 2.1.312, Windows, 커밋 aff975e/a55f15f 시점)
+Run IDs: 20261030-085716, 20261030-090215, 20261030-090443, 20261030-092454, 20261102-064426
+Runs: 1 + 1 + 1 + 18 + 32 = 53 (Claude Code 2.1.312, Windows)
 ```
 
 `20261030-092454` 폴더는 6개 작업 × 3개 조건(default/opusplan/auto) × 1반복의 실측 결과입니다: `default` 6/6 성공·$0.791, `opusplan` 5/6·$0.332, `auto` 6/6·$0.378. 반복이 1회뿐이고 예제 작업 6개에 한정되므로 일반적인 결론으로 보기엔 근거가 여전히 제한적입니다 (아래 "평가 범위 확장" 항목과 동일한 이유).
+
+`20261102-064426` 폴더는 8개 작업 × Opus 4개 조건([`arms.effort.json`](../benchmarks/arms.effort.json)) × 1반복입니다. 32회 모두 성공했고, 완료 작업당 비용은 세션 effort(`medium`) $0.128, 고정 `low` $0.102, effort 라우팅 $0.125, 모델 라우팅 $0.053입니다. 후속 턴 과제에서 effort만 바꾼 전환 2건은 대화 전체를 캐시에서 읽고 새 메시지(227·272 토큰)만 썼고, 모델을 바꾼 전환 2건은 공통 시스템 프롬프트(27,152 토큰)만 읽고 그때까지의 대화(7,542·8,034 토큰)를 새로 썼습니다. 모든 조건이 모든 과제를 풀어서 품질 차이는 측정되지 않았고, 승격과 출력 상한 도달은 0건입니다. 결과 파일 3개와 `results.json`은 기록 순서 버그를 고친 뒤 원본 파일에서 다시 계산했습니다(원본 기록은 그대로).
 
 ## 남은 작업
 
@@ -83,7 +87,7 @@ Runs: 1 + 1 + 1 + 18 = 21 (Claude Code 2.1.312, Windows, 커밋 aff975e/a55f15f 
 | 실제 모델 평가 확대 | 예비 데이터(6작업×3조건×1반복, "검증 결과" 참고)는 이미 있음. 반복 횟수를 늘려 재현성 확인 | 작업별 성공 판정, 유효·무효 실행, 원시 기록, 비용·시간을 반복마다 공개 |
 | 평가 범위 확장 | 실제 저장소 작업과 외부 작성 작업 추가 | 예제와 분류 규칙에 편향되지 않은 작업군에서 재현 |
 | 자동 작업 분해 | 브리프 생성과 실행 어댑터 연결 | 의존성 순서와 수정 범위 충돌을 지키며 완료 조건 검증 |
-| Codex | `codex exec` 벤치마크로 시뮬레이션의 가정(작은 모델도 같은 작업을 끝낸다) 검증, 이후 [설계 문서](../packages/codex-adapter/README.md)에 따른 실행기 여부 결정 | 숨은 테스트 기반 성공률과 완료 과제당 비용으로 기본 정책·standard → Sol 정책 비교 |
+| Codex | 실패한 턴을 상위 등급으로 자동 재시도(재시도 횟수·시간 제한 포함), 실행기로 Codex 비교군을 돌리는 벤치마크, effort 전환 시 캐시 손실의 반복 측정 | 같은 과제·초기 상태·검증 조건에서 숨은 테스트 기반 성공률과 완료 과제당 비용 비교 |
 | 모호한 작업 분류 | 소형 모델 보조 판단의 필요성 평가 | 규칙 기반 분류 대비 품질·추가 지연·비용 비교 |
 | 배포 | 저장소 경로 확정, npm·마켓플레이스 공개 준비 | 실제 설치 경로와 버전으로 설치·업데이트 절차 확인 |
 

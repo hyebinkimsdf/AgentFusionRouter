@@ -1,0 +1,4 @@
+Add a countItems(cart) function to src/cart.js that returns the total quantity of all items in the cart, 0 for an empty cart.
+
+[turn 2]
+Where is countItems defined now? Answer with the relative file path only.

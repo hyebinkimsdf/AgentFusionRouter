@@ -1,0 +1,104 @@
+{
+  "taskId": "savings-label-then-rate",
+  "armId": "auto",
+  "rep": 1,
+  "valid": true,
+  "success": true,
+  "timedOut": false,
+  "check": {
+    "testsPassed": true,
+    "testsExitCode": 0
+  },
+  "wallMs": 18235,
+  "claude": {
+    "isError": false,
+    "costUsd": 0.04965976,
+    "durationMs": 6370,
+    "numTurns": 3,
+    "permissionDenials": 0,
+    "tokens": {
+      "input": 1203,
+      "output": 855,
+      "cacheRead": 192436,
+      "cacheWrite": 15595
+    },
+    "conversationTokens": {
+      "input": 12,
+      "output": 836,
+      "cacheRead": 192436,
+      "cacheWrite": 15595
+    },
+    "byModel": {
+      "claude-haiku-5-5": {
+        "tokens": {
+          "input": 1197,
+          "output": 419,
+          "cacheRead": 95536,
+          "cacheWrite": 7386
+        },
+        "costUsd": 0.0027617600000000003
+      },
+      "claude-sonnet-5-5": {
+        "tokens": {
+          "input": 6,
+          "output": 436,
+          "cacheRead": 96900,
+          "cacheWrite": 8209
+        },
+        "costUsd": 0.046897999999999995
+      }
+    },
+    "budgetExhausted": false
+  },
+  "plugin": {
+    "loaded": true,
+    "requests": 6,
+    "tokens": {
+      "input": 12,
+      "output": 836,
+      "cacheRead": 192436,
+      "cacheWrite": 15595
+    },
+    "costUsd": 0.04953116,
+    "decidedTier": "light",
+    "routedRequests": 6,
+    "escalations": 0,
+    "models": [
+      "claude-haiku-5-5",
+      "claude-sonnet-5-5"
+    ],
+    "stops": {
+      "tool_use": 4,
+      "end_turn": 2
+    },
+    "firstRequest": {
+      "input": 2,
+      "output": 155,
+      "cacheRead": 27152,
+      "cacheWrite": 6936
+    },
+    "switches": {
+      "requests": 1,
+      "tokens": {
+        "input": 2,
+        "output": 84,
+        "cacheRead": 27152,
+        "cacheWrite": 7542
+      }
+    },
+    "efforts": {
+      "requested": [
+        "medium"
+      ],
+      "sent": [
+        "low",
+        "medium"
+      ]
+    }
+  },
+  "diff": {
+    "files": 1,
+    "added": 4,
+    "removed": 1
+  }
+}

@@ -1,0 +1,16 @@
+diff --git a/src/cart.js b/src/cart.js
+index cff26a3..80b8371 100644
+--- a/src/cart.js
++++ b/src/cart.js
+@@ -15,7 +15,10 @@ export const addItem = (cart, item) => {
+ 
+ export const useCoupon = (cart, coupon) => ({ ...cart, coupon })
+ 
+-export const subtotalOf = cart => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
++/** Total quantity of all items in the cart; 0 when empty. */
++export const countItems = cart => cart.items.reduce((sum, i) => sum + i.qty, 0)
++
++export const subtotalOf =cart => cart.items.reduce((sum, i) => sum + i.price * i.qty, 0)
+ 
+ /** Subtotal, discount, tax and total. Tax is charged on the discounted amount. */
+ export const calcTotal = cart => {

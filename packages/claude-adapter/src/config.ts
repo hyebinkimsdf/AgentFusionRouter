@@ -1,6 +1,6 @@
 import type { PluginOptions } from 'claude-code'
 
-import type { EscalationPolicy, RoutePolicy, TierTarget } from '@agent-fusion-router/core'
+import type { Effort, EscalationPolicy, RoutePolicy, TierTarget } from '@agent-fusion-router/core'
 import { CLAUDE_TIER_DEFAULTS, DEFAULT_ESCALATION, DEFAULT_POLICY } from '@agent-fusion-router/core'
 
 export type Config = {
@@ -23,11 +23,14 @@ const flag = (value: unknown, fallback: boolean): boolean => (typeof value === '
 const oneOf = <T extends string>(value: unknown, allowed: readonly T[], fallback: T): T =>
   allowed.includes(value as T) ? (value as T) : fallback
 
-/** A tier's model from settings: empty keeps the session's. */
-const target = (model: unknown, base: TierTarget): TierTarget => {
-  const name = text(model, '')
+const EFFORTS: readonly Effort[] = ['low', 'medium', 'high', 'xhigh', 'max']
 
-  return name === '' ? { effort: base.effort } : { ...base, model: name }
+/** A tier's model and effort from settings: an empty model keeps the session's, an empty effort the tier's default. */
+const target = (model: unknown, effort: unknown, base: TierTarget): TierTarget => {
+  const name = text(model, '')
+  const level = EFFORTS.includes(effort as Effort) ? (effort as Effort) : base.effort
+
+  return { ...(name === '' ? {} : { model: name }), ...(level === undefined ? {} : { effort: level }) }
 }
 
 /** The plugin's `userConfig` values, defaults filled in for anything unset or invalid. */
@@ -36,9 +39,9 @@ export const readConfig = (options: PluginOptions): Config => ({
     mode: oneOf(options.mode, ['observe', 'route'], DEFAULT_POLICY.mode),
     strategy: oneOf(options.strategy, ['model', 'effort'], DEFAULT_POLICY.strategy),
     tiers: {
-      light: target(options.lightModel ?? CLAUDE_TIER_DEFAULTS.light.model, CLAUDE_TIER_DEFAULTS.light),
-      standard: target(options.standardModel, CLAUDE_TIER_DEFAULTS.standard),
-      heavy: target(options.heavyModel ?? CLAUDE_TIER_DEFAULTS.heavy.model, CLAUDE_TIER_DEFAULTS.heavy),
+      light: target(options.lightModel ?? CLAUDE_TIER_DEFAULTS.light.model, options.lightEffort, CLAUDE_TIER_DEFAULTS.light),
+      standard: target(options.standardModel, options.standardEffort, CLAUDE_TIER_DEFAULTS.standard),
+      heavy: target(options.heavyModel ?? CLAUDE_TIER_DEFAULTS.heavy.model, options.heavyEffort, CLAUDE_TIER_DEFAULTS.heavy),
     },
     minLightConfidence: count(options.minLightConfidence, DEFAULT_POLICY.minLightConfidence),
     cacheGuardTokens: count(options.cacheGuardTokens, DEFAULT_POLICY.cacheGuardTokens),

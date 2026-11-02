@@ -210,6 +210,20 @@ ${table(
   [1, 2, 3, 4, 5, 6, 7],
 )}`
 
+  const share = (n: number | undefined): string => (n === undefined ? '—' : `${(n * 100).toFixed(1)}%`)
+  const caching = table(
+    ['Arm', 'Cache read ratio', 'First requests (read · write)', 'After a model or effort change (requests · read · write)', 'Cut at the output cap (requests · runs · still passed)', 'Effort asked → sent'],
+    summary.arms.map(a => [
+      armName(arms, a.armId),
+      share(a.cacheReadRatio),
+      a.firstRequestTokens ? `${compact(a.firstRequestTokens.cacheRead)} · ${compact(a.firstRequestTokens.cacheWrite)}` : '—',
+      !a.switches ? '—' : a.switches.requests === 0 ? 'none' : `${a.switches.requests} · ${compact(a.switches.tokens.cacheRead)} · ${compact(a.switches.tokens.cacheWrite)}`,
+      !a.maxTokens ? '—' : a.maxTokens.requests === 0 ? 'none' : `${a.maxTokens.requests} · ${a.maxTokens.runs} · ${a.maxTokens.recovered}`,
+      a.efforts ? `${esc(a.efforts.requested.join(', ') || '—')} → ${esc(a.efforts.sent.join(', ') || '—')}` : 'not logged',
+    ]),
+    [1, 2, 3, 4],
+  )
+
   const perTaskChart = groupedBarChart(
     tasks.map(t => ({
       label: t.id,
@@ -231,7 +245,7 @@ ${table(
     tasks.map(t => [
       `<code>${esc(t.id)}</code>`,
       esc(t.kind),
-      esc(t.expectedTier),
+      esc([t.expectedTier, ...(t.followUps ?? []).map(f => f.expectedTier)].join(' → ')),
       ...arms.map(a => {
         const cell = summary.cells.find(c => c.taskId === t.id && c.armId === a.id)
         if (!cell || cell.runs === 0) return '—'
@@ -337,6 +351,9 @@ ${charts}
 <h3>All measures</h3>
 ${comparison}
 <p class="note">Every cost figure in this comparison is <strong>Claude Code's computed session cost</strong> (<code>total_cost_usd</code>): Claude Code's own figure at list prices, not a bill. The billed cost is in the provider's billing console and is not measured here, and on a subscription the same work counts against plan limits instead. Per completed task = session cost ÷ successes, so failed runs count. "On the tasks all completed" sums session cost over the ${common.length} task${common.length === 1 ? '' : 's'} every arm passed (${esc(common.join(', ') || 'none')}): a like-for-like figure. A run with no reported cost is shown as unknown, never as $0. Invalid runs are left out of every figure.</p>
+<h3>Cache, output cap and switches</h3>
+${caching}
+<p class="note"><strong>Cache read ratio</strong> = cache reads ÷ (uncached input + cache reads + cache writes), over the arm's summed tokens. A low ratio is a reason to look, not a failure: a first request or a short session reads little however well it caches. <strong>First requests</strong> are each run's first request: what they write is a cold prefix, which depends on what ran before them, not on routing. <strong>After a change</strong> counts the requests whose model or effort differs from the request before them in the same loop: what switching did to the cache. A single-turn task never switches mid-conversation unless it escalates. <strong>Cut at the output cap</strong> counts requests that stopped at <code>max_tokens</code>, which is not a failed task: "still passed" counts the runs that recovered. <strong>Effort</strong> is what the session asked for before the router and what was sent; runs made before efforts were logged show "not logged".</p>
 
 <h2>By model</h2>
 <p class="sub">The same runs grouped by the model that answered the conversation, as the plugin recorded it (<code>A → B</code>: both answered in one session). Claude Code's own side requests are not what did the work and are left out of this grouping, not out of the costs. To see what each model actually changed, open <a href="work.html">Work produced</a>.</p>

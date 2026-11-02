@@ -15,7 +15,7 @@ import {
 
 import type { Config } from './config.ts'
 import { readConfig } from './config.ts'
-import { createLog, parseRecords } from './log.ts'
+import { createLog, loggedLedgerUsd, parseRecords } from './log.ts'
 
 // The engine reads this module's source and accepts an engine call only
 // spelled `$.noun.method(...)` inside a hook body: `$` is never passed to a
@@ -59,6 +59,8 @@ export function register(on: On, options: PluginOptions): void {
   const config = readConfig(options)
   const turns = new Map<string, TurnState>()
   const loops = new Map<string, LoopState>()
+  /** Per session, the ledger total the last cost record logged. */
+  const ledgers = new Map<string, Promise<{ usd: number }>>()
   const log = createLog()
 
   const loopOf = (agentId: string | undefined): LoopState => {
@@ -195,6 +197,8 @@ export function register(on: On, options: PluginOptions): void {
       decidedModel: decision?.model,
       decidedEffort: decision?.effort,
       applied: decision?.applied ?? false,
+      requestedEffort: e.effort,
+      effort: sent.effort,
       model: result.usage?.model,
       tokens,
       stop: result.stopReason,
@@ -287,6 +291,43 @@ export function register(on: On, options: PluginOptions): void {
       model: result.model,
       reasons: decision.reasons,
     })
+    await log.flush(file => $.fs.write(file.path, file.text))
+
+    return result
+  }).catch((_, e, next) => next(e))
+
+  // Claude Code's ledger, logged as it grows: the steps' estimates miss what it
+  // also counts, and the report shows the difference.
+  on('session.measure', async ($, e, next) => {
+    const result = await next(e)
+    const usd = e.cost?.usd
+    const dir = log.dir
+    if (usd === undefined || dir === undefined) return result
+
+    const session = await $.session.id()
+    let known = ledgers.get(session)
+    if (known === undefined) {
+      // After a reload or a resume, the session's logged total is the baseline;
+      // a ledger that restarted below it counts from zero.
+      known = (async () => {
+        const entries = await $.fs.list(dir).catch(() => [])
+        const files = entries.filter(f => f.kind === 'file' && f.name.includes(`_${session}_`))
+        const texts = await Promise.all(files.map(f => $.fs.read(`${dir}/${f.name}`).catch(() => '')))
+        const logged = loggedLedgerUsd(parseRecords(texts))
+
+        return { usd: usd < logged ? 0 : logged }
+      })()
+      ledgers.set(session, known)
+    }
+
+    // Read and moved on together, with no await between, so two measurements
+    // never log the same growth.
+    const last = await known
+    if (usd <= last.usd) return result
+    const addedUsd = usd - last.usd
+    last.usd = usd
+
+    log.add({ v: 1, kind: 'cost', ts: Date.now(), product: 'claude-code', session, usd, addedUsd })
     await log.flush(file => $.fs.write(file.path, file.text))
 
     return result

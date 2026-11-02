@@ -1,0 +1,81 @@
+diff --git a/src/pricing.js b/src/pricing.js
+index 2b458ae..86ea86d 100644
+--- a/src/pricing.js
++++ b/src/pricing.js
+@@ -1,10 +1,24 @@
+ // Amounts are whole currency units (won, cents) so totals never carry float error.
+ 
+-export const TAX_RATES = {
+-  KR: 0.1,
+-  US: 0.08,
++// Each region's tax rule is a function (amount) => tax, so regions can round differently.
++const TAX_RULES = new Map()
++
++/** Make `rule` the tax rule for `region`, replacing any rule it already had. */
++export const registerTaxRule = (region, rule) => {
++  if (typeof rule !== 'function') throw new TypeError(`Tax rule for region ${region} must be a function`)
++
++  TAX_RULES.set(region, rule)
+ }
+ 
++/** A rule that charges a flat rate, rounded to the nearest whole unit. */
++const flatRate = (rate) => (amount) => Math.round(amount * rate)
++
++registerTaxRule('KR', flatRate(0.1))
++registerTaxRule('US', flatRate(0.08))
++// Japan's 10% consumption tax drops any fraction of a yen. Dividing by 100 keeps exact
++// multiples exact, where `amount * 0.1` could land a hair below and floor a yen too low.
++registerTaxRule('JP', (amount) => Math.floor((amount * 10) / 100))
++
+ export const COUPONS = {
+   WELCOME10: 0.1,
+   VIP20: 0.2,
+@@ -17,10 +31,10 @@ export const applyCoupon = (amount, coupon) => {
+   return Math.round(amount * (1 - rate))
+ }
+ 
+-/** The tax owed on an amount in a region, rounded to a whole unit. */
++/** The tax owed on an amount in a region, as computed by that region's registered rule. */
+ export const applyTax = (amount, region) => {
+-  const rate = TAX_RATES[region]
+-  if (rate === undefined) throw new Error(`No tax rule for region ${region}`)
++  const rule = TAX_RULES.get(region)
++  if (rule === undefined) throw new Error(`No tax rule for region ${region}`)
+ 
+-  return Math.round(amount * rate)
++  return rule(amount)
+ }
+diff --git a/test/pricing.test.js b/test/pricing.test.js
+index 57885e7..075c60f 100644
+--- a/test/pricing.test.js
++++ b/test/pricing.test.js
+@@ -1,7 +1,7 @@
+ import assert from 'node:assert/strict'
+ import { test } from 'node:test'
+ 
+-import { applyCoupon, applyTax } from '../src/pricing.js'
++import { applyCoupon, applyTax, registerTaxRule } from '../src/pricing.js'
+ 
+ test('a coupon takes its percentage off', () => {
+   assert.equal(applyCoupon(10000, 'WELCOME10'), 9000)
+@@ -21,3 +21,20 @@ test('tax follows the region', () => {
+ test('an unknown region is an error', () => {
+   assert.throws(() => applyTax(1000, 'ZZ'))
+ })
++
++test('Japan rounds consumption tax down', () => {
++  assert.equal(applyTax(1000, 'JP'), 100)
++  assert.equal(applyTax(1009, 'JP'), 100)
++  // KR rounds the same fraction to nearest.
++  assert.equal(applyTax(1009, 'KR'), 101)
++})
++
++test('a registered rule decides the tax for its region', () => {
++  registerTaxRule('XX', (amount) => amount * 2)
++  assert.equal(applyTax(50, 'XX'), 100)
++})
++
++test('a tax rule must be a function', () => {
++  assert.throws(() => registerTaxRule('XY', 0.1), TypeError)
++  assert.throws(() => applyTax(1000, 'XY'))
++})

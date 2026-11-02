@@ -1,0 +1,79 @@
+{
+  "name": "agent-fusion-router-vscode",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.1.0",
+  "publisher": "hyebinkimsdf",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyebinkimsdf/agentfusionrouter"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentFusionRouter.showDetails",
+        "title": "%command.showDetails%",
+        "category": "Agent Fusion Router"
+      },
+      {
+        "command": "agentFusionRouter.refresh",
+        "title": "%command.refresh%",
+        "category": "Agent Fusion Router"
+      }
+    ],
+    "configuration": {
+      "title": "Agent Fusion Router",
+      "properties": {
+        "agentFusionRouter.period": {
+          "type": "string",
+          "enum": [
+            "today",
+            "7d",
+            "30d"
+          ],
+          "default": "today",
+          "description": "%config.period%"
+        },
+        "agentFusionRouter.refreshMinutes": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "description": "%config.refreshMinutes%"
+        },
+        "agentFusionRouter.claudeLogDir": {
+          "type": "string",
+          "default": "",
+          "description": "%config.claudeLogDir%"
+        },
+        "agentFusionRouter.codexHome": {
+          "type": "string",
+          "default": "",
+          "description": "%config.codexHome%"
+        },
+        "agentFusionRouter.codexStandardModel": {
+          "type": "string",
+          "default": "",
+          "description": "%config.codexStandardModel%"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@agent-fusion-router/codex-adapter": "*",
+    "@agent-fusion-router/core": "*",
+    "@types/vscode": "1.90.0"
+  }
+}

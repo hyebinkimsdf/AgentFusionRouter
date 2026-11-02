@@ -1,0 +1,63 @@
+{
+  "name": "shop",
+  "description": "A small cart and pricing library. Eight tasks across the router's tiers, two of them with a follow-up turn in the same session; each is judged by hidden tests the agent never sees.",
+  "project": "project",
+  "tasks": [
+    {
+      "id": "find-tax-rate",
+      "kind": "lookup",
+      "expectedTier": "light",
+      "prompt": "Which file defines the tax rate for Korea (KR)? Answer with the relative file path only.",
+      "answerIncludes": ["src/pricing.js"]
+    },
+    {
+      "id": "fix-receipt-typo",
+      "kind": "mechanical",
+      "expectedTier": "light",
+      "prompt": "Fix the typo in the receipt's total label in src/format.js: it prints \"Totla\" instead of \"Total\"."
+    },
+    {
+      "id": "rename-calc-total",
+      "kind": "mechanical",
+      "expectedTier": "standard",
+      "prompt": "Rename the function calcTotal to calculateTotal everywhere in the project, including the tests."
+    },
+    {
+      "id": "add-remove-item",
+      "kind": "implement",
+      "expectedTier": "standard",
+      "prompt": "Add a removeItem(cart, sku) function to src/cart.js that returns a new cart without the item with that SKU. Removing a SKU that is not in the cart returns an equal cart, and the original cart must not change."
+    },
+    {
+      "id": "fix-coupon-bug",
+      "kind": "debug",
+      "expectedTier": "standard",
+      "prompt": "Customers report that the order total is too low when they use a coupon. Find the bug and fix it."
+    },
+    {
+      "id": "tax-rule-registry",
+      "kind": "design",
+      "expectedTier": "heavy",
+      "prompt": "Tax rules are hard-coded as a rate table in src/pricing.js, and Japan needs a different rounding rule. Redesign tax handling so each region's rule is pluggable: export registerTaxRule(region, rule), where rule is a function (amount) => tax. applyTax(amount, region) must keep the same results for KR and US and keep throwing for unknown regions. Register JP as 10% consumption tax rounded down to a whole unit."
+    },
+    {
+      "id": "count-items-then-locate",
+      "kind": "implement, then lookup",
+      "expectedTier": "standard",
+      "prompt": "Add a countItems(cart) function to src/cart.js that returns the total quantity of all items in the cart, 0 for an empty cart.",
+      "followUps": [
+        { "prompt": "Where is countItems defined now? Answer with the relative file path only.", "expectedTier": "light" }
+      ],
+      "answerIncludes": ["src/cart.js"]
+    },
+    {
+      "id": "savings-label-then-rate",
+      "kind": "mechanical, then implement",
+      "expectedTier": "light",
+      "prompt": "In src/format.js, rename the receipt line \"Discount:\" to \"Savings:\".",
+      "followUps": [
+        { "prompt": "Now add a formatRate(rate) function to src/format.js that turns a discount rate such as 0.15 into the text \"15% off\", rounded to a whole percent.", "expectedTier": "standard" }
+      ]
+    }
+  ]
+}

@@ -18,19 +18,32 @@ Routing saves money only if the cheaper model still finishes the job. A light mo
 
 [`arms.fixed-models.json`](arms.fixed-models.json) compares fixed Opus, fixed Sonnet, and routing instead: `--arms benchmarks/arms.fixed-models.json`.
 
+[`arms.effort.json`](arms.effort.json) asks whether switching models adds anything over changing effort alone. Every arm runs on Opus:
+
+| Arm | Plugin | What it answers |
+|---|---|---|
+| `opus-session` | observe | Opus at the session's own effort |
+| `opus-low` | route, `strategy: effort`, every tier at `low` | A fixed low effort, with no classifier in it |
+| `auto-effort` | route, `strategy: effort` | The classifier choosing effort alone: light `low`, standard the session's, heavy `high` |
+| `auto` | route, standard tier → `sonnet` | The classifier choosing models, as in `arms.json` |
+
+`auto-effort` mixes the classifier's effect with effort's, so `opus-low` is the fixed point to compare it with. Each request logs the effort the session asked for and the effort sent, so the report shows which efforts actually ran.
+
 ## Tasks
 
 A task set is a folder:
 
 ```
 examples/shop/
-  tasks.json     the tasks: id, kind, expected tier, prompt, optional answerIncludes
+  tasks.json     the tasks: id, kind, expected tier, prompt, optional followUps and answerIncludes
   project/       the starting code; each run gets a fresh copy
   checks/<id>/   hidden tests, copied into test/hidden/ after the agent finishes
   solutions/<id>/  reference solutions, used only to prove the checks are sound
 ```
 
 A run succeeds when the whole test suite passes with the hidden tests added, and, for a question, the final answer contains every `answerIncludes` string. The agent never sees `checks/` or `solutions/`: it works in a copy of `project/` in the system temp folder.
+
+**Follow-up turns.** A task with `followUps` sends each one after the first prompt, resuming the same session (`--resume`), each with the tier a person would pick for it. The check judges the state after the last turn, and the answer check reads the last turn's answer. A single-turn task starts on its routed model and never switches inside the conversation unless it escalates, so these tasks are the only measure of what a switch does to the cache. A turn that ends in an error ends the run there.
 
 `bench validate` runs every check twice: on the untouched project, where it must fail, and with the reference solution, where it must pass. `bench run` does this first and refuses to start if any check is unsound.
 
@@ -55,9 +68,9 @@ claude -p --output-format json --model <arm model> --plugin-dir plugins/claude/a
 
 The prompt goes on stdin. The settings file carries the arm's plugin options and allows only the test runner (`node --test`, `npm test`) among shell commands. Your own settings, plugins, and MCP servers are not loaded, so every arm runs in the same environment. Arms run in a rotated order per task, so no arm always goes first.
 
-**Live runs cost money or plan usage.** The full shop comparison is 6 tasks × 3 arms × repetitions. `--budget` caps each `claude -p` invocation (default $1), not the benchmark: a plan-then-execute run makes two invocations. `--timeout` limits a run's time (default 15 minutes).
+**Live runs cost money or plan usage.** The full shop comparison is 8 tasks × 3 arms × repetitions. `--budget` caps each `claude -p` invocation (default $1), not the benchmark: a plan-then-execute run makes two invocations, and each follow-up turn one more. `--timeout` limits a run's time (default 15 minutes).
 
-**A total cap.** `--max-total-usd` stops the benchmark before a run whose whole cap (`--budget`, twice for plan-then-execute) would take the total past it. The total is Claude Code's computed cost of every session so far, invalid ones included. A session that reports no cost counts at its whole cap. Every run still gets the full `--budget`, so no run is cut short by the total and judged on it. This cap is not exact: Claude Code checks `--max-budget-usd` between requests, so a run can go past its cap by its last request, and the total by as much. Leave headroom of one run's cap: with `--budget 1`, a total of $5 stops once more than $3 is spent before a plan-then-execute run.
+**A total cap.** `--max-total-usd` stops the benchmark before a run whose whole cap (`--budget` for each of its invocations) would take the total past it. The total is Claude Code's computed cost of every session so far, invalid ones included. A session that reports no cost counts at its whole cap. Every run still gets the full `--budget`, so no run is cut short by the total and judged on it. This cap is not exact: Claude Code checks `--max-budget-usd` between requests, so a run can go past its cap by its last request, and the total by as much. Leave headroom of one run's cap: with `--budget 1`, a total of $5 stops once more than $3 is spent before a plan-then-execute run.
 
 **Timeouts and spent budgets are failures.** A run killed by `--timeout`, or stopped by its `--max-budget-usd` cap (Claude Code prints `subtype: "error_max_budget_usd"`), is a valid run that failed: the task did not finish within a real budget. It counts against the success rate even if the hidden tests happen to pass.
 
@@ -129,12 +142,17 @@ The first comparison, [`20261030-085716_vs_20261030-090443`](comparisons/2026103
 | Turns, permission denials | Claude Code's report |
 | Escalations, router tier | the plugin's records |
 | Lines changed | `git diff --numstat` against the starting copy |
+| Cache read ratio | cache reads ÷ (uncached input + cache reads + cache writes), over an arm's summed tokens. A signal to look into when low, not a pass mark: a first request or a short session reads little however well it caches |
+| First requests | each run's first request, read and written. A write is a cold prefix, which depends on what ran before, not on routing |
+| After a change | requests whose model or effort differs from the request before them in the same loop, read and written: the cache cost of a switch |
+| Cut at the output cap | requests that stopped at `max_tokens`, the runs that had one, and how many of those still passed. A cut request is not a failed task |
+| Effort | the effort the session asked for and the effort sent, from the plugin's records |
 
 Costs are Claude Code's computed figures at list prices, not a bill. On a subscription the same work counts against plan limits instead. Context compaction is not separated: these sessions are short, and its tokens would show only as part of the totals.
 
 ## Limits to state with any result
 
 - **The shop tasks are small.** Every model may solve all of them, and then the comparison only shows cost. Real conclusions need larger tasks from real repositories.
-- **The tasks and the classifier rules have the same author.** That the router picks the expected tier on all six shop tasks is not evidence of accuracy. Score the classifier on tasks written by someone else.
+- **The tasks and the classifier rules have the same author.** That the router picks the expected tier on the shop tasks is not evidence of accuracy. Score the classifier on tasks written by someone else.
 - **Repeat.** Run at least three repetitions per task and arm; single runs vary too much to compare.
 - **Simulated runs are not results.** `--simulate` invents its numbers with one rule (a model below the task's tier fails). Their folders end in `-simulated`, their reports say so in a banner, and Git ignores them.

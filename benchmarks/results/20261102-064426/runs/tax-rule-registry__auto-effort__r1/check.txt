@@ -1,0 +1,23 @@
+✔ adding the same SKU raises its quantity (1.2549ms)
+✔ adding never changes the original cart (0.2675ms)
+✔ totals without a coupon add Korean tax (1.1532ms)
+✔ the receipt lists each item and the subtotal (28.3694ms)
+✔ KR and US keep their results (1.1863ms)
+✔ JP rounds 10% down to a whole unit (0.2229ms)
+✔ a registered rule is used for its region (0.1946ms)
+✔ an unknown region is still an error (0.3673ms)
+✔ a coupon takes its percentage off (1.21ms)
+✔ an unknown coupon takes nothing off (0.1917ms)
+✔ tax follows the region (0.201ms)
+✔ an unknown region is an error (0.4671ms)
+✔ Japan rounds consumption tax down (0.2472ms)
+✔ a registered rule decides the tax for its region (0.1834ms)
+✔ a tax rule must be a function (0.6612ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 201.1245

@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --test:*)",
+      "Bash(npm test:*)",
+      "PowerShell(node --test:*)",
+      "PowerShell(npm test:*)"
+    ]
+  },
+  "pluginConfigs": {
+    "agent-fusion-router": {
+      "options": {
+        "mode": "route",
+        "strategy": "effort",
+        "logDir": "C:\\Users\\user\\Desktop\\새 폴더\\agentfusionrouter\\benchmarks\\results\\20261102-064426\\runs\\fix-coupon-bug__auto-effort__r1\\plugin-logs"
+      }
+    },
+    "agent-fusion-router@inline": {
+      "options": {
+        "mode": "route",
+        "strategy": "effort",
+        "logDir": "C:\\Users\\user\\Desktop\\새 폴더\\agentfusionrouter\\benchmarks\\results\\20261102-064426\\runs\\fix-coupon-bug__auto-effort__r1\\plugin-logs"
+      }
+    }
+  }
+}

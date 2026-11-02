@@ -21,8 +21,12 @@ export const requestText = (message: string): string => {
   return marker === null ? message : message.slice(marker.index + marker[0].length).trim()
 }
 
-/** Context Codex adds as a user message of its own (`<environment_context>`, `<external_codex_apps_open_page>`): not the person's words. */
-const INJECTED = /^\s*<[a-z_]+>/
+/**
+ * Context Codex adds as a user message of its own (`<environment_context>`,
+ * `<external_codex_apps_open_page>`, a project's AGENTS.md as `# AGENTS.md
+ * instructions for <dir>`): not the person's words.
+ */
+const INJECTED = /^\s*(<[a-z_]+>|# AGENTS\.md instructions for )/
 
 /** The text of a `response_item` user message, without the context blocks Codex injects. */
 const itemText = (content: unknown): string =>

@@ -1,0 +1,10 @@
+{
+  "taskId": "fix-coupon-bug",
+  "armId": "opus-low",
+  "rep": 1,
+  "simulated": false,
+  "startedAt": "2026-11-02T06:48:37.597Z",
+  "wallMs": 11993,
+  "exitCode": 0,
+  "timedOut": false
+}

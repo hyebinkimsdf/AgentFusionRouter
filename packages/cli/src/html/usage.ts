@@ -33,6 +33,7 @@ ${tile('Sessions', String(s.sessions))}
 ${tile('Turns', String(s.turns))}
 ${tile('Requests', String(s.requests))}
 ${tile('Estimated cost', usd(s.costUsd))}
+${s.ledger === undefined ? '' : tile("Claude Code's computed cost", usd(s.ledger.usd), `${usd(s.ledger.usd - s.ledger.estimatedUsd)} not in the per-request estimates${s.ledger.sessions === s.sessions ? '' : ` · ${s.ledger.sessions} of ${s.sessions} sessions`}`)}
 ${tile('Routed requests', String(s.routedRequests), s.wouldRouteRequests > 0 ? `${s.wouldRouteRequests} more in observe mode` : '')}
 ${tile('Escalated turns', String(s.escalatedTurns))}
 </div></div>

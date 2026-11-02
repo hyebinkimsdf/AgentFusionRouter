@@ -38,6 +38,24 @@
       "description": "Alias or id for ambiguous, wide or risky work, and for escalations. Never replaces a more capable session model.",
       "default": "opus"
     },
+    "lightEffort": {
+      "type": "string",
+      "title": "Light tier effort",
+      "description": "low, medium, high, xhigh or max, where the model takes effort. Empty: low.",
+      "default": ""
+    },
+    "standardEffort": {
+      "type": "string",
+      "title": "Standard tier effort",
+      "description": "low, medium, high, xhigh or max, where the model takes effort. Empty keeps the session's effort.",
+      "default": ""
+    },
+    "heavyEffort": {
+      "type": "string",
+      "title": "Heavy tier effort",
+      "description": "low, medium, high, xhigh or max, where the model takes effort. Empty: high.",
+      "default": ""
+    },
     "minLightConfidence": {
       "type": "number",
       "title": "Light tier confidence",

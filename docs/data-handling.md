@@ -6,9 +6,10 @@ The Claude Code plugin writes JSON Lines under `~/.agent-fusion-router/logs/`, o
 
 | Record | Fields |
 |---|---|
-| `step` (one model request) | time, session id, turn id, step index, subagent id, mode, tier, model requested before routing, model and effort the router chose, whether it was applied, model that answered, token counts (input, output, cache read, cache write), stop reason, reason tags |
+| `step` (one model request) | time, session id, turn id, step index, subagent id, mode, tier, model requested before routing, model and effort the router chose, whether it was applied, effort before routing and as sent, model that answered, token counts (input, output, cache read, cache write), stop reason, reason tags |
 | `turn` | time, session id, turn id, subagent id, tier, task kind, signal names, outcome (`answer`, `aborted`, `refusal`, `error`), duration, verification passes and failures, escalations |
 | `spawn` (one subagent start) | time, session id, subagent id and type, tier, model requested, model chosen, model it runs on, reason tags |
+| `cost` (Claude Code's own cost grew) | time, session id, the session's cost so far as Claude Code computes it, and the growth since the previous `cost` record |
 
 ## What is never recorded
 
@@ -43,6 +44,14 @@ It reads no other files and runs no commands.
 - **What it never keeps or prints:** message text, answers and tool output.
 - **Paths:** files are named relative to Codex's home.
 - **Writes and network:** it writes nothing, keeps no copy, and sends nothing anywhere.
+
+## Codex routing runner
+
+`agent-fusion-router codex` sends your prompts to Codex through `codex app-server`, as the Codex app does, with your Codex sign-in. It reads `account/read` to say how turns are paid for (never printing the account's email) and `account/rateLimits/read` for how much of the plan's limits is used.
+
+It writes one record per request and per turn to `~/.agent-fusion-router/codex-logs` (`--log-dir`), in the plugin's format: thread and turn ids, tier, task kind and signal names, your model and effort, the router's choice, what ran, whether it was applied, the request's token counts, the turn's outcome, duration and verification counts. Prompts, answers and command output are not written. Codex itself keeps its own rollout file for the thread, as it does for every session.
+
+The VS Code extension ([packages/vscode](../packages/vscode/README.md)) reads the plugin's logs and the same Codex records, the same way, inside the editor. It keeps its parse in memory while the editor runs, writes nothing and sends nothing.
 
 ## Deleting data
 

@@ -1,0 +1,42 @@
+Run 20261102-064426
+Validating task checks...
+  ok   find-tax-rate (fails before: true, passes with solution: true)
+  ok   fix-receipt-typo (fails before: true, passes with solution: true)
+  ok   rename-calc-total (fails before: true, passes with solution: true)
+  ok   add-remove-item (fails before: true, passes with solution: true)
+  ok   fix-coupon-bug (fails before: true, passes with solution: true)
+  ok   tax-rule-registry (fails before: true, passes with solution: true)
+  ok   count-items-then-locate (fails before: true, passes with solution: true)
+  ok   savings-label-then-rate (fails before: true, passes with solution: true)
+[1/32] find-tax-rate × opus-low (rep 1): pass · $0.0717 · 8s
+[2/32] find-tax-rate × auto-effort (rep 1): pass · $0.0716 · 6s
+[3/32] find-tax-rate × auto (rep 1): pass · $0.0028 · 9s
+[4/32] find-tax-rate × opus-session (rep 1): pass · $0.0716 · 17s
+[5/32] fix-receipt-typo × auto-effort (rep 1): pass · $0.0945 · 12s
+[6/32] fix-receipt-typo × auto (rep 1): pass · $0.0032 · 9s
+[7/32] fix-receipt-typo × opus-session (rep 1): pass · $0.0958 · 18s
+[8/32] fix-receipt-typo × opus-low (rep 1): pass · $0.0841 · 11s
+[9/32] rename-calc-total × auto (rep 1): pass · $0.0435 · 18s
+[10/32] rename-calc-total × opus-session (rep 1): pass · $0.1189 · 22s
+[11/32] rename-calc-total × opus-low (rep 1): pass · $0.0881 · 12s
+[12/32] rename-calc-total × auto-effort (rep 1): pass · $0.1044 · 17s
+[13/32] add-remove-item × opus-session (rep 1): pass · $0.1403 · 24s
+[14/32] add-remove-item × opus-low (rep 1): pass · $0.0950 · 10s
+[15/32] add-remove-item × auto-effort (rep 1): pass · $0.1411 · 23s
+[16/32] add-remove-item × auto (rep 1): pass · $0.0459 · 10s
+[17/32] fix-coupon-bug × opus-low (rep 1): pass · $0.1115 · 12s
+[18/32] fix-coupon-bug × auto-effort (rep 1): pass · $0.1444 · 18s
+[19/32] fix-coupon-bug × auto (rep 1): pass · $0.0570 · 14s
+[20/32] fix-coupon-bug × opus-session (rep 1): pass · $0.1851 · 29s
+[21/32] tax-rule-registry × auto-effort (rep 1): pass · $0.2137 · 52s
+[22/32] tax-rule-registry × auto (rep 1): pass · $0.1742 · 35s
+[23/32] tax-rule-registry × opus-session (rep 1): pass · $0.1676 · 29s
+[24/32] tax-rule-registry × opus-low (rep 1): pass · $0.1398 · 24s
+[25/32] count-items-then-locate × auto (rep 1): pass · $0.0469 · 14s
+[26/32] count-items-then-locate × opus-session (rep 1): pass · $0.1209 · 16s
+[27/32] count-items-then-locate × opus-low (rep 1): pass · $0.1076 · 14s
+[28/32] count-items-then-locate × auto-effort (rep 1): pass · $0.1061 · 13s
+[29/32] savings-label-then-rate × opus-session (rep 1): pass · $0.1228 · 16s
+[30/32] savings-label-then-rate × opus-low (rep 1): pass · $0.1214 · 23s
+[31/32] savings-label-then-rate × auto-effort (rep 1): pass · $0.1238 · 27s
+[32/32] savings-label-then-rate × auto (rep 1): pass · $0.0497 · 18s

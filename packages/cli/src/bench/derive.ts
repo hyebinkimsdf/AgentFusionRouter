@@ -17,8 +17,9 @@ const add = (a: Tokens, b: Tokens): Tokens => ({
 
 /**
  * The result of `claude -p --output-format json`: one JSON line per
- * invocation. A plan-then-execute run has two, the second resuming the first's
- * session. A resumed session's `total_cost_usd` and `modelUsage` are
+ * invocation. A plan-then-execute run has two, and each follow-up turn adds
+ * one, every later one resuming the first's session. A resumed session's
+ * `total_cost_usd` and `modelUsage` are
  * cumulative, so they come from the last line; its `usage` covers its own
  * requests only, so the conversation's tokens are summed over every line.
  */
@@ -125,9 +126,18 @@ export const pluginFacts = (records: readonly UsageRecord[], prices?: readonly M
   let routedRequests = 0
   let escalations = 0
   let decidedTier: PluginFacts['decidedTier']
+  let firstRequest: Tokens | undefined
   const models = new Set<string>()
+  const stops: Record<string, number> = {}
+  const switches = { requests: 0, tokens: emptyTokens() }
+  /** Per loop (the main loop, each subagent), the last request's model and effort. */
+  const last = new Map<string, { model: string; effort?: string }>()
+  const requested = new Set<string>()
+  const sent = new Set<string>()
 
-  for (const r of records) {
+  // In time order: each invocation of a session (a plan's approval, a follow-up
+  // turn) logs to a file of its own, and file names do not sort by time.
+  for (const r of [...records].sort((a, b) => a.ts - b.ts)) {
     if (r.kind === 'turn') {
       escalations += r.escalations
       continue
@@ -142,9 +152,37 @@ export const pluginFacts = (records: readonly UsageRecord[], prices?: readonly M
       tokens = add(tokens, r.tokens)
       costUsd += estimateCostUsd(r.tokens, r.model ?? r.requestedModel, prices) ?? 0
     }
+    stops[r.stop ?? 'none'] = (stops[r.stop ?? 'none'] ?? 0) + 1
+    if (r.agent === undefined) {
+      firstRequest ??= r.tokens
+      if (r.requestedEffort !== undefined) requested.add(String(r.requestedEffort))
+      if (r.effort !== undefined) sent.add(String(r.effort))
+    }
+
+    // An effort is compared only where both requests logged one: older logs have none.
+    const now = { model: r.model ?? r.requestedModel, ...(r.effort === undefined ? {} : { effort: String(r.effort) }) }
+    const before = last.get(r.agent ?? '')
+    if (before !== undefined && (before.model !== now.model || (before.effort !== undefined && now.effort !== undefined && before.effort !== now.effort))) {
+      switches.requests += 1
+      if (r.tokens) switches.tokens = add(switches.tokens, r.tokens)
+    }
+    last.set(r.agent ?? '', now)
   }
 
-  return { loaded: requests > 0, requests, tokens, costUsd, decidedTier, routedRequests, escalations, models: [...models].sort() }
+  return {
+    loaded: requests > 0,
+    requests,
+    tokens,
+    costUsd,
+    decidedTier,
+    routedRequests,
+    escalations,
+    models: [...models].sort(),
+    stops,
+    ...(firstRequest === undefined ? {} : { firstRequest }),
+    switches,
+    ...(requested.size + sent.size === 0 ? {} : { efforts: { requested: [...requested].sort(), sent: [...sent].sort() } }),
+  }
 }
 
 /** `git diff --numstat` output → files changed and lines added and removed. */

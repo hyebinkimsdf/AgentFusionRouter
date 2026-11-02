@@ -79,6 +79,10 @@ const first = (files: Map<string, string>): FileWrite | undefined => {
   return entry === undefined ? undefined : { path: entry[0], text: entry[1] }
 }
 
+/** The highest ledger total the records logged, or 0 when none logged one. */
+export const loggedLedgerUsd = (records: readonly UsageRecord[]): number =>
+  records.reduce((max, r) => (r.kind === 'cost' && r.usd > max ? r.usd : max), 0)
+
 /** Parses JSON Lines, skipping lines that do not parse. */
 export const parseRecords = (texts: readonly string[]): UsageRecord[] =>
   texts.flatMap(text =>

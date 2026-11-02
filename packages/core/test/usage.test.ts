@@ -140,4 +140,48 @@ describe('summarize', () => {
     assert.match(text, /Routing savings estimate: \$[\d.]+ \(API list prices, same tokens; not a measured saving\)/)
     assert.match(text, /Potential savings if routed: \$[\d.]+ \(API list prices, simulation\)/)
   })
+
+  test('without cost records there is no ledger line', () => {
+    assert.equal(s.ledger, undefined)
+    assert.doesNotMatch(formatReport(s), /computed cost/)
+  })
+})
+
+describe('summarize with Claude Code ledger records', () => {
+  const cost = (session: string, usd: number, addedUsd: number): UsageRecord => ({
+    v: 1,
+    kind: 'cost',
+    ts: Date.UTC(2026, 9, 30),
+    product: 'claude-code',
+    session,
+    usd,
+    addedUsd,
+  })
+  const priced = step({ model: 'claude-opus-5-5', tokens: tokens(1000, 100) })
+  const estimate = estimateCostUsd(tokens(1000, 100), 'claude-opus-5-5') ?? 0
+
+  test('adds up growth, not running totals, and compares only the sessions that logged it', () => {
+    const s = summarize([
+      priced,
+      cost('s1', 0.01, 0.01),
+      cost('s1', 0.03, 0.02),
+      step({ session: 's2', model: 'claude-opus-5-5', tokens: tokens(1000, 100) }),
+    ])
+
+    assert.equal(s.requests, 2, 'cost records are not requests')
+    assert.equal(s.ledger?.sessions, 1)
+    assert.equal(s.ledger?.usd.toFixed(4), '0.0300')
+    assert.equal(s.ledger?.estimatedUsd, estimate, "s2 has no ledger, so its estimate is left out")
+
+    const text = formatReport(s)
+    assert.match(text, /Claude Code's computed cost: \$0\.0300 \(1 of 2 sessions logged it\)/)
+    assert.match(text, new RegExp(`Not in the per-request estimates: \\$${(0.03 - estimate).toFixed(4).replace('.', '\\.')}`))
+  })
+
+  test('a period that starts mid-session counts only its own growth', () => {
+    // The session had cost $0.50 before the period; the record in it adds $0.02.
+    const s = summarize([priced, cost('s1', 0.52, 0.02)])
+
+    assert.equal(s.ledger?.usd, 0.02)
+  })
 })
