@@ -8,7 +8,7 @@ Agent Fusion Router classifies a task, selects a model tier, and tracks the resu
 
 > **0.1.0 · Unreleased · Claude Code adapter implemented**
 >
-> The plugin starts in **observe mode** and changes no requests until you enable `route`. Codex support is planned. The benchmark CLI runs sample tasks and produces a web report with hash-verified evidence. The repository holds one preliminary live comparison (six sample tasks, three arms, one repetition each — see "Project status" below); the sample is too small to support a general success-rate or cost-savings claim.
+> The plugin starts in **observe mode** and changes no requests until you enable `route`. For Codex, a read-only usage ledger is implemented; routing is planned. The benchmark CLI runs sample tasks and produces a web report with hash-verified evidence. The repository holds one preliminary live comparison (six sample tasks, three arms, one repetition each — see "Project status" below); the sample is too small to support a general success-rate or cost-savings claim.
 
 ## Why Agent Fusion Router?
 
@@ -31,7 +31,7 @@ This project makes routing decisions explicit and records the usage needed to ev
 | Usage CLI | Implemented: `report` (text, JSON, or web page with screenshot), `explain`, `doctor` |
 | Task briefs | Library utilities implemented; automatic task splitting is not connected to the adapter |
 | Benchmark CLI | Implemented: `bench validate`, `run`, `report`, `verify`; six sample tasks with hidden checks; web report, full-page screenshot, SHA-256 evidence |
-| Codex adapter | Design notes only |
+| Codex adapter | Usage ledger implemented: `codex-usage` reads Codex's session records, counts each request once, and reconciles them with Codex's running total (auto-compaction included). Routing runner: design notes only |
 | Performance results | **One preliminary live run** — six sample tasks × three arms (Opus-fixed / opusplan / auto-route) × one repetition: auto-route matched Opus-fixed's 6/6 success at about 52% of its cost ($0.378 vs $0.791). One repetition on the sample tasks alone is a thin basis for a general claim |
 
 The [development status](docs/development-status.md) records the implementation inventory, verification results, and remaining work. Local verification on **2026-11-01** passed `npm run check`: **112 tests** (added regression tests while fixing 5 reproducible bugs in routing decisions, usage logging, and benchmark aggregation), core/test/CLI typechecks, and plugin bundle consistency. Existing verification notes record 5 plugin tests passing on Claude Code 2.1.312; those engine checks were not rerun during this documentation update.
@@ -87,6 +87,7 @@ node packages/cli/dist/cli.js report
 node packages/cli/dist/cli.js report --since 7d
 node packages/cli/dist/cli.js report --since 7d --json
 node packages/cli/dist/cli.js doctor
+node packages/cli/dist/cli.js codex-usage   # per-request token usage from Codex's session records (read-only)
 ```
 
 Export a shareable report, optionally with a PNG capture:
@@ -181,6 +182,7 @@ The plugin records model requests, turns, and eligible subagent starts as JSON L
 | `node packages/cli/dist/cli.js report --html usage.html --png usage.png` | Also write the summary as a web page and a full-page screenshot |
 | `node packages/cli/dist/cli.js explain "<task>" --model opus` | Preview the core's default routing policy locally |
 | `node packages/cli/dist/cli.js doctor` | Inspect the log folder, record counts, and catalog price date; accepts `--dir` |
+| `node packages/cli/dist/cli.js codex-usage` | Per-request token ledger from Codex's session records, reconciled with Codex's running total; accepts `--codex-home` and `--json` |
 
 Cost estimates use the versioned [model catalog](packages/core/src/catalog.ts). A routed request can also be priced at its originally requested model using the same token counts. **This is an estimate, not an invoice or a measured savings result:** a different model could produce different tokens, retries, and outcomes. Unknown prices are excluded from cost totals and identified in the report.
 
@@ -270,6 +272,7 @@ Before opening a pull request, run the applicable checks above, update affected 
 - [x] Connect the benchmark runner, CLI commands, and report generation
 - [ ] Publish repeated live comparisons with raw evidence
 - [ ] Connect automatic task splitting to an execution adapter
+- [x] Codex usage ledger from Codex's own session records, reconciled with its running total
 - [ ] Implement the Codex runner described in the design notes
 - [ ] Evaluate a small-model fallback for ambiguous classifications
 
@@ -283,7 +286,7 @@ Before opening a pull request, run the applicable checks above, update affected 
 | [Data handling](docs/data-handling.md) | Log fields, access scope, and retention |
 | [Benchmark protocol](benchmarks/README.md) | Comparison arms, task checks, and metrics |
 | [Publishing](docs/publishing.md) | Marketplace and release preparation |
-| [Codex design](packages/codex-adapter/README.md) | Planned adapter scope |
+| [Codex adapter](packages/codex-adapter/README.md) | Usage ledger and its reconciliation rules; planned routing runner |
 | [Changelog](CHANGELOG.md) | Version history |
 
 ## License

@@ -11,7 +11,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test \"packages/*/test/*.test.ts\"",
-    "typecheck": "tsc -p packages/core && tsc -p packages/core/test && tsc -p packages/cli",
+    "typecheck": "tsc -p packages/core && tsc -p packages/core/test && tsc -p packages/codex-adapter && tsc -p packages/cli",
     "typecheck:claude": "node scripts/sync-claude-types.mjs && tsc -p packages/claude-adapter",
     "check": "npm run typecheck && npm test && node scripts/build.mjs --check"
   },

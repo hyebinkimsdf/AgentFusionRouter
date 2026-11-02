@@ -27,6 +27,13 @@ First release, Claude Code only.
 - `bench run --max-total-usd <usd>`: stops before a run whose whole cap would not fit in the total, counted as Claude Code's computed cost of every session, invalid ones included. A session with no reported cost counts at its whole cap. Every run keeps the full `--budget`, so the total never cuts a run short. Claude Code checks its cap between requests, so the total can be passed by one run's last request.
 - Reports show *What the run used*, and the index *All sessions, invalid included*: Claude Code's computed cost of every session, apart from the performance figures, which leave invalid runs out.
 - `benchmarks/excluded/`: runs kept as evidence but left out of the index and comparisons, with notes outside their hashed folders.
+- `codex-usage`: a per-request token ledger from Codex's own session records (`CODEX_HOME`, else `~/.codex`; archived sessions included), read-only and with no message text kept.
+  - Each request (`token_usage_record`) is counted once, by its id, across files.
+  - Codex's running total (`token_count`) is compared interval by interval. It enters the ledger only where records are missing or short, marked as estimated.
+  - Auto-compaction requests, which the running total leaves out (openai/codex#47003, seen here on Codex 0.164 as 254,923 tokens in one session), are counted as their own row.
+  - Compaction events with no request behind them are reported, not counted: copied from a parent thread, or from a Codex version that recorded none.
+  - Every difference from the running total is reported by cause, with what is left *Unaccounted*.
+  - Token counts only: prices come later.
 
 ### Changed
 

@@ -14,6 +14,7 @@
     "node": ">=20"
   },
   "devDependencies": {
+    "@agent-fusion-router/codex-adapter": "*",
     "@agent-fusion-router/core": "*"
   }
 }

@@ -8,7 +8,7 @@ Agent Fusion Router는 작업을 분석해 모델 등급을 선택하고 실행 
 
 > **0.1.0 · 정식 배포 전 · Claude Code 어댑터 구현**
 >
-> 기본값은 요청을 변경하지 않는 **관측(`observe`) 모드**입니다. `route` 모드로 설정하면 라우팅을 적용합니다. Codex는 설계 단계입니다. 벤치마크 CLI는 예제 작업을 실행하고, 해시로 검증할 수 있는 증거 파일과 웹 보고서를 만듭니다. 저장소에 예제 작업 6개·조건 3개·반복 1회의 실측 비교가 있지만(아래 "현재 구현 현황" 참고), 반복과 작업 범위가 좁아 일반적인 성공률·비용 절감 결론으로 쓰기는 어렵습니다.
+> 기본값은 요청을 변경하지 않는 **관측(`observe`) 모드**입니다. `route` 모드로 설정하면 라우팅을 적용합니다. Codex는 읽기 전용 사용량 원장이 구현되어 있고, 라우팅은 설계 단계입니다. 벤치마크 CLI는 예제 작업을 실행하고, 해시로 검증할 수 있는 증거 파일과 웹 보고서를 만듭니다. 저장소에 예제 작업 6개·조건 3개·반복 1회의 실측 비교가 있지만(아래 "현재 구현 현황" 참고), 반복과 작업 범위가 좁아 일반적인 성공률·비용 절감 결론으로 쓰기는 어렵습니다.
 
 ## 프로젝트 소개
 
@@ -31,7 +31,7 @@ Agent Fusion Router는 판단 근거와 사용량을 함께 기록해 이 과정
 | 사용량 CLI | `report`(텍스트·JSON·웹 페이지와 캡처), `explain`, `doctor` 구현 |
 | 작업 브리프 | 라이브러리 유틸리티 구현. 자동 작업 분해와 어댑터 연결은 예정 |
 | 벤치마크 CLI | `bench validate`, `run`, `report`, `verify` 구현. 숨은 검증 테스트가 있는 예제 작업 6개, 웹 보고서, 전체 화면 캡처, SHA-256 증거 파일 |
-| Codex 어댑터 | 설계 문서 작성. 실행 기능 미구현 |
+| Codex 어댑터 | 사용량 원장 구현: `codex-usage`가 Codex 세션 기록을 읽어 요청마다 한 번씩 집계하고, Codex 누적값과 대조(자동 압축 포함). 라우팅 실행기는 설계 문서만 있음 |
 | 성능 평가 | **예비 실측 데이터 있음** — 예제 작업 6개 × 조건 3개(Opus 고정/opusplan/자동 라우팅) × 반복 1회: 자동 라우팅이 Opus 고정과 동일하게 6/6 성공하면서 비용은 약 52%($0.378 vs $0.791). 반복 1회·예제 작업 한정이라 일반적인 결론으로 보기엔 근거가 약함 |
 
 **2026-11-01 로컬 검증:** `npm run check` 통과. **단위 테스트 112개**(라우팅 판단·사용량 로그·벤치마크 집계에서 재현된 버그 5개를 수정하며 회귀 테스트 추가), 코어·테스트·CLI 타입 검사, 플러그인 번들 일치 검사를 확인했습니다. 기존 검증 기록에는 Claude Code 2.1.312에서 플러그인 테스트 5개가 통과한 것으로 정리되어 있으며, 이번 문서 갱신에서는 엔진 검사를 재실행하지 않았습니다. 구현 파일과 남은 작업은 [개발 진행 현황](docs/development-status.md)에 정리했습니다.
@@ -87,6 +87,7 @@ node packages/cli/dist/cli.js report
 node packages/cli/dist/cli.js report --since 7d
 node packages/cli/dist/cli.js report --since 7d --json
 node packages/cli/dist/cli.js doctor
+node packages/cli/dist/cli.js codex-usage   # Codex 세션 기록의 요청별 토큰 사용량(읽기 전용)
 ```
 
 공유용 HTML 보고서와 선택적 PNG 캡처를 생성할 수도 있습니다.
@@ -181,6 +182,7 @@ flowchart TD
 | `node packages/cli/dist/cli.js report --html usage.html --png usage.png` | 집계를 웹 페이지와 전체 화면 캡처로도 저장 |
 | `node packages/cli/dist/cli.js explain "<작업>" --model opus` | 코어 기본 정책의 라우팅 결과를 로컬에서 확인 |
 | `node packages/cli/dist/cli.js doctor` | 로그 폴더, 기록 수, 카탈로그 가격 기준일 확인. `--dir` 지원 |
+| `node packages/cli/dist/cli.js codex-usage` | Codex 세션 기록의 요청별 토큰 원장과 Codex 누적값 대조. `--codex-home`, `--json` 지원 |
 
 비용은 저장소의 [모델 카탈로그](packages/core/src/catalog.ts)를 기준으로 추정합니다. 라우팅된 요청은 동일한 토큰 수를 원래 요청 모델의 가격으로 환산해 비교할 수도 있습니다. **이 값은 실제 청구 금액이나 실측 절감률이 아닙니다.** 다른 모델은 토큰 수, 재시도 횟수, 작업 결과가 달라질 수 있습니다. 가격을 알 수 없는 모델은 비용 합계에서 제외하고 보고서에 표시합니다.
 
@@ -270,6 +272,7 @@ claude plugin test plugins/claude/agent-fusion-router
 - [x] 벤치마크 실행기, CLI 명령, 보고서 생성 연결
 - [ ] 원시 기록을 포함한 반복 실측 비교 공개
 - [ ] 자동 작업 분해와 실행 어댑터 연결
+- [x] Codex 세션 기록 기반 사용량 원장과 누적값 대조
 - [ ] 설계 문서에 따른 Codex 실행기 구현
 - [ ] 모호한 분류에 대한 소형 모델 보조 판단 검토
 
@@ -283,7 +286,7 @@ claude plugin test plugins/claude/agent-fusion-router
 | [데이터 처리](docs/data-handling.md) | 로그 필드, 접근 범위, 데이터 보관 |
 | [벤치마크 절차](benchmarks/README.md) | 비교 조건, 작업 검증, 평가 지표 |
 | [배포](docs/publishing.md) | 마켓플레이스와 릴리스 준비 |
-| [Codex 설계](packages/codex-adapter/README.md) | 향후 어댑터의 범위 |
+| [Codex 어댑터](packages/codex-adapter/README.md) | 사용량 원장과 대조 규칙, 예정된 라우팅 실행기 |
 | [변경 이력](CHANGELOG.md) | 버전별 변경 사항 |
 
 ## 라이선스

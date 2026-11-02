@@ -34,6 +34,14 @@ Nothing. The plugin makes no network requests. Model requests go to the provider
 
 It reads no other files and runs no commands.
 
+## Codex session records
+
+`agent-fusion-router codex-usage` reads Codex's own session records (`rollout-*.jsonl` under `sessions/` and `archived_sessions/` in `CODEX_HOME`, else `~/.codex`). Those files hold your prompts, Codex's answers and tool output, and the command reads them whole.
+
+- **What it keeps:** token counts, request and turn ids, model names, reasoning effort and timestamps. Message text is never kept in its ledger or printed.
+- **Paths:** files are named relative to Codex's home.
+- **Writes and network:** it writes nothing, keeps no copy, and sends nothing anywhere.
+
 ## Deleting data
 
 Delete `~/.agent-fusion-router/`. Uninstalling the plugin does not delete it.

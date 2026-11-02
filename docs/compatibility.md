@@ -5,7 +5,8 @@
 | Claude Code plugin | Claude Code with function-hook plugins (mods): `turn.step`, `agent.spawn`, `turn.start`, `turn.complete`, `tool.call` | 2.1.312 on Windows 10 (`claude plugin validate`, `claude plugin test`) |
 | CLI | Node 20 or newer | Node 24 |
 | Development | Node 22.18 or newer (tests run TypeScript directly) | Node 24, TypeScript 7.0, esbuild 0.28 |
-| Codex | Not yet | — |
+| Codex usage ledger | Session records with `token_usage_record` and `token_count` lines; older records with running totals only | Codex 0.159, 0.164 and 0.165 (VS Code extension and desktop app) on Windows 10 |
+| Codex routing | Not yet | — |
 
 The plugin API is early access and may change between Claude Code releases. After a Claude Code update, check the plugin:
 

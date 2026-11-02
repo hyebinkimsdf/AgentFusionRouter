@@ -3,6 +3,7 @@ import { homedir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
+import { codexHome, formatCodexUsage, readCodexLedger, summarizeCodexLedger } from '@agent-fusion-router/codex-adapter'
 import { DEFAULT_POLICY, PRICES_AS_OF, analyzeTask, formatReport, route, summarize } from '@agent-fusion-router/core'
 
 import type { ComparisonInfo } from './bench/records.ts'
@@ -27,6 +28,11 @@ Usage logs
   explain <task>        Show how the router classifies a task
     --model <id>          The session model to route from (default claude-opus-5-5)
   doctor                Check the log folder and what it holds
+
+Codex usage (read-only, from Codex's own session records)
+  codex-usage           Per-request token ledger, reconciled with Codex's running totals
+    --codex-home <path>   Codex's data folder (default CODEX_HOME, else ~/.codex)
+    --json                Print the summary and every ledger entry as JSON
 
 Benchmarks (run from the repository root)
   bench validate        Check every task's hidden check: fails before, passes with the solution
@@ -146,6 +152,14 @@ const doctor = async (args: string[]): Promise<void> => {
   console.log(`Last record  ${last === 0 ? 'none' : new Date(last).toISOString()}`)
   if (skipped > 0) console.log(`Unreadable   ${skipped} lines skipped`)
   console.log(`Prices as of ${PRICES_AS_OF}`)
+}
+
+const codexUsage = async (args: string[]): Promise<void> => {
+  const { values } = parseArgs({ args, options: { 'codex-home': { type: 'string' }, json: { type: 'boolean' } } })
+  const ledger = await readCodexLedger(values['codex-home'] === undefined ? codexHome() : resolve(values['codex-home']))
+  const summary = summarizeCodexLedger(ledger)
+
+  console.log(values.json ? JSON.stringify({ summary, files: ledger.files.map(({ entries, ...file }) => file), entries: ledger.entries }, null, 2) : formatCodexUsage(summary))
 }
 
 const bench = async (args: string[]): Promise<void> => {
@@ -272,6 +286,8 @@ const main = async (): Promise<void> => {
       return explain(rest)
     case 'doctor':
       return doctor(rest)
+    case 'codex-usage':
+      return codexUsage(rest)
     case 'bench':
       return bench(rest)
     case undefined:

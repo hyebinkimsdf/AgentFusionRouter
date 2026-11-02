@@ -1,0 +1,11 @@
+{
+  "name": "@agent-fusion-router/codex-adapter",
+  "version": "0.1.0",
+  "description": "Reads Codex's own session records into a per-request usage ledger, reconciled with Codex's running totals.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
