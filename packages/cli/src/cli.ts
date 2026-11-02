@@ -3,7 +3,16 @@ import { homedir } from 'node:os'
 import { basename, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
-import { codexHome, formatCodexUsage, readCodexLedger, summarizeCodexLedger } from '@agent-fusion-router/codex-adapter'
+import type { CodexCostSummary } from '@agent-fusion-router/codex-adapter'
+import {
+  codexHome,
+  codexPolicyWithStandard,
+  formatCodexCosts,
+  formatCodexUsage,
+  readCodexLedger,
+  simulateCodexRouting,
+  summarizeCodexLedger,
+} from '@agent-fusion-router/codex-adapter'
 import { DEFAULT_POLICY, PRICES_AS_OF, analyzeTask, formatReport, route, summarize } from '@agent-fusion-router/core'
 
 import type { ComparisonInfo } from './bench/records.ts'
@@ -19,10 +28,12 @@ import { readRecords } from './logs.ts'
 const USAGE = `agent-fusion-router <command> [options]
 
 Usage logs
-  report                Summarize what the plugin recorded
+  report                Summarize what the plugin recorded, then Codex's usage when it has any
     --dir <path>          Log folder (default ~/.agent-fusion-router/logs)
     --since <age>         Only records newer than this: 7d, 12h, 30m
     --json                Print the summary as JSON
+    --codex-home <path>   Codex's data folder (default CODEX_HOME, else ~/.codex)
+    --no-codex            Leave Codex out
     --html <file>         Also write the report as a web page
     --png <file>          With --html: also save a full-page screenshot
   explain <task>        Show how the router classifies a task
@@ -30,9 +41,12 @@ Usage logs
   doctor                Check the log folder and what it holds
 
 Codex usage (read-only, from Codex's own session records)
-  codex-usage           Per-request token ledger, reconciled with Codex's running totals
+  codex-usage           Per-request token ledger reconciled with Codex's running totals,
+                        API list costs, and what routing each turn would have cost
     --codex-home <path>   Codex's data folder (default CODEX_HOME, else ~/.codex)
-    --json                Print the summary and every ledger entry as JSON
+    --json                Print the summary, every ledger entry and every turn as JSON
+    --standard-model <m>  Simulate ordinary work on this model (sol, terra, an id) instead
+                          of the turn's own, as the benchmark's auto arm routes it
 
 Benchmarks (run from the repository root)
   bench validate        Check every task's hidden check: fails before, passes with the solution
@@ -83,6 +97,8 @@ const report = async (args: string[]): Promise<void> => {
       json: { type: 'boolean' },
       html: { type: 'string' },
       png: { type: 'string' },
+      'codex-home': { type: 'string' },
+      'no-codex': { type: 'boolean' },
     },
   })
   const dir = values.dir ?? DEFAULT_DIR
@@ -90,8 +106,15 @@ const report = async (args: string[]): Promise<void> => {
   const cutoff = values.since === undefined ? 0 : Date.now() - parseAge(values.since)
   const kept = records.filter(r => r.ts >= cutoff)
   const summary = summarize(kept)
+  const codex = values['no-codex'] ? undefined : await codexCosts(values['codex-home'] === undefined ? codexHome() : resolve(values['codex-home']), cutoff)
 
-  console.log(values.json ? JSON.stringify({ pricesAsOf: PRICES_AS_OF, ...summary }, null, 2) : formatReport(summary))
+  if (values.json) {
+    const codexFigures = codex === undefined ? undefined : (({ simulations, ...figures }) => figures)(codex)
+    console.log(JSON.stringify({ pricesAsOf: PRICES_AS_OF, ...summary, ...(codexFigures === undefined ? {} : { codex: codexFigures }) }, null, 2))
+  } else {
+    console.log(formatReport(summary))
+    if (codex !== undefined) console.log(`\nCodex, from its own session records\n\n${formatCodexCosts(codex)}\n\nPer-request tokens and the reconciliation with Codex's totals: codex-usage`)
+  }
 
   if (values.html !== undefined) {
     const html = renderUsageReport(summary, {
@@ -154,12 +177,27 @@ const doctor = async (args: string[]): Promise<void> => {
   console.log(`Prices as of ${PRICES_AS_OF}`)
 }
 
+/** Codex's usage since `cutoff`, priced and simulated; undefined when Codex has no session records there. */
+const codexCosts = async (home: string, cutoff: number): Promise<CodexCostSummary | undefined> => {
+  const ledger = await readCodexLedger(home)
+  if (ledger.files.length === 0) return undefined
+  const entries = ledger.entries.filter(e => cutoff === 0 || (e.timestamp !== undefined && Date.parse(e.timestamp) >= cutoff))
+
+  return simulateCodexRouting(entries, ledger.analyses)
+}
+
 const codexUsage = async (args: string[]): Promise<void> => {
-  const { values } = parseArgs({ args, options: { 'codex-home': { type: 'string' }, json: { type: 'boolean' } } })
+  const { values } = parseArgs({ args, options: { 'codex-home': { type: 'string' }, json: { type: 'boolean' }, 'standard-model': { type: 'string' } } })
+  const policy = values['standard-model'] === undefined ? undefined : codexPolicyWithStandard(values['standard-model'])
   const ledger = await readCodexLedger(values['codex-home'] === undefined ? codexHome() : resolve(values['codex-home']))
   const summary = summarizeCodexLedger(ledger)
+  const costs = simulateCodexRouting(ledger.entries, ledger.analyses, policy)
 
-  console.log(values.json ? JSON.stringify({ summary, files: ledger.files.map(({ entries, ...file }) => file), entries: ledger.entries }, null, 2) : formatCodexUsage(summary))
+  if (values.json) {
+    console.log(JSON.stringify({ summary, costs, files: ledger.files.map(({ entries, ...file }) => file), entries: ledger.entries }, null, 2))
+  } else {
+    console.log(summary.files === 0 ? formatCodexUsage(summary) : `${formatCodexUsage(summary)}\n\n${formatCodexCosts(costs)}`)
+  }
 }
 
 const bench = async (args: string[]): Promise<void> => {

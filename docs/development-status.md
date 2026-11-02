@@ -20,6 +20,7 @@ Claude Code를 대상으로 작업 분석부터 모델 선택, 실패 시 승격
 | 설정 및 로그 | 사용자 설정 해석, 세션별 JSON Lines 저장과 파일 분할 | [config.ts](../packages/claude-adapter/src/config.ts), [log.ts](../packages/claude-adapter/src/log.ts) |
 | CLI | `report`, `explain`, `doctor`, `codex-usage`, `bench validate/run/report/verify` | [cli.ts](../packages/cli/src/cli.ts) |
 | Codex 사용량 원장 | 세션 기록의 요청별 사용량, 요청 ID 중복 제거, 구간별 누적값 대조, 자동 압축 분리 | [ledger.ts](../packages/codex-adapter/src/ledger.ts), [sessions.ts](../packages/codex-adapter/src/sessions.ts) |
+| Codex 비용·시뮬레이션 | OpenAI API 요금 환산 비용, 같은 라우터(신뢰도·캐시 보호 포함)로 턴마다 판단했을 때의 비용, `report` 통합 | [savings.ts](../packages/codex-adapter/src/savings.ts), [turns.ts](../packages/codex-adapter/src/turns.ts), [catalog.ts](../packages/core/src/catalog.ts) |
 | 보고서 | 사용량·벤치마크 HTML 보고서, 브라우저를 통한 전체 페이지 PNG 캡처 | [html/](../packages/cli/src/html), [capture.ts](../packages/cli/src/capture.ts) |
 | 배포 기반 | npm 워크스페이스, 플러그인 번들 빌드, 마켓플레이스 매니페스트, CI 설정 | [package.json](../package.json), [build.mjs](../scripts/build.mjs), [ci.yml](../.github/workflows/ci.yml) |
 
@@ -82,7 +83,7 @@ Runs: 1 + 1 + 1 + 18 = 21 (Claude Code 2.1.312, Windows, 커밋 aff975e/a55f15f 
 | 실제 모델 평가 확대 | 예비 데이터(6작업×3조건×1반복, "검증 결과" 참고)는 이미 있음. 반복 횟수를 늘려 재현성 확인 | 작업별 성공 판정, 유효·무효 실행, 원시 기록, 비용·시간을 반복마다 공개 |
 | 평가 범위 확장 | 실제 저장소 작업과 외부 작성 작업 추가 | 예제와 분류 규칙에 편향되지 않은 작업군에서 재현 |
 | 자동 작업 분해 | 브리프 생성과 실행 어댑터 연결 | 의존성 순서와 수정 범위 충돌을 지키며 완료 조건 검증 |
-| Codex | 원장에 모델 카탈로그(API 요금 환산)를 붙여 잠재 절감 계산, `codex exec` 벤치마크, 이후 [설계 문서](../packages/codex-adapter/README.md)에 따른 실행기 여부 결정 | 실제 절감과 시뮬레이션 구분, 숨은 테스트 기반 성공률과 함께 비교 |
+| Codex | `codex exec` 벤치마크로 시뮬레이션의 가정(작은 모델도 같은 작업을 끝낸다) 검증, 이후 [설계 문서](../packages/codex-adapter/README.md)에 따른 실행기 여부 결정 | 숨은 테스트 기반 성공률과 완료 과제당 비용으로 기본 정책·standard → Sol 정책 비교 |
 | 모호한 작업 분류 | 소형 모델 보조 판단의 필요성 평가 | 규칙 기반 분류 대비 품질·추가 지연·비용 비교 |
 | 배포 | 저장소 경로 확정, npm·마켓플레이스 공개 준비 | 실제 설치 경로와 버전으로 설치·업데이트 절차 확인 |
 

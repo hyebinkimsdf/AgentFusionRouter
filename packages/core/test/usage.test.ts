@@ -133,4 +133,11 @@ describe('summarize', () => {
     assert.match(text, /not your bill/)
     assert.match(text, /claude-haiku-5-5/)
   })
+
+  test('the report names both savings figures with what they rest on', () => {
+    const text = formatReport(s)
+
+    assert.match(text, /Routing savings estimate: \$[\d.]+ \(API list prices, same tokens; not a measured saving\)/)
+    assert.match(text, /Potential savings if routed: \$[\d.]+ \(API list prices, simulation\)/)
+  })
 })

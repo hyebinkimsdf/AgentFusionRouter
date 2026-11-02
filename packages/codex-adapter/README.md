@@ -52,7 +52,28 @@ So a total that includes such a version is a lower bound.
 ledger − running total = compaction left out + unexplained excess + records after the last total
 ```
 
-Prices, savings and any routing come in later steps. The ledger holds token counts only.
+The ledger holds token counts only. Prices and the routing simulation are a separate layer on top of it.
+
+## Costs and the routing simulation (implemented)
+
+`codex-usage` and `report` price the ledger and simulate routing it. Every figure is labelled with its basis.
+
+**API list prices.** Costs use OpenAI's API list prices (Standard tier), in `CODEX_MODELS` in [the core's catalog](../core/src/catalog.ts), checked on the date it gives. On a ChatGPT plan, Codex draws on plan limits and credits, so these figures are never what was paid. The pricing rules:
+
+- uncached input, cached input and output are priced apart;
+- reasoning is billed as output;
+- a request past 272K input tokens is priced at the long-context row;
+- cache writes are priced at the 30-minute rate, though no session read so far has written any.
+
+**The simulation.** It asks what each turn would have cost had this router chosen its model.
+
+- **Same router as Claude Code.** The prompt goes through the same `analyzeTask` and `route` as in the Claude Code plugin. That includes the confidence threshold, follow-ups and the cache guard (no move down past 50,000 tokens of context).
+- **Tier targets.** Light goes to Luna, heavy to Astra, and standard keeps the turn's own model. `--standard-model sol` simulates the other common policy, ordinary work on Sol, as the benchmark's auto arm sends it to Sonnet.
+- **How it is priced.** The turn's requests are priced at the routed model with the same token counts. A switched turn's first request reads its whole input uncached, because the new model's cache is cold. Auto-compaction stays on the model it ran on.
+- **Which prompt is read.** The prompt is the turn's first `user_message`, or the first user `response_item` when there is none (seen on Codex 0.164 and 0.165). Context blocks Codex injects (`<environment_context>`) are left out, and so is the IDE context the VS Code extension puts before `## My request:`.
+- **What is kept.** The prompt is read in memory, and only the router's analysis (tier, kind, confidence, signal names) is kept.
+
+**Potential savings** is actual minus simulated, at API list prices. It is a simulation, not a saving that happened. It assumes a smaller model uses the same tokens and finishes the same work. It does not count the return to a cold cache on the turn after a switch, or any retry a smaller model would need. Only a benchmark measures what routing saves.
 
 ## Routing runner (planned)
 

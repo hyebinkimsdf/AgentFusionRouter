@@ -33,7 +33,14 @@ First release, Claude Code only.
   - Auto-compaction requests, which the running total leaves out (openai/codex#47003, seen here on Codex 0.164 as 254,923 tokens in one session), are counted as their own row.
   - Compaction events with no request behind them are reported, not counted: copied from a parent thread, or from a Codex version that recorded none.
   - Every difference from the running total is reported by cause, with what is left *Unaccounted*.
-  - Token counts only: prices come later.
+  - The ledger holds token counts only; the costs below are a layer on top of it.
+- Codex costs and a routing simulation, in `codex-usage` and in `report` (which now adds Codex's usage after the plugin's; `--no-codex` leaves it out).
+  - Costs use OpenAI's API list prices (`CODEX_MODELS`, as of 2026-11-02). They are labelled as such: on a ChatGPT plan they are never what was paid.
+  - The simulation sends each turn's prompt through the same `analyzeTask` and `route` as the Claude Code plugin, cache guard included. Light goes to Luna and heavy to Astra; standard keeps the turn's model, or `--standard-model sol` sends it to Sol.
+  - It prices the same tokens at the routed model, with a switched turn's first request read from a cold cache. *Potential savings* is labelled a simulation, not a saving that happened.
+  - Prompts are read in memory and only the analysis is kept. The VS Code extension's IDE context and Codex's injected context blocks are left out. A turn with no `user_message` event (Codex 0.164 and 0.165) takes its prompt from the user message item.
+- The usage report states both Claude savings figures with their basis: *Routing savings estimate* (API list prices, same tokens; not a measured saving) and *Potential savings if routed* (API list prices, simulation).
+- The core's model families include Codex's (Luna < Terra < Sol < Astra), matched only as a whole part of a model id. An unknown model such as `my-console-model` stays unknown, and is never switched away from.
 
 ### Changed
 

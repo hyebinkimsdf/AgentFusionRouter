@@ -36,17 +36,32 @@ var CLAUDE_MODELS = [
   },
   { id: "claude-haiku-4-5", family: "haiku", price: price(1, 5) }
 ];
-var FAMILY_RANK = { haiku: 0, sonnet: 1, opus: 2, fable: 3 };
+var openai = (input, output, cacheRead, cacheWrite) => ({ input, output, cacheRead, cacheWrite });
+var LONG_OPENAI = 272e3;
+var CODEX_MODELS = [
+  { id: "gpt-6-astra", family: "astra", price: openai(10, 50, 1, 12.5), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(20, 75, 2, 25) } },
+  { id: "gpt-6.1-sol", family: "sol", price: openai(2, 10, 0.1, 2.5), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(4, 15, 0.2, 5) } },
+  { id: "gpt-6-sol", family: "sol", price: openai(2, 10, 0.2, 2.5), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(4, 15, 0.4, 5) } },
+  { id: "gpt-5.6-sol", family: "sol", price: openai(4, 20, 0.4, 5), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(8, 30, 0.8, 10) } },
+  { id: "gpt-6.1-terra", family: "terra", price: openai(1, 5, 0.05, 1.25), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(2, 7.5, 0.1, 2.5) } },
+  { id: "gpt-5.6-terra", family: "terra", price: openai(2, 12, 0.2, 2.5), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(4, 18, 0.4, 5) } },
+  { id: "gpt-6-luna", family: "luna", price: openai(0.1, 0.5, 0.01, 0.125), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(0.2, 0.75, 0.02, 0.25) } },
+  { id: "gpt-5.6-luna", family: "luna", price: openai(0.2, 1.2, 0.02, 0.25), longContext: { aboveInputTokens: LONG_OPENAI, price: openai(0.4, 1.8, 0.04, 0.5) } }
+];
+var FAMILY_RANK = { haiku: 0, sonnet: 1, opus: 2, fable: 3, luna: 0, terra: 1, sol: 2, astra: 3 };
 var findModel = (idOrAlias, models = CLAUDE_MODELS) => {
   const name = idOrAlias.toLowerCase().trim();
   return models.find((m) => m.id === name) ?? [...models].sort((a, b) => b.id.length - a.id.length).find((m) => name.startsWith(m.id)) ?? models.find((m) => m.family === name);
 };
 var familyOf = (idOrAlias) => {
-  const listed = findModel(idOrAlias)?.family;
+  const listed = (findModel(idOrAlias) ?? findModel(idOrAlias, CODEX_MODELS))?.family;
   if (listed) return listed;
   const name = idOrAlias.toLowerCase();
-  return Object.keys(FAMILY_RANK).find((f) => name.includes(f));
+  const parts = name.split(/[^a-z0-9.]+/);
+  return CLAUDE_FAMILIES.find((f) => name.includes(f)) ?? CODEX_FAMILIES.find((f) => parts.includes(f));
 };
+var CLAUDE_FAMILIES = ["haiku", "sonnet", "opus", "fable"];
+var CODEX_FAMILIES = ["luna", "terra", "sol", "astra"];
 var capabilityRank = (idOrAlias) => {
   const family = familyOf(idOrAlias);
   return family === void 0 ? void 0 : FAMILY_RANK[family];
@@ -406,10 +421,16 @@ var formatReport = (s) => {
   }
   lines.push("", `Estimated cost: ${usd(s.costUsd)}`);
   if (s.routedRequests > 0) {
-    lines.push(`Same tokens at the models asked for before routing: ${usd(s.unroutedCostUsd)}`);
+    lines.push(
+      `Same tokens at the models asked for before routing: ${usd(s.unroutedCostUsd)}`,
+      `Routing savings estimate: ${usd(s.unroutedCostUsd - s.costUsd)} (API list prices, same tokens; not a measured saving)`
+    );
   }
   if (s.wouldRouteRequests > 0) {
-    lines.push(`Same tokens at the router's choices: ${usd(s.potentialCostUsd)}`);
+    lines.push(
+      `Same tokens at the router's choices: ${usd(s.potentialCostUsd)}`,
+      `Potential savings if routed: ${usd(s.costUsd - s.potentialCostUsd)} (API list prices, simulation)`
+    );
   }
   if (s.unpricedModels.length > 0) {
     lines.push(`No price for: ${s.unpricedModels.join(", ")} (left out of the totals)`);

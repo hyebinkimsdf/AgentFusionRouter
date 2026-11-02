@@ -1,5 +1,6 @@
 import type { CodexTokens, FileLedger, LedgerEntry } from './ledger.ts'
 import { addCodexTokens, emptyCodexTokens } from './ledger.ts'
+import type { CodexCostSummary } from './savings.ts'
 import type { CodexLedger } from './sessions.ts'
 
 export type CodexModelRow = {
@@ -170,7 +171,33 @@ export const formatCodexUsage = (s: CodexUsageSummary): string => {
     '',
     `Compaction events with no usage record: ${s.compactionEventsWithoutRecord}. Copied from a parent thread, or written by a Codex version that recorded no compaction usage; not counted, so a total that includes such a version is a lower bound.`,
     `Duplicate records dropped: ${s.duplicateRecords} within files, ${s.crossFileDuplicates} across files · Malformed lines: ${s.malformedLines} · Sessions still being written: ${s.filesStillBeingWritten}`,
+  ].join('\n')
+}
+
+const usd = (n: number): string => `${n < 0 ? '−' : ''}$${Math.abs(n) < 1 ? Math.abs(n).toFixed(4) : Math.abs(n).toFixed(2)}`
+
+/**
+ * Costs at OpenAI's API list prices and the routing simulation, as plain
+ * text. Every figure is labelled with its basis: none of it was paid, and
+ * none of it was saved.
+ */
+export const formatCodexCosts = (c: CodexCostSummary): string => {
+  const rows = c.byModel.map(m => [`${m.model}${m.isCompaction ? ' (auto-compaction)' : ''}`, `${m.requests}`, m.usd === undefined ? 'no price' : usd(m.usd)])
+  const widths = [0, 1, 2].map(i => Math.max(['Model', 'Requests', 'API list price'][i]?.length ?? 0, ...rows.map(r => (r[i] ?? '').length)))
+  const t = c.turns
+
+  return [
+    `Codex at OpenAI API list prices (as of ${c.pricesAsOf}). This is not what was paid: a ChatGPT plan draws on plan limits and credits.`,
+    pad(['Model', 'Requests', 'API list price'], widths),
+    ...rows.map(r => pad(r, widths)),
+    `Total at API list prices: ${usd(c.actualUsd)}${c.compactionUsd > 0 ? ` (auto-compaction ${usd(c.compactionUsd)})` : ''}`,
+    ...(c.unpricedModels.length === 0 ? [] : [`No price for: ${c.unpricedModels.join(', ')} (left out of every figure)`]),
     '',
-    'Token counts only: no prices yet.',
+    'If this router had chosen each turn\'s model (simulation)',
+    `Policy: light → ${c.policy.tiers.light ?? "the turn's own model"}, standard → ${c.policy.tiers.standard ?? "the turn's own model"}, heavy → ${c.policy.tiers.heavy ?? "the turn's own model"}; no move down past ${exact(c.policy.cacheGuardTokens)} tokens of context`,
+    `Turns ${t.total}: ${t.analyzed} with a prompt to read, ${t.movedDown} moved down, ${t.movedUp} moved up, ${t.heldByCacheGuard} held by the cache guard`,
+    `Same tokens at the router's choices: ${usd(c.simulatedUsd)}`,
+    `Potential savings: ${usd(c.potentialSavingsUsd)} (API list prices, simulation; not a saving that happened)`,
+    "Assumes a smaller model uses the same tokens and finishes the same work. A switched turn's first request is priced with a cold cache; auto-compaction stays on the model it ran on. Only a benchmark measures what routing actually saves.",
   ].join('\n')
 }

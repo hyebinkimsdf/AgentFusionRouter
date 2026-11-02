@@ -36,7 +36,7 @@ const rollout = (...lines: string[]) => `${lines.join('\n')}\n`
 const statuses = (text: string) => parseSessionLedger(text, 'f').intervals.map(i => i.status)
 const ledgerOf = (...texts: string[]): CodexLedger => {
   const files = texts.map((t, i) => parseSessionLedger(t, `f${i}`))
-  return { home: 'h', files, entries: files.flatMap(f => f.entries), crossFileDuplicates: 0 }
+  return { home: 'h', files, entries: files.flatMap(f => f.entries), crossFileDuplicates: 0, analyses: new Map() }
 }
 
 const fixtureText = await readFile(FIXTURE, 'utf8')
@@ -44,7 +44,7 @@ const fixtureText = await readFile(FIXTURE, 'utf8')
 describe('a real session with auto-compaction', () => {
   const text = fixtureText
   const ledger = parseSessionLedger(text, 'compaction-session.jsonl')
-  const summary = summarizeCodexLedger({ home: 'h', files: [ledger], entries: ledger.entries, crossFileDuplicates: 0 })
+  const summary = summarizeCodexLedger({ home: 'h', files: [ledger], entries: ledger.entries, crossFileDuplicates: 0, analyses: new Map() })
 
   test('every request record is in the ledger once', () => {
     const records = ledger.entries.filter(e => e.source === 'request_record')

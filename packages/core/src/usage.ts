@@ -244,10 +244,16 @@ export const formatReport = (s: Summary): string => {
   lines.push('', `Estimated cost: ${usd(s.costUsd)}`)
 
   if (s.routedRequests > 0) {
-    lines.push(`Same tokens at the models asked for before routing: ${usd(s.unroutedCostUsd)}`)
+    lines.push(
+      `Same tokens at the models asked for before routing: ${usd(s.unroutedCostUsd)}`,
+      `Routing savings estimate: ${usd(s.unroutedCostUsd - s.costUsd)} (API list prices, same tokens; not a measured saving)`,
+    )
   }
   if (s.wouldRouteRequests > 0) {
-    lines.push(`Same tokens at the router's choices: ${usd(s.potentialCostUsd)}`)
+    lines.push(
+      `Same tokens at the router's choices: ${usd(s.potentialCostUsd)}`,
+      `Potential savings if routed: ${usd(s.costUsd - s.potentialCostUsd)} (API list prices, simulation)`,
+    )
   }
   if (s.unpricedModels.length > 0) {
     lines.push(`No price for: ${s.unpricedModels.join(', ')} (left out of the totals)`)

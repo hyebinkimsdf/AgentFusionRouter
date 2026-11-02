@@ -2,8 +2,11 @@ import { readFile, readdir } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { basename, join, relative, sep } from 'node:path'
 
+import type { Analysis } from '@agent-fusion-router/core'
+
 import type { FileLedger, LedgerEntry } from './ledger.ts'
 import { parseSessionLedger } from './ledger.ts'
+import { analyzeTurns } from './turns.ts'
 
 /** Codex's data folder: CODEX_HOME, else ~/.codex. */
 export const codexHome = (env: NodeJS.ProcessEnv = process.env): string => env.CODEX_HOME || join(homedir(), '.codex')
@@ -33,6 +36,8 @@ export type CodexLedger = {
   entries: LedgerEntry[]
   /** Records dropped because an earlier file holds the same request id. */
   crossFileDuplicates: number
+  /** The router's analysis of each turn's prompt, by file, then turn id. The prompts themselves are not kept. */
+  analyses: Map<string, Map<string, Analysis>>
 }
 
 /**
@@ -44,11 +49,14 @@ export const readCodexLedger = async (home: string = codexHome()): Promise<Codex
   const files: FileLedger[] = []
   const entries: LedgerEntry[] = []
   const seen = new Set<string>()
+  const analyses = new Map<string, Map<string, Analysis>>()
   let crossFileDuplicates = 0
 
   for (const path of await findSessionFiles(home)) {
-    const ledger = parseSessionLedger(await readFile(path, 'utf8'), relative(home, path).split(sep).join('/'))
+    const text = await readFile(path, 'utf8')
+    const ledger = parseSessionLedger(text, relative(home, path).split(sep).join('/'))
     files.push(ledger)
+    analyses.set(ledger.file, analyzeTurns(text))
 
     for (const entry of ledger.entries) {
       if (entry.requestId !== undefined) {
@@ -62,5 +70,5 @@ export const readCodexLedger = async (home: string = codexHome()): Promise<Codex
     }
   }
 
-  return { home, files, entries, crossFileDuplicates }
+  return { home, files, entries, crossFileDuplicates, analyses }
 }

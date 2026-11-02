@@ -36,9 +36,11 @@ It reads no other files and runs no commands.
 
 ## Codex session records
 
-`agent-fusion-router codex-usage` reads Codex's own session records (`rollout-*.jsonl` under `sessions/` and `archived_sessions/` in `CODEX_HOME`, else `~/.codex`). Those files hold your prompts, Codex's answers and tool output, and the command reads them whole.
+`agent-fusion-router codex-usage`, and `report` unless given `--no-codex`, read Codex's own session records (`rollout-*.jsonl` under `sessions/` and `archived_sessions/` in `CODEX_HOME`, else `~/.codex`). Those files hold your prompts, Codex's answers and tool output, and the commands read them whole.
 
-- **What it keeps:** token counts, request and turn ids, model names, reasoning effort and timestamps. Message text is never kept in its ledger or printed.
+- **What it keeps:** token counts, request and turn ids, model names, reasoning effort and timestamps.
+- **Prompts:** each turn's prompt is read in memory so the router can classify it. Only the analysis is kept (tier, kind, confidence, signal names), never the text.
+- **What it never keeps or prints:** message text, answers and tool output.
 - **Paths:** files are named relative to Codex's home.
 - **Writes and network:** it writes nothing, keeps no copy, and sends nothing anywhere.
 

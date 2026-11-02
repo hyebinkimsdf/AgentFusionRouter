@@ -31,7 +31,7 @@ This project makes routing decisions explicit and records the usage needed to ev
 | Usage CLI | Implemented: `report` (text, JSON, or web page with screenshot), `explain`, `doctor` |
 | Task briefs | Library utilities implemented; automatic task splitting is not connected to the adapter |
 | Benchmark CLI | Implemented: `bench validate`, `run`, `report`, `verify`; six sample tasks with hidden checks; web report, full-page screenshot, SHA-256 evidence |
-| Codex adapter | Usage ledger implemented: `codex-usage` reads Codex's session records, counts each request once, and reconciles them with Codex's running total (auto-compaction included). Routing runner: design notes only |
+| Codex adapter | Usage ledger implemented: `codex-usage` reads Codex's session records, counts each request once, and reconciles them with Codex's running total (auto-compaction included). Costs at OpenAI API list prices and a routing simulation, also in `report`. Routing runner: design notes only |
 | Performance results | **One preliminary live run** — six sample tasks × three arms (Opus-fixed / opusplan / auto-route) × one repetition: auto-route matched Opus-fixed's 6/6 success at about 52% of its cost ($0.378 vs $0.791). One repetition on the sample tasks alone is a thin basis for a general claim |
 
 The [development status](docs/development-status.md) records the implementation inventory, verification results, and remaining work. Local verification on **2026-11-01** passed `npm run check`: **112 tests** (added regression tests while fixing 5 reproducible bugs in routing decisions, usage logging, and benchmark aggregation), core/test/CLI typechecks, and plugin bundle consistency. Existing verification notes record 5 plugin tests passing on Claude Code 2.1.312; those engine checks were not rerun during this documentation update.
@@ -178,11 +178,11 @@ The plugin records model requests, turns, and eligible subagent starts as JSON L
 | --- | --- |
 | `/router` | Show routing and usage for the current Claude Code session |
 | `/router explain <task>` | Explain a task classification using the plugin's configuration |
-| `node packages/cli/dist/cli.js report` | Summarize recorded sessions; accepts `--dir`, `--since`, and `--json` |
+| `node packages/cli/dist/cli.js report` | Summarize recorded sessions, then Codex's usage when it has any; accepts `--dir`, `--since`, `--json`, `--codex-home` and `--no-codex` |
 | `node packages/cli/dist/cli.js report --html usage.html --png usage.png` | Also write the summary as a web page and a full-page screenshot |
 | `node packages/cli/dist/cli.js explain "<task>" --model opus` | Preview the core's default routing policy locally |
 | `node packages/cli/dist/cli.js doctor` | Inspect the log folder, record counts, and catalog price date; accepts `--dir` |
-| `node packages/cli/dist/cli.js codex-usage` | Per-request token ledger from Codex's session records, reconciled with Codex's running total; accepts `--codex-home` and `--json` |
+| `node packages/cli/dist/cli.js codex-usage` | Per-request token ledger from Codex's session records, reconciled with Codex's running total, priced at OpenAI API list prices, with what routing each turn would have cost (a simulation); accepts `--codex-home`, `--json` and `--standard-model` |
 
 Cost estimates use the versioned [model catalog](packages/core/src/catalog.ts). A routed request can also be priced at its originally requested model using the same token counts. **This is an estimate, not an invoice or a measured savings result:** a different model could produce different tokens, retries, and outcomes. Unknown prices are excluded from cost totals and identified in the report.
 
